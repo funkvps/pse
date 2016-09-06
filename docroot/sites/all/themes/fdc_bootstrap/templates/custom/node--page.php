@@ -64,8 +64,6 @@ $content_menu = child_sibling_menu($node->nid);
 	</div>
 	<?php if (!$side_menu_disable_bool): ?>
 		<aside class="col-xs-12 col-sm-3 col-md-3 col-lg-3 pull-right" id="sidebarnobg">
-
-				hey
 				<?php print render($page['social_block']); ?>
 <!--			<div class="addthis_sharing_toolbox" ></div>-->
 			<?php include DRUPAL_ROOT . '/sites/all/themes/fdc_bootstrap/templates/custom/inc/right_menu.inc'; ?>

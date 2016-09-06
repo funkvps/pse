@@ -206,7 +206,7 @@ if (function_exists('fdc_pse_node_content')) {
 
 
 <!-- Go to www.addthis.com/dashboard to customize your tools ss -->
-<!--<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-55841db216f9ca3a" async="async"></script>-->
+	<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-55841db216f9ca3a" async="async"></script>
 
 
 
