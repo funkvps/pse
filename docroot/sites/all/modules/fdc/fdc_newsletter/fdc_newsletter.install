@@ -1,0 +1,61 @@
+<?php 
+
+function fdc_newsletter_enable() {
+  $current = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  $addition = array('fdc_newsletter' => 'fdc_newsletter_MailSystem');
+  variable_set('mail_system', array_merge($current, $addition));
+}
+
+function fdc_newsletter_disable() {
+  $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  unset($mail_system['fdc_newsletter']);
+  variable_set('mail_system', $mail_system);
+}
+
+/**
+* Implementation of hook_install().
+*/
+function fdc_newsletter_install() {
+	// Use schema API to create database table.
+	if (!db_table_exists('fdc_newsletter')) {	
+		drupal_install_schema('fdc_newsletter_schema');
+		drupal_set_message('FDC\'s Newsletter module has been installed', 'status');
+		return;	
+	}
+}
+
+/**
+ *	Implementation of hook_schema();
+ */
+function fdc_newsletter_schema() {
+
+	$schema['fdc_newsletter'] = array(
+		'description' => t('Stores all submitted Newsletter Sign-ups'),
+		'fields' => array(		
+			'uid' => array(
+				'description' => 'The unique ID',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),		
+			'email' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => FALSE,
+				'default' => '',
+			),
+			'date' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => FALSE,
+				'default' => '',
+			),
+		),
+		'unique keys' => array(
+		  'uid' => array('uid'),
+		),	
+		'primary key' => array('uid'),
+	);
+	
+	return $schema;
+}

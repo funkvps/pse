@@ -1,0 +1,166 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - overrides and imagery
+ */
+
+
+#intrographic {
+background-image: url(../img/pagebanner_oilgas2.png);
+height: 320px;
+color: #444;
+margin-bottom: 20px;
+}
+
+#intrographic p, #intrographic h2 {
+color: #444;
+width: 400px;
+line-height: 130%;}
+
+#intrographic h1 {
+color: #fff;
+
+}
+#intrographic h2 {
+color: #fff;
+
+}
+
+
+.teal_stripe {
+background-image: url(../img/islandbg_oilgas_application_teal.png);}
+
+#fourislands .teal_stripe p,#fourislands .teal_stripe h2,#fourislands .teal_stripe a  {
+color: #fff;}
+
+#threeislands .teal_stripe p,#threeislands .teal_stripe h2,#threeislands .teal_stripe a  {
+color: #fff;}
+
+
+.orange_stripe {
+background-image: url(../img/islandbg_oilgas_application_orange.png);}
+
+#threeislands .orange_stripe p,#threeislands .orange_stripe h2,#threeislands .orange_stripe a  {
+color: #fff;}
+
+#fourislands .orange_stripe p,#fourislands .orange_stripe h2,#fourislands .orange_stripe a  {
+color: #fff;}
+
+
+/* gFLARE product island */
+
+.gflare1 {background-image: url(../img/islandbg_pflares1.png);
+}
+
+.gflare2 {background-image: url(../img/islandbg_pflares2.png);
+}
+
+.gflare3 {background-image: url(../img/islandbg_pflares3.png);
+}
+
+.gflare4 {background-image: url(../img/islandbg_pflares4.png);
+}
+
+.og_seminar {background-image: url(../img/islandbg_oilgas_seminar.jpg);
+}
+
+
+
+#twoislands .gflare p,#twoislands .gflare h2, #twoislands .gflare a  {
+color: #fff;}
+
+#threeislands .gflare p,#threeislands .gflare h2, #threeislands .gflare a  {
+color: #fff;}
+
+#fourislands .gflare1 p,
+#fourislands .gflare1 h2,
+#fourislands .gflare1 a,
+#fourislands .gflare2 p,
+#fourislands .gflare2 h2,
+#fourislands .gflare2 a,
+#fourislands .gflare3 p,
+#fourislands .gflare3 h2,
+#fourislands .gflare3 a,
+#fourislands .gflare4 p,
+#fourislands .gflare4 h2,
+#fourislands .gflare4 a, 
+#fourislands .og_seminar p,
+#fourislands .og_seminar h2,
+#fourislands .og_seminar a  {
+color: #fff;}
+
+
+/* MVM additional overrides for specific images. Throw these out if no longer necessary */
+
+.oilgas_dynamic {
+background-image: url(../img/islandbg_oilgas_dynamic.jpg);}
+
+#threeislands .oilgas_dynamic p,#threeislands .oilgas_dynamic h2,#threeislands .oilgas_dynamic a  {
+color: #fff;}
+
+#fourislands .oilgas_dynamic p,#fourislands .oilgas_dynamic h2,#fourislands .oilgas_dynamic a  {
+color: #fff;}
+
+
+.oilgas_dynamic2 {
+background-image: url(../img/islandbg_oilgas_dynamic.png);}
+
+#threeislands .oilgas_dynamic p,#threeislands .oilgas_dynamic h2,#threeislands .oilgas_dynamic a  {
+color: #fff;}
+
+#fourislands .oilgas_dynamic2 p,#fourislands .oilgas_dynamic2 h2,#fourislands .oilgas_dynamic2 a  {
+color: #fff;}
+
+
+.oilgas_blowdown {
+background-image: url(../img/islandbg_oilgas_blowdown.jpg);}
+#threeislands .oilgas_blowdown p,#threeislands .oilgas_blowdown h2,#threeislands .oilgas_blowdown a  {
+color: #fff;}
+#fourislands .oilgas_blowdown p,#fourislands .oilgas_blowdown h2,#fourislands .oilgas_blowdown a  {
+color: #fff;}
+
+
+.oilgas_fire {
+background-image: url(../img/islandbg_oilgas_fire.jpg);}
+
+#threeislands .oilgas_fire p,#threeislands .oilgas_fire h2,#threeislands .oilgas_fire a  {
+color: #fff;}
+#fourislands .oilgas_fire p,#fourislands .oilgas_fire h2,#fourislands .oilgas_fire a  {
+color: #fff;}
+
+.oilgas_separator {
+background-image: url(../img/islandbg_oilgas_separator.jpg);}
+
+#threeislands .oilgas_separator p,#threeislands .oilgas_separator h2,#threeislands .oilgas_separator a  {
+color: #fff;}
+#fourislands .oilgas_separator p,#fourislands .oilgas_separator h2,#fourislands .oilgas_separator a  {
+color: #fff;}
+
+
+
+
+/* ------ get rid of this at some point -- */
+
+.override {
+background-image: url(../img/islandbg_oilgas.png);}
+
+#fourislands .override p,#fourislands .override h2,#fourislands .override a  {
+color: #fff;}
+
+#threeislands .override p,#threeislands .override h2,#threeislands .override a  {
+color: #fff;}
+
+
+.override2 {
+background-image: url(../img/islandbg_powerlines.png);}
+
+#threeislands .override2 p,#threeislands .override2 h2,#threeislands .override2 a  {
+color: #fff;}
+
+
+.override3 {
+background-image: url(../img/islandbg_cleanenergy.png);}
+
+#threeislands .override3 p,#threeislands .override3 h2,#threeislands .override3 a  {
+color: #fff;}
+

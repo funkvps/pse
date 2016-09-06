@@ -1,0 +1,14 @@
+name = PSE: Settings
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-settings-field_col_news_settings
+features[field_instance][] = node-settings-field_col_right_footer
+features[field_instance][] = node-settings-field_content_menu
+features[field_instance][] = node-settings-field_left_footer
+features[field_instance][] = node-settings-field_login_page_text
+features[field_instance][] = node-settings-field_register_page_text
+features[field_instance][] = node-settings-field_top_menu
+features[node][] = settings
+features[features_api][] = api:2

@@ -1,0 +1,11 @@
+name = PSE: Panels
+core = 7.x
+package = Ctools
+dependencies[] = ctools
+dependencies[] = features
+dependencies[] = page_manager
+dependencies[] = panels
+features[page_manager_pages][] = contentment_dashboard
+features[panels_renderer_pipeline][] = standard
+features[features_api][] = api:2
+features[ctools][] = 1

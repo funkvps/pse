@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Training Lisitings feature.
+ */
+
+include_once 'pse__node_training_listings.features.inc';

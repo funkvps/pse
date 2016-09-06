@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Company feature.
+ */
+
+include_once 'pse__node_company.features.inc';

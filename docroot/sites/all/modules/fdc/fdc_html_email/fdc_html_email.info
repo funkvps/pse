@@ -1,0 +1,5 @@
+name = HTML Emails
+description = An extention of the MailSystem class enabling HTML emails. (Mitchell Currie @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+core = 7.x

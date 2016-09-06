@@ -1,0 +1,225 @@
+<?php
+
+/**
+ * @surf
+ * Purpose of this module is to provide support to webforms
+ * Creates fields on runtime for any new webforms created
+ */
+
+/**
+ * @param type $node
+ * @param type $submission
+ */
+function fdc_webform_webform_submission_presave($node, &$submission) {
+
+
+	if ($node->type == "download_signup_form") {
+		if ($node->nid != 714) {
+			if (!empty($submission->data[5][0])) {
+				$node->webform['redirect_url'] = $submission->data[5][0];
+			}
+		}
+	}
+
+
+	if (!empty($submission)) {
+
+
+		if ($node->nid == 149) { //node specific
+			$fields = array(
+				"first_name" => $submission->data[1][0],
+				"last_name" => $submission->data[2][0],
+				"email" => $submission->data[3][0],
+				"company" => $submission->data[6][0],
+				"title" => $submission->data[8][0],
+				"phone" => $submission->data[4][0],
+			);
+
+			if (function_exists('fdc_salesforce_push')) {
+				fdc_salesforce_push($fields); //sends data to salesforce module
+			}
+		}
+		else
+		if ($node->nid == 113) { //node specific
+			$fullname = fdc_webform_name_splitter($submission->data[2][0]);
+
+			$fields = array(
+				"first_name" => $fullname->first_name,
+				"last_name" => $fullname->last_name,
+				"email" => $submission->data[3][0],
+				"company" => $submission->data[6][0],
+				"title" => $submission->data[5][0],
+				"phone" => $submission->data[4][0],
+			);
+
+			if (function_exists('fdc_salesforce_push')) {
+				fdc_salesforce_push($fields);  //sends data to salesforce module
+			}
+		}
+		else {
+			// any other forms						
+
+			$fullname = fdc_webform_name_splitter($submission->data[1][0]);
+			$fields = array(
+				"first_name" => $fullname->first_name,
+				"last_name" => $fullname->last_name,
+				"email" => $submission->data[2][0],
+				"company" => $submission->data[3][0],
+				"title" => $submission->data[4][0],
+				"phone" => $submission->data[5][0],
+			);
+
+			if (function_exists('fdc_salesforce_push')) {
+				fdc_salesforce_push($fields); //sends data to salesforce module
+			}
+		}
+	}
+}
+
+/**
+ * 
+ * @param type $node
+ */
+function fdc_webform_node_insert($node) {
+	if ($node->type == 'contact_us') {   // if its contact us node type then
+		webform_ensure_record($node);
+		$components = _my_function_webform_components(); //add the fields on runtime
+		foreach ($components as $component) {
+			$component['nid'] = $node->nid;
+			$component['extra']['title_display'] = 'inline';
+			$node->webform['components'][] = $component;
+			webform_component_insert($component);
+		}
+	}
+	if ($node->type == 'events_and_webinar') { // if its events_webinar node type then
+		webform_ensure_record($node);
+		$components = _my_function_webform_components(); // add the fields on runtime
+		foreach ($components as $component) {
+			$component['nid'] = $node->nid;
+			$component['extra']['title_display'] = 'inline';
+			$node->webform['components'][] = $component;
+			webform_component_insert($component);
+		}
+	}
+	if ($node->type == 'download_signup_form') { // if its download_signup_form node type then
+		webform_ensure_record($node);
+		$components = _my_function_webform_components(); // add the fields on runtime
+		foreach ($components as $component) {
+			$component['nid'] = $node->nid;
+			$component['extra']['title_display'] = 'inline';
+			$node->webform['components'][] = $component;
+			webform_component_insert($component);
+		}
+	}
+	if ($node->type == 'customer_area_forms') { // if its customer_area_forms node type then
+		webform_ensure_record($node);
+		$components = _my_function_webform_components(); // add the fields on runtime
+		foreach ($components as $component) {
+			$component['nid'] = $node->nid;
+			$component['extra']['title_display'] = 'inline';
+			$node->webform['components'][] = $component;
+			webform_component_insert($component);
+		}
+	}
+	/**
+	 * created new webform content type?? 
+	 * want to use the same functionality?? try below
+	 */
+//	if ($node->type == 'REPLACE_ME_WITH_CONTENT_TYPE_NAME') {	// if its REPLACE_ME_WITH_CONTENT_TYPE_NAME
+//		webform_ensure_record($node);
+//		$components = _my_function_webform_components();	// add the fields on runtime
+//		foreach ($components as $component) {
+//			$component['nid'] = $node->nid;
+//			$component['extra']['title_display'] = 'inline';
+//			$node->webform['components'][] = $component;
+//			webform_component_insert($component);
+//		}
+//	}
+}
+
+/**
+ * fields pregenerated are fullname,email,company/oganisation, jobtitle
+ * @return array
+ */
+function _my_function_webform_components() {  // client wanted the following fields pregenerated
+	$components = array(
+		0 => array(
+			'name' => 'Full name',
+			'form_key' => 'full_name',
+			'type' => 'textfield',
+			'mandatory' => 1,
+			'width' => '40',
+			'maxlength' => '75',
+			'weight' => 1,
+			'pid' => 0,
+			'value' => "[node:user_full_name]",
+			'attributes' => array('class' => "form-control"),
+		),
+		1 => array(
+			'name' => 'Email',
+			'form_key' => 'email',
+			'type' => 'textfield',
+			'mandatory' => 1,
+			'width' => '40',
+			'maxlength' => '75',
+			'weight' => 2,
+			'pid' => 0,
+			'value' => "[node:user_email]",
+			'attributes' => array('class' => "form-control"),
+		),
+		2 => array(
+			'name' => 'Company/Organisation',
+			'form_key' => 'organisation',
+			'type' => 'textfield',
+			'mandatory' => 1,
+			'width' => '40',
+			'maxlength' => '75',
+			'weight' => 3,
+			'pid' => 0,
+			'value' => "[node:user_company]",
+			'attributes' => array('class' => "form-control"),
+		),
+		3 => array(
+			'name' => 'Job Title',
+			'form_key' => 'job_title',
+			'type' => 'textfield',
+			'mandatory' => 1,
+			'width' => '40',
+			'maxlength' => '75',
+			'weight' => 4,
+			'pid' => 0,
+			'value' => "[node:user_job_title]",
+			'attributes' => array('class' => "form-control"),
+		),
+		4 => array(
+			'name' => 'Telephone',
+			'form_key' => 'telephone',
+			'type' => 'textfield',
+			'mandatory' => 1,
+			'width' => '40',
+			'maxlength' => '75',
+			'weight' => 5,
+			'pid' => 0,
+			'value' => "[node:user_telephone]",
+			'attributes' => array('class' => "form-control"),
+		),
+	);
+
+	return $components;
+}
+
+function fdc_webform_name_splitter($full_name) {
+	if (!empty($full_name)) {
+		$std = new stdClass();
+		$parts = explode(" ", $full_name);
+		$lastname = array_pop($parts);
+		$firstname = implode(" ", $parts);
+
+		$std->first_name = $firstname;
+		$std->last_name = $lastname;
+
+		if (!empty($std)) {
+			return $std;
+		}
+	}
+}

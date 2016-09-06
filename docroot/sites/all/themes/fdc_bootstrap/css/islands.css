@@ -1,0 +1,306 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - size etc. Used everywhere. Do not modify. use overrides.
+ */
+
+#hubgraphic {
+		width: 910px;
+		height: 270px;
+		padding-left: 30px;
+		padding-top: 30px;
+		display: block;
+		clear: both;
+		background-color: rgba(255, 255, 255, 0.8);
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+		font-size: 140%;
+		color: #fff;}
+		
+		#hubgraphic h1 {
+		color: #fff;
+		font-size: 200%;
+		font-weight: normal;
+		width: 619px;}
+		
+/*	#hubgraphic a {
+	color: #ccc;}*/
+
+	#hubintro {width: 619px;
+	margin-top: 20px;
+	font-size: 120%;}
+	
+	#hubintro p{
+	margin-bottom: 0.5em;}
+
+	ul#fourislands li {
+		width: 218px;}
+
+	ul#threeislands li {		
+		width: 298px;}
+		
+	ul#twoislands li {		
+		width: 458px;}
+		
+		
+ul#threeislands h2, ul#fourislands h2, ul#twoislands h2,
+div#threeislands h2, div#fourislands h2, div#twoislands h2	{margin-top: 0em;}	
+
+ul#fourislands, ul#threeislands, ul#twoislands,
+div#fourislands, div#threeislands, div#twoislands  {
+		list-style: none;
+		clear: both;
+}
+
+
+
+ul#fourislands li, ul#threeislands li, ul#twoislands li,
+div#fourislands > div a, div#threeislands > div a, div#twoislands > div a {
+	display: block;
+		padding: 0px 0;
+		border: 1px solid #ccc;
+		float: left;
+		margin-right: 20px;
+		margin-top: 20px;	
+		/*height: 9em;*/
+		overflow: hidden;
+		background-color: rgba(255, 255, 255, 0.8);
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+		}
+		
+ul#fourislands li a, ul#threeislands li a, ul#twoislands li a,
+div#fourislands div a, div#threeislands div a, div#twoislands div a  { 
+		text-decoration: none;
+		}
+		
+		
+ul#fourislands header, ul#threeislands header, ul#twoislands header,
+div#fourislands header, div#threeislands header, div#twoislands header {		
+		/*height: 7em;*/
+		padding-top: 6px;
+		padding-left: 6px;
+
+		}
+		
+ul#fourislands h2, ul#threeislands h2, ul#twoislands h2,
+div#fourislands h2, div#threeislands h2, div#twoislands h2 {
+		font-weight: normal;
+		font-size: 120%;
+		line-height: 100%;
+		margin-bottom: 0.5em;
+		width: 90%;}
+		
+		
+ul#fourislands article, ul#threeislands article, ul#twoislands article,
+div#fourislands article, div#threeislands article, div#twoislands article {
+		}		
+
+ul#fourislands article img, ul#threeislands article img, ul#twoislands article img,
+div#fourislands article img, div#threeislands article img, div#twoislands article img {
+		margin-right: 9px;
+		margin-left: 2px;
+		clear: left;
+}
+		
+		
+ul#fourislands p, ul#threeislands p, ul#twoislands p,
+div#fourislands p, div#threeislands p, div#twoislands p {
+	padding-top: 0.25em;
+	font-size: 90%;
+	line-height: 105%;
+	color: #444;
+	width: 90%
+		}
+
+ul#fourislands footer, ul#threeislands footer, ul#twoislands footer,
+div#fourislands footer, div#threeislands footer, div#twoislands footer {		
+		padding: 5px 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-size: 70%;
+		}
+
+
+
+
+/**
+ *	 island base colours - colour masters
+ */
+
+/*mid-grey background graduation*/
+.darkgrey {
+background-image: url(../img/islanddgrey.png);}
+
+/*mid-grey background graduation*/
+.greygrad {
+background-image: url(../img/islandgrey.png);}
+
+.greygrad h2, .greygrad header {color: #fff;}
+
+/*light-grey background graduation*/
+.greygrad2 {
+background-image: url(../img/islandlightgrey.png);}
+
+/*teal background graduation*/
+.teal {
+background-image: url(../img/islandteal.png);}
+
+/*orange background graduation*/
+.orange {
+background-image: url(../img/islandorange.png);}
+
+/*quote overrides* works for two or less*/
+
+.quoteteal {
+background-image: url(../img/islandbg_quote.png);}
+
+.quoteorange {
+background-image: url(../img/islandbg_quoteorange.png);}
+
+.aside_flare {
+background-image: url(../img/aside_flare.png);}
+
+
+
+
+/*teal change colour for legibility*/
+#fourislands .teal p,
+#fourislands .teal a,
+#fourislands .teal h2, 
+#fourislands .teal footer,
+
+#threeislands .teal p,
+#threeislands .teal a,
+#threeislands .teal h2, 
+#threeislands .teal footer,
+
+#twoislands .teal p,
+#twoislands .teal a,
+#twoislands .teal h2, 
+#twoislands .teal footer,
+
+
+#fourislands .orange p,
+#fourislands .orange a,
+#fourislands .orange h2, 
+#fourislands .orange footer,
+
+#threeislands .orange p,
+#threeislands .orange a,
+#threeislands .orange h2, 
+#threeislands .orange footer,
+
+#twoislands .orange p,
+#twoislands .orange a,
+#twoislands .orange h2, 
+#twoislands .orange footer,
+
+#fourislands .darkgrey p,
+#fourislands .darkgrey h2, 
+#fourislands .darkgrey footer,
+
+#threeislands .darkgrey p,
+#threeislands .darkgrey h2, 
+#threeislands .darkgrey footer,
+
+#twoislands .darkgrey p,
+#twoislands .darkgrey h2, 
+#twoislands .darkgrey footer,
+
+
+
+#twoislands .quoteteal p,
+#twoislands .quoteteal h2,
+#twoislands .quoteteal a,  
+
+#threeislands .quoteteal p,
+#threeislands .quoteteal h2,
+#threeislands .quoteteal a,
+
+#fourislands .quoteteal p,
+#fourislands .quoteteal h2,
+#fourislands .quoteteal a,
+
+#twoislands .quoteorange p,
+#twoislands .quoteorange h2,
+#twoislands .quoteorenage a,  
+
+#threeislands .quoteorange p,
+#threeislands .quoteorange h2,
+#threeislands .quoteorenage a,  
+
+#fourislands .quoteorange p,
+#fourislands .quoteorange h2,
+#fourislands .quoteorenage a,  
+
+#fourislands .aside_flare p,
+#fourislands .aside_flare h2,
+#fourislands .aside_flare a  
+
+{color: #fff;}
+
+
+
+#twoislands .quoteteal h2,
+#threeislands .quoteteal h2,
+#fourislands .quoteteal h2,
+#twoislands .quoteorange h2,
+#threeislands .quoteorange h2,
+#fourislands .quoteorange h2
+
+{font-size: 125%;}
+
+
+#oneislands {
+		width: 910px;
+		padding-left: 30px;
+		padding-bottom: 30px;		
+		padding-top: 10px;
+		margin-top: 40px;
+		display: block;
+		background-color: rgba(255, 255, 255, 0.8);
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+		font-size: 140%;
+		line-height: 160%;
+}
+
+#oneislands p {width: 80%;}
+
+#oneislands ul {position: relative; left: 1em; margin-bottom: 1em;}
+
+
+/*tweak sizes of any islands in the sidebar */
+
+aside ul#fourislands li {
+		height: 10em;
+
+		}
+	
+aside ul#fourislands p{
+	font-size: 100%;
+	line-height: 110%;
+
+		}
+		
+aside ul#fourislands footer{		
+		font-size: 75%;
+		}
+		
+aside ul#fourislands header {		
+		height: 7.5em;
+
+		}
+		
+aside ul#fourislands h2 {
+		font-size: 125%;
+		line-height: 105%;
+}
+								

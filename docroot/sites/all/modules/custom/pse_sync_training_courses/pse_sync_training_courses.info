@@ -1,0 +1,5 @@
+name = PSE sync training courses
+description = Sync taxonomy term values between related training products (Audrius Vaitonis @ <a href="http://www.brightlemon.com" target="_BLANK">BrightLemon</a>)
+;dependencies[] = 
+package = PSE Development
+core = 7.x

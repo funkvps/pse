@@ -1,0 +1,1304 @@
+<?php
+
+function fdc_membership_utils_menu() {
+
+	$items['user/dashboard'] = array(
+		'title' => 'My dashboard',
+		'page callback' => 'fdc_membership_utils_dashboard',
+		'access callback' => TRUE,
+		'type' => MENU_NORMAL_ITEM,
+	);
+	$items['user/order/%'] = array(
+		'page callback' => 'fdc_membership_utils_orders',
+		'page arguments' => array(2),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	return $items;
+}
+
+function fdc_membership_utils_theme() {
+	return array(
+		'fdc_membership_user_tpl' => array(
+			'template' => 'fdc_membership_user_tpl',
+		),
+		'fdc_membership_industrial_tpl' => array(
+			'template' => 'fdc_membership_user_tpl',
+		),
+		'fdc_membership_academic_tpl' => array(
+			'template' => 'fdc_membership_user_tpl',
+		),
+	);
+}
+
+function fdc_membership_utils_permission() {
+	return array(
+		'fdc utils' => array(
+			'title' => t('Administrate fdc Settings'),
+			'description' => t('Stuff'),
+		),
+	);
+}
+
+/**
+ * 
+ * @param type $stringtime
+ * @return date
+ */
+function fdc_membership_utils_date_cleaner($stringtime) {
+	if (!empty($stringtime)) {
+		$date = date('d-m-Y', $stringtime);
+		return $date;
+	}
+}
+
+/**
+ * 
+ * @return int
+ */
+function fdc_membership_utils_current_user_id() {
+	$current_uid = $GLOBALS['user']->uid; // my id 
+	return $current_uid;
+}
+
+/**
+ * 
+ * @global type $user
+ * @return boolean
+ */
+function fdc_membership_utils_isAdmin() {
+	if (user_access('bypass node access')) {
+		return true;
+	}
+  return false;
+}
+
+/**
+ * 
+ * @return boolean
+ */
+function fdc_membership_utils_isLoggedIn() {
+	if (user_is_logged_in()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+/**
+ * 
+ * @param type $string
+ * @param type $num
+ * @return string
+ */
+function fdc_membership_utils_trim($string, $num) {
+	if (!empty($string)) {
+		$string = substr($string, 0, $num);
+		return $string . "...";
+	}
+}
+
+/**
+ * 
+ * @param type $name
+ * @return string
+ */
+function fdc_membership_utils_urlSanitizer($name) {
+	$url = str_replace(array('--'), array('-'), str_replace('+', '-', urlencode(strtolower(preg_replace('/[^A-Za-z0-9-]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', str_replace(' ', '-', str_replace('&', '', $name))))))));
+	if (!empty($url)) {
+		return $url;
+	}
+}
+
+/**
+ * 
+ * @param int $user_id
+ * @return stdClass object
+ */
+//function fdc_membership_utils_user_tax_role($user_id) {
+//  drupal_set_message('Deprecated, bad function fdc_membership_utils_user_tax_role');
+//	if (!empty($user_id)) {
+//		$query = db_query("
+//			SELECT
+//				users.uid,
+//				users.`status`,
+//				users_roles.rid,
+//				taxonomy_term_data.`name`,
+//				users.mail,
+//				taxonomy_term_data.tid
+//			FROM
+//				users
+//			INNER JOIN users_roles ON users.uid = users_roles.uid
+//			LEFT JOIN field_data_field_permission ON users.uid = field_data_field_permission.entity_id
+//			LEFT JOIN taxonomy_term_data ON field_data_field_permission.field_permission_tid = taxonomy_term_data.tid
+//			where users.uid= :uid", array(":uid" => $user_id))->fetchObject();
+//		if (!empty($query)) {
+//			return $query;
+//		}
+//	}
+//}
+
+/**
+ * 
+ * @return string
+ */
+function fdc_membership_utils_get_uid() {
+	$current_uid = $GLOBALS['user']->uid; // my role 
+	return $current_uid;
+}
+
+/**
+ * 
+ * @param int $user_id
+ * @return object
+ */
+function fdc_membership_utils_orders($user_id) {
+	// commerce_order.`status` = 'completed' AND
+	if (!empty($user_id)) {
+		$query = db_query("
+				SELECT
+					commerce_order.order_id,
+					commerce_order.order_number,
+					commerce_order.uid,
+					commerce_order.mail,
+					commerce_order.`status`,
+					users.`name`,
+					commerce_line_item.line_item_label,
+					commerce_line_item.line_item_id
+				FROM
+					commerce_order
+				INNER JOIN users ON commerce_order.uid = users.uid
+				LEFT JOIN commerce_line_item ON commerce_order.order_number = commerce_line_item.order_id
+				WHERE
+
+					commerce_order.uid = :uid ", array(':uid' => (int) $user_id))->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * 
+ * @param int $nid
+ * @return int 
+ */
+function fdc_membership_utils_order_get_my_users($nid) {
+	if (!empty($nid)) {
+		$query = db_query('
+		SELECT
+			field_data_field_company_users.field_company_users_target_id  as user_id						
+		FROM
+			field_data_field_col_company_users
+		INNER JOIN field_data_field_company_users ON field_data_field_col_company_users.field_col_company_users_value = field_data_field_company_users.entity_id
+		INNER JOIN node ON node.nid = field_data_field_col_company_users.entity_id
+		WHERE
+			node.nid = :nid
+		', array(':nid' => (int) $nid))->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * 
+ * @param type $user_id
+ * @return obj
+ */
+function fdc_membership_utils_order_get_order($user_id) {
+	$query = db_query("
+	SELECT
+		commerce_order.order_id,
+		commerce_order.order_number,
+		commerce_order.uid,
+		commerce_order.mail,
+		commerce_order.`status`,
+		users.`name`,
+		commerce_line_item.line_item_label,
+		commerce_line_item.line_item_id
+	FROM
+		commerce_order
+	INNER JOIN users ON commerce_order.uid = users.uid
+	LEFT JOIN commerce_line_item ON commerce_order.order_number = commerce_line_item.order_id
+	WHERE
+		commerce_order.uid = :uid
+		AND commerce_order.`status` != 'cart' 
+		AND commerce_order.`status` != 'checkout_review'
+		AND commerce_order.`status` != 'checkout_checkout'
+		AND commerce_order.`status` != 'checkout_payment'
+		order by commerce_order.order_number desc
+	", array(":uid" => $user_id))->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+/**
+ * @return mixed
+ */
+function fdc_membership_utils_dashboard() {
+
+	$role = $GLOBALS['user']->roles; // current user role 
+	$std = new stdClass();
+	$current_uid = fdc_membership_utils_current_user_id();
+
+//	$current_role = fdc_membership_utils_user_tax_role($current_uid);
+
+
+
+
+
+	$author_menu = false;   // is the user an author
+
+	$me = fdc_membership_utils_my_role_in_company($current_uid);   // me = current user
+
+	$location = fdc_membership_utils_user_location($current_uid); // profile country to be used for training
+
+	if (!empty($location)) {
+		$std->user_location = $location;
+	}
+	if ($me->nid) {
+		$my_company = fdc_membership_utils_company_profile($me->nid);
+		if (!empty($my_company)) {
+			$std->my_company = $my_company;
+		}
+	}
+
+	/**
+	 * Check if the user has role to create content
+	 */
+  if (user_access('see create content link')) {
+    $author_menu = true;
+  }
+
+	$std->author_menu = $author_menu;
+
+	//
+	// setting interest terms
+	//
+	//
+
+	$interests = array();
+
+	$interest_terms = array();
+
+//	$company_interest_terms = fdc_membership_utils_get_company_interests($std->my_company->companyid);
+//	$ind_interest_terms = fdc_membership_utils_get_related_terms_by_sector_interests($current_uid);
+
+//	if (count($ind_interest_terms)) {
+//    $interest_terms = $ind_interest_terms;
+//  } else {
+//    if (count($company_interest_terms)) {
+//      $interest_terms = $company_interest_terms;
+//    }
+//  }
+//  dsm('$me');
+//  dsm($me);
+//  dsm('std');
+//  dsm($std);
+//  dsm('$ind_interest_terms');
+//  dsm($ind_interest_terms);
+//  dsm('$company_interest_terms');
+//  dsm($company_interest_terms);
+//  dsm('$interest_terms');
+//  dsm($interest_terms);
+
+	//$interest_terms = fdc_membership_utils_get_related_terms_by_sector_interests($current_uid);
+
+	//print_r($interest_terms);
+
+//	if (!empty($interest_terms)) {
+//		foreach ($interest_terms as $key => $value) {
+//			$interests[$key] = $value;
+//			//echo $key;
+//		}
+//	}
+
+	//print_r($interests);
+	/**
+	 * Menu for the user
+	 */
+	if ($me->user_type == "company_user") {
+		$std->menu = "company user menu";
+		$std->user_type = "company_user";
+
+
+
+
+		/**
+		 * Order information for a non admin single user
+		 */
+		$my_order = fdc_membership_utils_order_get_order($current_uid);
+		if (!empty($my_order)) {
+
+			foreach ($my_order as &$o) {
+
+				$line_item = commerce_line_item_load($o->line_item_id);
+				if (!empty($line_item)) {
+					$product_id = $line_item->commerce_product['und'][0]['product_id'];
+
+					if (!empty($product_id)) {
+						$o->product = fdc_membership_utils_get_training_details($product_id);
+					}
+				}
+			}
+
+
+//			print_r($my_order);
+			$std->order = $my_order;
+		}
+	}
+	if ($me->user_type == "general_user") {
+		$std->menu = "company user menu";
+		$std->user_type = "general_user";
+
+		/**
+		 * Order information for a non admin single user
+		 */
+		$my_order = fdc_membership_utils_order_get_order($current_uid);
+		if (!empty($my_order)) {
+
+			foreach ($my_order as &$o) {
+
+				$line_item = commerce_line_item_load($o->line_item_id);
+				if (!empty($line_item)) {
+					$product_id = $line_item->commerce_product['und'][0]['product_id'];
+
+					if (!empty($product_id)) {
+						$o->product = fdc_membership_utils_get_training_details($product_id);
+					}
+				}
+			}
+
+
+//			print_r($my_order);
+			$std->order = $my_order;
+		}
+	}
+	if ($me->user_type == "company_admin") {
+		$std->menu = "admin menu";
+		$std->user_type = "company_admin";
+
+		/**
+		 * Order information for admin and their 
+		 */
+		$my_users = fdc_membership_utils_order_get_my_users($me->nid);
+    
+    // BrightLemon, Audrius ticket #38 - Fixes to the my order page
+    global $user;
+    foreach ($my_users as $delta => $uid) {
+      if ($user->uid == $uid->user_id) {
+        unset($my_users[$delta]);
+      }
+    }
+    // END OF BrightLemon, Audrius
+    
+		$std->members = $my_users;
+		if (!empty($my_users)) {
+			foreach ($my_users as &$user) {
+
+				$orders = fdc_membership_utils_orders($user->user_id);
+
+				foreach ($orders as &$o) {
+
+					$line_item = commerce_line_item_load($o->line_item_id);
+					if (!empty($line_item)) {
+						$product_id = $line_item->commerce_product['und'][0]['product_id'];
+
+						if (!empty($product_id)) {
+							$o->product = fdc_membership_utils_get_training_details($product_id);
+							$o->user_info = fdc_membership_utils_user_profile($user->user_id);
+						}
+					}
+				}
+
+
+				if (!empty($orders)) {
+					$user->orders = $orders;
+				}
+
+
+
+				$my_order = fdc_membership_utils_order_get_order($current_uid);
+
+				if (!empty($my_order)) {
+
+					foreach ($my_order as &$o) {
+
+						$line_item = commerce_line_item_load($o->line_item_id);
+						if (!empty($line_item)) {
+							$product_id = $line_item->commerce_product['und'][0]['product_id'];
+
+							if (!empty($product_id)) {
+								$o->product = fdc_membership_utils_get_training_details($product_id);
+							}
+						}
+					}
+
+					$std->order = $my_order;
+				}
+			}
+      
+
+
+
+			$std->orders = $my_users;
+		}
+		else {
+			$my_order = fdc_membership_utils_order_get_order($current_uid);
+
+			if (!empty($my_order)) {
+
+				foreach ($my_order as &$o) {
+
+					$line_item = commerce_line_item_load($o->line_item_id);
+					if (!empty($line_item)) {
+						$product_id = $line_item->commerce_product['und'][0]['product_id'];
+
+						if (!empty($product_id)) {
+							$o->product = fdc_membership_utils_get_training_details($product_id);
+						}
+					}
+				}
+
+				$std->order = $my_order;
+			}
+		}
+
+
+
+
+
+		$std->user_company_nid = $me->nid;
+	}
+
+
+	/**
+	 * Company information
+	 */
+	/**
+	 * internal pages permission
+	 */
+
+	//echo "interestss:";
+	//print_r($interest_terms);
+	
+//	if (!empty($interest_terms)) {
+//		$related_news = fdc_membership_utils_get_related_items_by_sector_interest($interest_terms, 'news_articles');
+//		$c=0;
+//    if (!empty($related_news)) {
+//      foreach ($related_news as $key => $related_node) {
+//        $c++;
+//        if ($c<=3) {
+//          $news_info = fdc_membership_utils_related_news($related_node->nid);
+//          if (!empty($news_info)) {
+//            $std->related_news->$key = $news_info;
+//          }
+//        }
+//      }
+//    }
+//	}
+
+	// TODO itt tartok
+
+//	if (!empty($interest_terms)) {
+//		//echo "<pre>";
+//		//echo "interests:";
+//		//print_r($interest_terms);
+//		$related_events_webinar = fdc_membership_utils_get_related_items_by_sector_interest($interest_terms, 'events_and_webinar');
+//		//echo "events:";
+//		//print_r($related_events_webinar);
+//		//echo "</pre>";
+//		$c=0;
+//    if (!empty($related_events_webinar)) {
+//      foreach ($related_events_webinar as $key2 => $related_node) {
+//        $c++;
+//        if ($c<=3) {
+//          $events_info = fdc_membership_utils_related_events($related_node->nid);
+//          if (!empty($events_info)) {
+//            //echo $events_info;
+//            $std->related_events->$key2 = $events_info;
+//          }
+//        }
+//      }
+//    }
+//	}
+
+	$std->show_all_training = true;
+//	if (!empty($interest_terms)) {
+//
+//		$related_training = fdc_membership_utils_get_related_training_by_sector_interest($interest_terms, $location);
+//		if (!empty($related_training)) {
+//			$std->related_tagged_training = $related_training;
+//			$std->show_all_training = false;
+//		}
+//	}
+
+	/* Kornel */
+	//echo "<pre>";
+	//print_r($std);
+	//echo "</pre>";
+
+	if ($std->user_type=="company_user" || $std->user_type=="company_admin") {
+
+//		if (empty($interest_terms)) {
+//			$tid = fdc_membership_utils_get_company_interests($std->my_company->companyid);
+//			foreach ($tid as $tidtemp) {
+//				$tid2 = fdc_membership_utils_get_company_interests_trainings($tidtemp->ivalue);
+//				foreach ($tid2 as $tid2temp) {
+//					$traininglist[] = fdc_membership_utils_get_training_details_more($tid2temp->entityid);
+//					$std->show_all_training = false;
+//				}
+//			}
+//		}
+//		else {
+//			foreach ($interest_terms as $it) {
+//				$tid2 = fdc_membership_utils_get_company_interests_trainings($it->sectors);
+////        dsm('tid2');
+////        dsm($tid2);
+//        if (!empty($tid2)) {
+//          foreach ($tid2 as $tid2temp) {
+//            $traininglist[] = fdc_membership_utils_get_training_details_more($tid2temp->entityid);
+//            $std->show_all_training = false;
+//          }
+//        }
+//			}
+//
+//		}
+
+		//echo "traininglist:";
+		//print_r($traininglist);
+
+		if (!empty($traininglist)) {
+			$std->show_all_training=false;
+			$std->related_tagged_training = $traininglist;
+		}
+	}
+
+
+	//echo "<pre>";
+	//print_r ($std);
+	//echo "</pre>";
+
+
+
+	if ($me->field_company_type_value == 'industrial') {
+
+		variable_set('user_theme', 'industrial_theme');
+		return theme('fdc_membership_industrial_tpl', array("results" => $std));
+	}
+	else
+	if ($me->field_company_type_value == 'academic') {
+		variable_set('user_theme', 'academic_theme');
+		return theme('fdc_membership_academic_tpl', array("results" => $std));
+	}
+	else {
+		variable_set('user_theme', 'normal_theme');
+		return theme('fdc_membership_user_tpl', array("results" => $std));
+	}
+
+
+//	return theme('fdc_membership_user_tpl', array('results' => $std, 'role' => $current_role));
+}
+
+function fdc_membership_utils_my_role_in_company($user_id) {
+
+	if (!empty($user_id)) {
+
+		$is_company_admin = fdc_membership_utils_is_admin($user_id);
+
+		if ($is_company_admin) {
+			//  is company admin
+			$prop = fdc_membership_utils_get_company_prop_admin($user_id);
+			if (!empty($prop)) {
+
+				$prop->user_type = "company_admin";
+				return $prop;
+			}
+		}
+		else {
+			// is not company admin
+
+			$prop = fdc_membership_utils_get_company_prop($user_id);
+			if (!empty($prop)) {
+				$prop->user_type = "company_user";
+				return $prop;
+			}
+			else {
+        $prop = new stdClass();
+				$prop->user_type = "general_user";
+				return $prop;
+			}
+		}
+	}
+}
+
+function fdc_membership_utils_get_company_prop($user_id) {
+	if (!empty($user_id)) {
+
+		$query = db_query("
+			SELECT
+			node.nid,
+				field_data_field_company_type.field_company_type_value,
+				field_data_field_company_users.field_company_users_target_id
+			FROM
+				node
+			INNER JOIN field_data_field_company_type ON node.nid = field_data_field_company_type.entity_id
+			INNER JOIN field_data_field_col_company_users ON node.nid = field_data_field_col_company_users.entity_id
+			INNER JOIN field_data_field_company_users ON field_data_field_col_company_users.field_col_company_users_value = field_data_field_company_users.entity_id
+			WHERE
+				field_data_field_company_users.field_company_users_target_id = :uid
+			", array(":uid" => $user_id))->fetchObject();
+
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_membership_utils_get_company_prop_admin($user_id) {
+	if (!empty($user_id)) {
+
+		$query = db_query("
+			SELECT
+				node.nid,
+				field_data_field_company_type.field_company_type_value,
+					field_data_field_company_owner.field_company_owner_target_id
+			FROM
+				node
+			INNER JOIN field_data_field_company_type ON node.nid = field_data_field_company_type.entity_id
+			INNER JOIN field_data_field_company_owner ON node.nid = field_data_field_company_owner.entity_id
+			WHERE
+				field_data_field_company_owner.field_company_owner_target_id = :uid
+			", array(":uid" => $user_id))->fetchObject();
+
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_membership_utils_is_admin($user_id) {
+	if (!empty($user_id)) {
+
+		$query = db_query("
+			SELECT
+				count(*) as counter
+			FROM
+				node
+			INNER JOIN field_data_field_company_type ON node.nid = field_data_field_company_type.entity_id
+			INNER JOIN field_data_field_company_owner ON node.nid = field_data_field_company_owner.entity_id
+			WHERE
+				field_data_field_company_owner.field_company_owner_target_id = :uid
+			", array(":uid" => $user_id))->fetchObject();
+		if (!empty($query)) {
+			if ($query->counter > 0) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+}
+
+function fdc_membership_utils_user_profile($user_id) {
+	if (!empty($user_id)) {
+
+		$query = db_query("
+			SELECT
+				users.`name` ,
+				users.mail,
+				field_data_field_profile_first_name.field_profile_first_name_value as first_name,
+				field_data_field_profile_last_name.field_profile_last_name_value as last_name
+			FROM
+				users
+			INNER JOIN field_data_field_profile_first_name ON users.uid = field_data_field_profile_first_name.entity_id
+			INNER JOIN field_data_field_profile_last_name ON users.uid = field_data_field_profile_last_name.entity_id
+			WHERE
+				users.uid = :uid
+			", array(":uid" => $user_id))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+//function fdc_membership_utils_related_news($tid) {
+//	if (!empty($tid)) {
+//		$sql = db_query("
+//		SELECT
+//			taxonomy_term_data.`name`,
+//			taxonomy_term_data.tid,
+//			node.nid,
+//			node.title,
+//			node.type,
+//			field_data_field_news_summary.field_news_summary_value as summary
+//		FROM
+//			field_data_field_related_content
+//		INNER JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_related_content.field_related_content_tid
+//		LEFT JOIN node ON field_data_field_related_content.entity_id = node.nid
+//		LEFT JOIN field_data_field_collection_newsarticle ON node.nid = field_data_field_collection_newsarticle.entity_id
+//		LEFT JOIN field_data_field_news_summary ON field_data_field_collection_newsarticle.field_collection_newsarticle_value = field_data_field_news_summary.entity_id
+//		WHERE
+//			node.type = 'news_articles'
+//		AND taxonomy_term_data.tid = :tid
+//
+//
+//		", array(":tid" => $tid))->fetchObject();
+//		if (!empty($sql)) {
+//			return $sql;
+//		}
+//	}
+//}
+function fdc_membership_utils_related_news($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+		SELECT
+			node.nid,
+			node.title,
+			node.type,
+			field_data_field_news_summary.field_news_summary_value AS summary
+		FROM
+			node
+		LEFT JOIN field_data_field_collection_newsarticle ON node.nid = field_data_field_collection_newsarticle.entity_id
+		LEFT JOIN field_data_field_news_summary ON field_data_field_collection_newsarticle.field_collection_newsarticle_value = field_data_field_news_summary.entity_id
+		WHERE
+			node.type = 'news_articles'
+		AND node.nid = :nid
+
+
+		", array(":nid" => $nid))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_membership_utils_related_events($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+				SELECT
+					node.nid,
+					node.title,
+					node.type
+
+				FROM
+					field_data_field_related_content
+
+
+				INNER JOIN field_data_field_col_related ON field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+				LEFT JOIN node ON field_data_field_col_related.entity_id = node.nid
+				WHERE
+					node.type = 'events_and_webinar'
+				AND node.nid = :nid
+			", array(":nid" => $nid))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+/*function fdc_membership_utils_related_events($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+				SELECT
+					node.nid,
+					node.title,
+					node.type,
+					field_data_field_event_start_date.field_event_start_date_value AS start_date,
+					field_data_field_event_end_date.field_event_end_date_value AS end_date
+				FROM
+					field_data_field_related_content,
+					node,
+					field_data_field_col_related,
+					field_data_field_event_start_date,
+					field_data_field_event_end_date
+				WHERE field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+				AND field_data_field_col_related.entity_id = node.nid
+				AND field_data_field_event_start_date.entity_id = node.nid
+				AND field_data_field_event_start_date.field_event_start_date_value >= NOW()
+				AND field_data_field_event_end_date.entity_id = node.nid
+				AND	node.type = 'events_and_webinar'
+				AND node.nid = :nid
+			", array(":nid" => $nid))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}*/
+
+//
+//function fdc_membership_utils_related_events($tid) {
+//	if (!empty($tid)) {
+//		$sql = db_query("
+//				SELECT
+//					taxonomy_term_data.`name`,
+//					taxonomy_term_data.tid,
+//					node.nid,
+//					node.title,
+//					node.type
+//				FROM
+//					field_data_field_related_content
+//				INNER JOIN field_data_field_col_related ON field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+//				LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_related_content.field_related_content_tid
+//				LEFT JOIN node ON field_data_field_col_related.entity_id = node.nid
+//				WHERE
+//					taxonomy_term_data.tid = :tid
+//					and node.type = 'events_and_webinar'
+//			", array(":tid" => $tid))->fetchObject();
+//		if (!empty($sql)) {
+//			return $sql;
+//		}
+//	}
+//}
+
+function fdc_membership_utils_related_training($tid) {
+	if (!empty($tid)) {
+		$sql = db_query("
+				SELECT
+					taxonomy_term_data.`name`,
+					taxonomy_term_data.tid,
+					node.nid,
+					node.title,
+					node.type
+				FROM
+					field_data_field_related_content
+				INNER JOIN field_data_field_col_related ON field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+				LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_related_content.field_related_content_tid
+				LEFT JOIN node ON field_data_field_col_related.entity_id = node.nid
+				WHERE
+					taxonomy_term_data.tid = :tid
+					and node.type = 'training_course'
+			", array(":tid" => $tid))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_membership_utils_related_taxonomy_term($company_nid) {
+	if (!empty($company_nid)) {
+		$sql = db_query("
+				SELECT
+					taxonomy_term_data.`name`,
+					taxonomy_term_data.tid,
+					node.nid,
+					node.title,
+					node.type
+				FROM
+					field_data_field_related_content
+				INNER JOIN field_data_field_col_related ON field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+				LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_related_content.field_related_content_tid
+				LEFT JOIN node ON field_data_field_col_related.entity_id = node.nid
+				WHERE
+					node.nid = :nid
+			
+			", array(":nid" => $company_nid))->fetchAll();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+/* Kornel */
+function fdc_membership_utils_get_company_interests ($company_nid) {
+	if (!empty($company_nid)) {
+		$sql = db_query ("
+			SELECT
+				field_data_field_profile_sector_interest.field_profile_sector_interest_value as sectors
+
+			FROM
+				node,
+				field_data_field_profile_sector_interest
+
+			WHERE
+				node.nid = :nid
+				AND field_data_field_profile_sector_interest.entity_id = node.nid
+				AND field_data_field_profile_sector_interest.bundle = 'company'
+		", array(":nid" => $company_nid))->fetchAll();
+	}
+	if (!empty($sql)) {
+		return $sql;
+	}
+}
+
+function fdc_membership_utils_get_company_interests_trainings ($interest) {
+	if (!empty($interest)) {
+		$sql = db_query ("
+			SELECT
+				field_data_field_profile_sector_interest.entity_id as entityid
+			FROM
+				field_data_field_profile_sector_interest
+			WHERE
+				field_data_field_profile_sector_interest.field_profile_sector_interest_value = :interest
+				AND field_data_field_profile_sector_interest.bundle = 'training' LIMIT 3
+		", array (":interest" => $interest))->fetchAll();
+	}
+	if (!empty($sql)) {
+		return $sql;
+	}
+}
+
+
+
+function fdc_membership_utils_get_company_details() {
+	if (!empty($uid)) {
+		$sql = db_query("SELECT
+						field_data_field_profile_first_name.field_profile_first_name_value as first_name
+					FROM
+						users
+					INNER JOIN field_data_field_profile_first_name ON users.uid = field_data_field_profile_first_name.entity_id
+					where users.uid = :uid", array(":uid" => $uid))->fetchObject();
+		if (!empty($sql)) {
+			return $sql->first_name;
+		}
+	}
+}
+
+function fdc_membership_utils_get_training_details($prod_id) {
+	if (!empty($prod_id)) {
+		$sql = db_query("
+			SELECT
+				field_data_field_prod_start_date.field_prod_start_date_value as start_date,
+				field_data_field_prod_end_date.field_prod_end_date_value as end_date,
+				commerce_product.product_id,
+				commerce_product.sku,
+				commerce_product.title
+			FROM
+				commerce_product
+			INNER JOIN field_data_field_col_commerce ON commerce_product.product_id = field_data_field_col_commerce.entity_id
+			left JOIN field_data_field_prod_start_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_start_date.entity_id
+			left JOIN field_data_field_prod_end_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_end_date.entity_id
+			WHERE
+				commerce_product.product_id = :prod_id
+			", array(":prod_id" => $prod_id))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+
+function fdc_membership_utils_get_training_details_more ($prod_id) {
+	if (!empty($prod_id)) {
+		$sql = db_query ("SELECT
+					commerce_product.sku,
+					commerce_product.title,
+					commerce_product.product_id,
+					commerce_product.type,
+					CURDATE(),
+					FROM_UNIXTIME(
+						field_data_field_prod_start_date.field_prod_start_date_value,
+						'%Y-%m-%d'
+					) AS f_start_date,
+					field_data_field_prod_start_date.field_prod_start_date_value AS start_date,
+					field_data_field_prod_end_date.field_prod_end_date_value AS end_date,
+					field_data_field_prod_stock.field_prod_stock_value AS stock,
+					taxonomy_term_data.`name` AS location,
+					field_data_field_taxo_currency.field_taxo_currency_value AS country,
+					field_data_commerce_price.commerce_price_amount AS currency_amount,
+					field_data_commerce_price.commerce_price_currency_code AS currency_code,
+					taxonomy_term_data.tid,
+					field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+					field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+					file_managed.uri AS img_path,
+					field_data_field_prod_public.field_prod_public_value AS public_display_text,
+					field_data_field_profile_sector_interest.field_profile_sector_interest_value as interests,
+					field_data_field_profile_country.field_profile_country_value as profile_country
+				FROM
+					commerce_product
+				INNER JOIN field_data_field_col_commerce ON commerce_product.product_id = field_data_field_col_commerce.entity_id
+				LEFT JOIN field_data_field_prod_start_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_start_date.entity_id
+				LEFT JOIN field_data_field_prod_end_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_end_date.entity_id
+				LEFT JOIN field_data_field_prod_location ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_location.entity_id
+				LEFT JOIN field_data_field_prod_stock ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_stock.entity_id
+				LEFT JOIN taxonomy_term_data ON field_data_field_prod_location.field_prod_location_tid = taxonomy_term_data.tid
+				LEFT JOIN field_data_field_taxo_currency ON taxonomy_term_data.tid = field_data_field_taxo_currency.entity_id
+				LEFT JOIN field_data_commerce_price ON commerce_product.product_id = field_data_commerce_price.entity_id
+				LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_data.tid = field_data_field_taxo_flags.entity_id
+				LEFT JOIN field_data_field_profile_country ON taxonomy_term_data.tid = field_data_field_profile_country.entity_id
+				LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+				LEFT JOIN field_data_field_prod_public ON commerce_product.product_id = field_data_field_prod_public.entity_id
+				INNER JOIN field_data_field_profile_sector_interest ON commerce_product.product_id = field_data_field_profile_sector_interest.entity_id
+				WHERE
+					commerce_product.product_id = :prod_id
+
+					", array(":prod_id" => $prod_id))->fetchObject();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+
+function fdc_membership_utils_time_of_day() {
+	$time = time();
+	$hour = date("g", $time);
+	$m = date("A", $time);
+
+	if ($m == "AM") {
+		if ($hour == 12) {
+			return "Good Evening";
+		}
+		elseif ($hour < 4) {
+			return "Good Evening";
+		}
+		elseif ($hour > 3) {
+			return "Good Morning";
+		}
+	}
+	elseif ($m == "PM") {
+		if ($hour == 12) {
+			return "Good Afternoon";
+		}
+		elseif ($hour < 7) {
+			return "Good Afternoon";
+		}
+		elseif ($hour > 6) {
+			return "Good Evening";
+		}
+	}
+}
+
+function fdc_membership_utils_get_related_terms_by_sector_interests($uid) {
+	if (!empty($uid)) {
+		$sql = db_query("SELECT
+	field_data_field_profile_sector_interest.field_profile_sector_interest_value as sectors
+FROM
+	users
+INNER JOIN field_data_field_profile_sector_interest ON users.uid = field_data_field_profile_sector_interest.entity_id
+WHERE
+	users.uid = :uid", array(":uid" => $uid))->fetchAll();
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+/**
+ * @param $interests
+ * @param $type
+ * @return mixed
+ */
+function fdc_membership_utils_get_related_items_by_sector_interest($interests, $type) {
+	if (!empty($interests)) {
+
+
+		$sql_array = array(); // TODO anyád
+		$sql_array[':type'] = $type;
+		$sql = "SELECT
+					Distinct				
+					node.nid
+				FROM
+					node
+				INNER JOIN field_data_field_profile_sector_interest ON node.nid = field_data_field_profile_sector_interest.entity_id
+				WHERE 
+					node.type = :type";
+
+
+		$count = count($interests);
+
+		if ($count > 0) {
+			if ($count == 1) {
+				$sql .= " AND ";
+			}
+			else {
+				$sql .= " AND (";
+			}
+		}
+
+		foreach ($interests as $key => $v) {
+
+			if ($key == 0) {
+				$sql .= " field_data_field_profile_sector_interest.field_profile_sector_interest_value = :term" . $key . " ";
+				$sql_array[':term' . $key] = "" . $v->sectors . "";
+			}
+			else {
+				$sql .= " OR field_data_field_profile_sector_interest.field_profile_sector_interest_value =  :term" . $key . " ";
+				$sql_array[':term' . $key] = "" . $v->sectors . "";
+			}
+		}
+		if ($count > 0) {
+			if ($count == 1) {
+				
+			}
+			else {
+				$sql .= " )";
+			}
+		}
+		$statement = db_query($sql, $sql_array)->fetchAll(); {
+			if (!empty($statement)) {
+
+				return $statement;
+			}
+		}
+	}
+}
+
+function fdc_membership_utils_get_related_training_by_sector_interest($interests, $location) {
+	if (!empty($interests) && !empty($location)) {
+
+		$sql_array = array();
+		$sql = "SELECT
+					commerce_product.sku,
+					commerce_product.title,
+					commerce_product.product_id,
+					commerce_product.type,
+					CURDATE(),
+					FROM_UNIXTIME(
+						field_data_field_prod_start_date.field_prod_start_date_value,
+						'%Y-%m-%d'
+					) AS f_start_date,
+					field_data_field_prod_start_date.field_prod_start_date_value AS start_date,
+					field_data_field_prod_end_date.field_prod_end_date_value AS end_date,
+					field_data_field_prod_stock.field_prod_stock_value AS stock,
+					taxonomy_term_data.`name` AS location,
+					field_data_field_taxo_currency.field_taxo_currency_value AS country,
+					field_data_commerce_price.commerce_price_amount AS currency_amount,
+					field_data_commerce_price.commerce_price_currency_code AS currency_code,
+					taxonomy_term_data.tid,
+					field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+					field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+					file_managed.uri AS img_path,
+					field_data_field_prod_public.field_prod_public_value AS public_display_text,
+					field_data_field_profile_sector_interest.field_profile_sector_interest_value as interests,
+					field_data_field_profile_country.field_profile_country_value as profile_country
+				FROM
+					commerce_product
+				INNER JOIN field_data_field_col_commerce ON commerce_product.product_id = field_data_field_col_commerce.entity_id
+				LEFT JOIN field_data_field_prod_start_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_start_date.entity_id
+				LEFT JOIN field_data_field_prod_end_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_end_date.entity_id
+				LEFT JOIN field_data_field_prod_location ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_location.entity_id
+				LEFT JOIN field_data_field_prod_stock ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_stock.entity_id
+				LEFT JOIN taxonomy_term_data ON field_data_field_prod_location.field_prod_location_tid = taxonomy_term_data.tid
+				LEFT JOIN field_data_field_taxo_currency ON taxonomy_term_data.tid = field_data_field_taxo_currency.entity_id
+				LEFT JOIN field_data_commerce_price ON commerce_product.product_id = field_data_commerce_price.entity_id
+				LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_data.tid = field_data_field_taxo_flags.entity_id
+				LEFT JOIN field_data_field_profile_country ON taxonomy_term_data.tid = field_data_field_profile_country.entity_id
+				LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+				LEFT JOIN field_data_field_prod_public ON commerce_product.product_id = field_data_field_prod_public.entity_id
+				INNER JOIN field_data_field_profile_sector_interest ON commerce_product.product_id = field_data_field_profile_sector_interest.entity_id
+				WHERE
+					FROM_UNIXTIME(
+						field_data_field_prod_start_date.field_prod_start_date_value,
+						'%Y-%m-%d'
+					) > CURDATE()
+				
+				AND field_data_field_profile_country.field_profile_country_value = :location
+
+					";
+		$sql_array[':location'] = $location;
+
+		$count = count($interests);
+
+		if ($count > 0) {
+			if ($count == 1) {
+				$sql .= " AND ";
+			}
+			else {
+				$sql .= " AND (";
+			}
+		}
+
+		foreach ($interests as $key => $v) {
+
+			if ($key == 0) {
+				$sql .= " field_data_field_profile_sector_interest.field_profile_sector_interest_value = :term" . $key . " ";
+				$sql_array[':term' . $key] = "" . $v->sectors . "";
+			}
+			else {
+				$sql .= " OR field_data_field_profile_sector_interest.field_profile_sector_interest_value =  :term" . $key . " ";
+				$sql_array[':term' . $key] = "" . $v->sectors . "";
+			}
+		}
+		if ($count > 0) {
+			if ($count == 1) {
+				
+			}
+			else {
+				$sql .= " )";
+			}
+		}
+
+		$sql .= " GROUP BY 
+					commerce_product.sku
+				  ORDER BY
+					field_data_field_prod_start_date.field_prod_start_date_value ASC LIMIT 3";
+		$statement = db_query($sql, $sql_array)->fetchAll(); {
+			if (!empty($statement)) {
+
+//				print_r($statement);
+				return $statement;
+			}
+		}
+	}
+}
+
+function fdc_membership_utils_company_profile($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("SELECT
+	node.title as company_name,
+	field_data_field_company_logo.field_company_logo_fid,
+	file_managed.uri as img_path,
+	node.nid as companyid
+FROM
+	node
+LEFT JOIN field_data_field_company_logo ON node.nid = field_data_field_company_logo.entity_id
+LEFT JOIN file_managed ON field_data_field_company_logo.field_company_logo_fid = file_managed.fid
+	where node.nid = :nid", array(":nid" => $nid))->fetchObject();
+
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_membership_utils_user_location($uid) {
+	if (!empty($uid)) {
+		$sql = db_query("SELECT
+							field_data_field_profile_country.field_profile_country_value as location,
+							users.uid
+						FROM
+							users
+						INNER JOIN field_data_field_profile_country ON users.uid = field_data_field_profile_country.entity_id
+						WHERE
+							users.uid = :uid", array(":uid" => $uid))->fetchObject();
+
+		if (!empty($sql)) {
+			return $sql->location;
+		}
+	}
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function fdc_membership_utils_page_alter(&$page) {
+  if (request_path() == 'user/dashboard') {
+    // dpm($page);
+    // $new = array(
+      // '#show_messages' => $page['#show_messages'],
+      // '#theme' => $page['#theme'],
+      // '#theme_wrappers' => $page['#theme_wrappers'],
+      // '#type' => $page['#type'],
+      // '#process' => $page['#process'],
+      // 'content_second_chance' => $page['content_second_chance'],
+      // 'content' => $page['content'],
+      // '#sorted' => TRUE,
+      // 'page_bottom' => $page['page_bottom'],
+      // '#post_render' => $page['#post_render'],
+    // );
+    // $page = $new;
+    // dpm($page);
+  }
+}
+
+function fdc_membership_utils_views_pre_render(&$views) {
+
+}

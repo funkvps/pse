@@ -1,0 +1,87 @@
+<?php
+
+function fdc_user_register_menu() {
+	$items = array();
+	$items['admin/config/fdc_user_register'] = array(
+		'title' => 'Registration Config',
+		'description' => '',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('fdc_user_register_admin'),
+		'access arguments' => array('access administration pages'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+	return $items;
+}
+
+//function fdc_user_register_permission() {
+//	return array(
+//		'fdc challenge utils' => array(
+//			'title' => t('Administrate fdc Settings'),
+//			'description' => t('Stuff'),
+//		),
+//	);
+//}
+//
+
+
+// Admin
+function fdc_user_register_admin() {
+
+	$form = array();
+	
+		
+	$form['fdc_user_register_email_markup'] = array(
+		'#markup' => '<h4>Register Email Domain Settings</h4><hr>'
+	);
+	
+	$form['fdc_user_register_email_domains'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Email Domains'),
+		'#default_value' => variable_get('fdc_user_register_email_domains', variable_get('fdc_user_register_email_domains','gmail.com,gmail.co.uk')),
+		'#size' => 100,
+		'#maxlength' => 1000,
+		'#description' => t("please enter domains and then seperate them by commas eg hotmail.com, hotmal.co.uk, yahoo.co.uk etc "),
+		'#required' => TRUE,
+	);
+	
+	return system_settings_form($form);
+}
+
+function fdc_user_register_form_alter(&$form, &$form_state, $form_id) {
+	// make sure this is the register form
+	if ($form_id == 'user_register_form') {
+		$form['account']['mail']['#title'] = t('Organisation email');
+		$form['account']['mail']['#description'] = t('A valid organisation email address. All emails from the system will be sent to this address. The address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by email. Please note that we do not accept gmail and other generic email addresses.');
+		// this adds your custom validation function to the form validation array
+		$form['#validate'][] = 'fdc_user_register_user_register_validation';
+	}
+}
+
+function fdc_user_register_user_register_validation($form, &$form_state) {
+	$edomains =  variable_get('fdc_user_register_email_domains','gmail.com,gmail.co.uk');
+	$emailDomains = explode(",",$edomains);
+	
+//	$emailDomains = array(
+//		'gmail.com',
+//		'gmail.co.uk',
+//		'hotmail.co.uk',
+//		'hotmail.com',
+//		'yahoo.com',
+//		'yahoo.co.uk',
+//	);
+
+	// Get domain 
+	$email = $form_state['values']['mail'];
+	$splitIndex = strpos($email, '@') + 1;
+	$emailLength = strlen($email);
+	$domain = substr($email, $splitIndex, $emailLength);
+
+	// Error if not legitimate domain  
+	if (in_array($domain, $emailDomains)) {
+		form_set_error('mail', 'We cannot accept email addresses from domains eg hotmail, gmail and yahoo');
+	}
+}
+
+
+
+    

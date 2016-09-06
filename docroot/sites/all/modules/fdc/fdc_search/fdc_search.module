@@ -1,0 +1,332 @@
+<?php
+
+function fdc_search_menu() {
+
+	/**
+	 * search
+	 */
+	$items['search'] = array(
+		'title' => 'Search results',
+		'description' => '',
+		'page callback' => 'fdc_search_results',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+	$items['search/results/%'] = array(
+		'title' => 'Search results',
+		'description' => '',
+		'page arguments' => array(2),
+		'page callback' => 'fdc_search_results',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+	$items['search/results'] = array(
+		'title' => 'Search results',
+		'description' => '',
+		'page callback' => 'fdc_search_results',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+
+
+	$items['admin/config/fdc/fdc_search/cache'] = array(
+		'title' => 'Search cache',
+		'description' => '',
+		'page callback' => 'fdc_search_cache_data',
+		'page arguments' => array(''),
+		'access arguments' => array(''),
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	$items['search/get_json_data/product_name'] = array(
+		'description' => '',
+		'page callback' => 'skivers_search_get_json_data_product_name',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+
+
+
+	return $items;
+}
+
+function fdc_search_theme() {
+	return array(
+		'fdc_search_tpl' => array(
+			'template' => 'fdc_search_tpl',
+		),
+	);
+}
+
+function fdc_search_cron() {
+	fdc_search_cache_data();
+}
+
+function fdc_search_node_update($node) {
+	if (!empty($node)) {
+		fdc_search_cache_data();
+	}
+}
+
+function fdc_search_node_delete($node) {
+	if (!empty($node)) {
+
+		fdc_search_cache_data();
+	}
+}
+
+//function fdc_search_node_submit()
+//{
+//    fdc_search_cache_data();
+//}
+//
+//function fdc_search_node_update($node)
+//{
+//    fdc_search_cache_data();
+//}
+
+function fdc_search_init() {
+	// Add fdc_bookmarks JS to footer.
+//	drupal_add_js(drupal_get_path('module', 'fdc_search') . '/js/fdc_search.js', array('scope' => 'footer'));		//ENABLE FOR AJAX
+	drupal_add_css(drupal_get_path('module', 'fdc_search') . '/css/fdc_search.css');
+}
+
+function fdc_search() {
+	$results = array();
+	return theme('fdc_search_tpl', array('results' => $results));
+}
+
+function fdc_search_results($term = null) {
+
+	if (!empty($term)) {
+		$search_term = $term;
+	}
+	else {
+		if (isset($_GET['search_input'])) {
+			$search_term = $_GET['search_input'];
+		}
+	}
+
+
+	$search = db_query("
+              SELECT
+					fdc_search.uid,
+					fdc_search.nid,
+					fdc_search.`name`,
+					fdc_search.img_fid,
+					fdc_search.img_path,
+					fdc_search.url,
+					fdc_search.tags,
+					fdc_search.description
+				FROM
+					fdc_search
+				where fdc_search.`name` like :term
+				or
+				fdc_search.tags like :term
+				or
+				fdc_search.description like :term
+		", array(':term' => "%" . $search_term . "%"))->fetchAll();
+
+
+	foreach ($search as $key => &$value) {
+
+		$value->occurence = substr_count($value->description, $search_term);
+		$value->more = fdc_search_preg($search_term, $value->description);
+
+	}
+
+
+	return theme('fdc_search_tpl', array('results' => $search));
+}
+
+function fdc_search_preg($search, $string) {
+	$result = array();
+	preg_match_all('/' . preg_quote($search) . '\s+\w+/i', $string, $result);
+	return $result[0];
+}
+
+function fdc_search_cache_data() {
+	$product_db = 'fdc_search';
+	$data = fdc_search_get_all_node();
+
+	if (!empty($data)) {
+		try {
+			if (db_table_exists($product_db)) {
+				db_truncate($product_db)->execute();
+				foreach ($data as $d) {
+
+
+
+					$attr = array(
+						'nid' => $d->nid,
+						'name' => $d->title,
+						'img_path' => '',
+						'url' => url('node/' . $d->nid),
+						'tags' => fdc_search_trim2(strip_tags($d->tags)),
+						'description' => $d->body
+					);
+
+					try {
+						db_insert($product_db)->fields($attr)->execute();
+					}
+					catch (Exception $exc) {
+//						echo $exc->getTraceAsString();
+					}
+				}
+				return "data cached successfully";
+			}
+		}
+		catch (Exception $exc) {
+			echo $exc->getTraceAsString();
+		}
+	}
+}
+
+function fdc_search_get_all_node() {
+
+	$std = new stdClass();
+	$query = db_query("
+             SELECT
+				node.nid,
+				node.type,
+				node.title,
+				node.`status`,
+				field_data_field_content_body.field_content_body_value AS body
+			FROM
+				node
+			LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+			LEFT JOIN field_data_field_content_body ON field_data_field_col_content.field_col_content_value = field_data_field_content_body.entity_id
+			WHERE
+				node.`status` = 1
+			AND (
+				node.type = 'news_articles'
+				OR node.type = 'directions'
+				OR node.type = 'events_and_webinar'
+				OR node.type = 'faq_page'
+				OR node.type = 'page'
+				OR node.type = 'products'
+				OR node.type = 'training_course'
+			)
+			ORDER BY
+				node.type ASC
+		")->fetchAll();
+
+	if (!empty($query)) {
+		foreach ($query as $key => $q) {
+      if (empty($std->$key)) {
+        $std->$key = new stdClass();
+      }
+			$std->$key->nid = $q->nid;
+			$std->$key->title = $q->title;
+			$std->$key->type = $q->type;
+			$std->$key->tags = fdc_search_get_node_tags($q->nid);
+//				$std->$key->body = serialize($q->body);
+			$std->$key->body = $q->body;
+		}
+
+		if (!empty($std)) {
+			return $std;
+		}
+	}
+}
+
+function fdc_search_get_node_tags($nid) {
+
+	$query = db_query("
+            SELECT
+				node.nid,
+				taxonomy_term_data.`name`
+			FROM
+				node
+			INNER JOIN taxonomy_index ON node.nid = taxonomy_index.nid
+			LEFT JOIN taxonomy_term_data ON taxonomy_index.tid = taxonomy_term_data.tid
+			WHERE
+				node.nid = :nid
+		", array(":nid" => $nid))->fetchAll();
+
+	if (!empty($query)) {
+		$arr = array();
+		foreach ($query as $key => $q) {
+			$arr[$key] = $q->name;
+		}
+
+		$new_str = implode(", ", $arr);
+
+		return $new_str;
+	}
+}
+
+function skivers_search_get_json_data_product_name() {
+
+	if (isset($_GET)) {
+
+		$search = db_query("
+               SELECT
+					fdc_search.uid,
+					fdc_search.nid,
+					fdc_search.`name`,
+					fdc_search.img_fid,
+					fdc_search.img_path,
+					fdc_search.url,
+					fdc_search.description
+				FROM
+					fdc_search
+				where fdc_search.`name` like :term
+				or
+				fdc_search.description like :term
+		", array(':term' => "%" . $_GET['name'] . "%"))->fetchAll();
+
+
+//		$ar = array();
+		$html = "<div class='wrap'>";
+		$countz = 0;
+		foreach ($search as $s) {
+			if ($countz < 4) {
+				$width = "";
+//				$imgsrc = image_style_url('search_result_thumbnail', $s->img_path);
+				if (empty($s->img_path)) {
+//					$imgsrc = "/sites/all/themes/fdc_bootstrap/img/placeholder.jpg";
+					$width = "style='width:50px'";
+				}
+
+				$html .='
+					<div class="search-item">
+						<a href="' . $s->url . '">
+							<span><strong>' . $s->name . '</strong></span></a>
+					</div>';
+				$countz ++;
+			}
+
+//			$arr = array("name" => $loc->name, "url" => $loc->url);
+//			array_push($ar, $arr);
+		}
+
+
+		$html .="<div class='more_suggestions'>";
+		$html .="<a href='/search/results/" . $_GET['name'] . "'>View all of the " . count($search) . " result(s) found" . "</a>";
+		$html .="</div></div>";
+
+		echo($html);
+		exit();
+
+//		if (!empty($ar)) {
+////        return json_encode($ar);
+////			return $ar;
+//			
+//		}
+	}
+}
+
+function fdc_search_trim($string) {
+	if (!empty($string)) {
+		$string = substr($string, 0, 34);
+		return $string . "...";
+	}
+}
+
+function fdc_search_trim2($string) {
+	if (!empty($string)) {
+		$string = substr($string, 0, 240);
+		return $string;
+	}
+}

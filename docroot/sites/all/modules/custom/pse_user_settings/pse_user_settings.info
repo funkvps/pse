@@ -1,0 +1,5 @@
+name = PSE user settings
+description = Allow user to have preferences and filter content on his dashboard according to these preferences (Audrius Vaitonis @ <a href="http://www.brightlemon.com" target="_BLANK">BrightLemon</a>)
+;dependencies[] = 
+package = PSE Development
+core = 7.x

@@ -1,0 +1,13 @@
+<?php
+/**
+*http://bootstrap-growl.remabledesigns.com/
+**/
+ function fdc_growler_init()
+{
+    drupal_add_js(drupal_get_path('module', 'fdc_growler') . '/js/bootstrap-growl.min.js', array('scope' => 'footer'));
+    drupal_add_js(drupal_get_path('module', 'fdc_growler') . '/js/fdc_growler.js', array('scope' => 'footer'));
+    drupal_add_css(drupal_get_path('module', 'fdc_growler') . '/css/animate.css');
+    drupal_add_css(drupal_get_path('module', 'fdc_growler') . '/css/fdc_growler.css');
+}
+
+

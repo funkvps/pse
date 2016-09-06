@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Field Collection feature.
+ */
+
+include_once 'pse__field_collection.features.inc';

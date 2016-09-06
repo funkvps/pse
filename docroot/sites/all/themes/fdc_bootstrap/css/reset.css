@@ -1,0 +1,60 @@
+/**
+ *	 The Kernel
+ *
+ *	 Normalising reset
+ */
+ 
+* {
+	-webkit-font-smoothing: antialiased; /* Get them fonts looking crisp. */
+	
+	margin: 0;
+	padding: 0;
+}
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, img, button {
+	display: block;
+}
+
+img {
+	border: none;
+	
+	-ms-interpolation-mode: bicubic;
+	image-rendering: optimizeQuality;
+}
+
+table, caption, th, td {
+	border-collapse: separate;
+	border-spacing: 0;
+	
+	vertical-align: top;
+}
+	caption, th, td {
+		text-align: left;
+		font-weight: normal;
+	}
+
+form {
+	overflow: hidden;
+}
+	input, textarea, fieldset {
+		border: none;
+	}
+	textarea {
+		resize: none;
+	}
+	label[for], button, [type=submit] {
+		cursor: pointer;
+	}
+		button {
+			-webkit-appearance: none;
+			background: transparent;
+			border: none;
+		}
+	input {
+		-webkit-border-radius: 0; /* Fix for iOS over-rounding them borders */
+	}
+		input[type=search], input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button, ::-webkit-search-cancel-button, input[type=search]::-webkit-search-decoration, input[type=search]::-webkit-search-results-button, input[type=search]::-webkit-search-results-decoration {
+			-webkit-appearance: none !important;
+			
+			margin: 0; /* Pseudo-elements need explicit margin */ 
+		}

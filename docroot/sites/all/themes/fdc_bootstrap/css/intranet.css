@@ -1,0 +1,170 @@
+/**
+ *	 PSE Intranet CSS
+ *		
+ *	 Main CSS and styling
+ */
+
+@import 'reset.css';
+@import 'type.css';
+ 
+body,td,th {
+/*font-family: 'NewsGothic', corbel, san-serif;}*/
+}
+html {
+	background-color: #ededed;
+}
+body {
+margin: auto; 
+color: #444;
+background-color: #ededed;
+background-image: url(../img/intranet/bg.jpg);
+background-repeat: no-repeat;
+font-size: 1.15em;
+line-height: 130%;
+
+}
+
+h1  {font-size: 100%; margin-bottom: 0.5em;}
+h2  {font-size: 150%; margin-bottom: 2.5em;}
+p   {margin-bottom: 0.5em;}
+
+a, .hilite, cite {
+color: #666;}
+
+a {
+text-decoration: none;}
+
+a:hover {
+text-decoration: underline;}
+
+
+.text .website_frame, .not-front .website_frame {
+	background: 0 none;
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+footer#bottom {
+	background: 0 none;
+	padding: 0;
+	margin: 0;
+}
+
+.row, .col-xs-12 {
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
+#gridholder {
+margin: auto;
+padding: 5%;
+display: block;
+text-align: center;
+}
+
+
+
+ul.links li, 
+ul.links2 li, 
+ul.links3 li {
+width: 115px; 
+height: 115px;
+margin: 3%;
+display: inline-block;
+background: center center;
+background-repeat: no-repeat;}
+
+ul.links li img, 
+ul.links2 li img, 
+ul.links3 li img {
+display: block;
+width: 115px; 
+height: 115px;
+}
+
+
+ul.links li:first-child {
+background-image: url(../img/intranet/website.png);}
+
+ul.links li:nth-child(2) {
+background-image: url(../img/intranet/search.png);}
+
+ul.links li:nth-child(3) {
+background-image: url(../img/intranet/intranet.png);}
+
+
+ul.links2 li:first-child {
+background-image: url(../img/intranet/phone.png);}
+
+ul.links2 li:nth-child(2) {
+background-image: url(../img/intranet/org.png);}
+
+ul.links2 li:nth-child(3){
+background-image: url(../img/intranet/people.png);}
+
+
+
+ul.links3 li:first-child {
+background-image: url(../img/intranet/chat.png);}
+
+ul.links3 li:nth-child(2) {
+background-image: url(../img/intranet/trac.png);}
+
+ul.links3 li:nth-child(3) {
+background-image: url(../img/intranet/concur.png);}
+
+
+/* hover states*/
+
+ul.links li:hover:first-child {
+background-image: url(../img/intranet/website2.png);}
+
+ul.links li:hover:nth-child(2) {
+background-image: url(../img/intranet/search2.png);}
+
+ul.links li:hover:nth-child(3) {
+background-image: url(../img/intranet/intranet2.png);}
+
+
+
+ul.links2 li:hover:first-child{
+background-image: url(../img/intranet/phone2.png);}
+
+ul.links2 li:hover:nth-child(2){
+background-image: url(../img/intranet/org2.png);}
+
+ul.links2 li:hover:nth-child(3){
+background-image: url(../img/intranet/people2.png);}
+
+
+
+ul.links3 li:hover:first-child {
+background-image: url(../img/intranet/chat2.png);}
+
+ul.links3 li:hover:nth-child(2){
+background-image: url(../img/intranet/trac2.png);}
+
+ul.links3 li:hover:nth-child(3){
+background-image: url(../img/intranet/concur2.png);}
+
+
+#footer a {color: #333;}
+
+footer#bottom {
+width: 100%;
+margin-top: 4em;
+text-transform: uppercase;
+text-align: top;
+text-align: center;
+font-size: 60%;
+line-height: 140%;
+letter-spacing: 0.125em;}
+
+
+
+
+
+
+
+

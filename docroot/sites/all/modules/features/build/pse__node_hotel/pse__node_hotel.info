@@ -1,0 +1,13 @@
+name = PSE: Hotel
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+dependencies[] = taxonomy
+features[field_instance][] = node-hotel-field_breadcrumbs
+features[field_instance][] = node-hotel-field_collection_metatags
+features[field_instance][] = node-hotel-field_hotel_above_content
+features[field_instance][] = node-hotel-field_hotel_information
+features[field_instance][] = node-hotel-field_search_tags
+features[node][] = hotel
+features[features_api][] = api:2

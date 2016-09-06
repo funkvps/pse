@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Custom Menu Block feature.
+ */
+
+include_once 'pse__node_menu_block.features.inc';

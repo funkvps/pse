@@ -1,0 +1,128 @@
+<?php
+
+function fdc_enquiry_forms_menu() {
+	$items['fdc_enquiry/get_json_data/send_email'] = array(
+		'description' => '',
+		'page callback' => 'fdc_enquiry_forms_send',
+		'page arguments' => array(''),
+		'access arguments' => array(''),
+		'type' => MENU_CALLBACK,
+	);
+	return $items;
+}
+
+//function fdc_enquiry_forms_theme() {
+//	return array(
+//		'fdc_enquiry_forms_view_tpl' => array(
+//			'template' => 'fdc_enquiry_forms_view_tpl',
+//		),
+//		'fdc_enquiry_forms_listings_tpl' => array(
+//			'template' => 'fdc_enquiry_forms_listings_tpl',
+//		),
+//		'fdc_enquiry_forms_results_listings_tpl' => array(
+//			'template' => 'fdc_enquiry_forms_results_listings_tpl',
+//		),
+//	);
+//}
+//
+//function fdc_enquiry_forms_permission() {
+//	return array(
+//		'fdc challenge utils' => array(
+//			'title' => t('Administrate fdc Settings'),
+//			'description' => t('Stuff'),
+//		),
+//	);
+//}
+//
+//function fdc_enquiry_forms_form_alter(&$form, &$form_state,$form_id) {
+////	print_r($form_id);
+////	die();
+//  switch ($form_id) {
+//    case 'user_register_form':
+//          $form['#submit'][] = 'fdc_enquiry_forms_user_register_submit';
+//      break;
+//  }
+//}
+//
+//function fdc_enquiry_forms_user_register_submit($form, &$form_state) {
+//  $form_state['redirect'] = 'user/dashboard';
+//}
+//
+////function fdc_membership_user_register_submit($form, &$form_state) {
+////	$form_state['redirect'] = 'user/dashboard';
+////}
+function fdc_enquiry_forms_init() {
+	drupal_add_js(drupal_get_path('module', 'fdc_enquiry_forms') . '/js/fdc_enquiry_forms.js', array('scope' => 'footer'));
+}
+
+include_once(drupal_get_path('module', 'fdc_enquiry_forms') . '/fdc_enquiry_forms_form_inc.inc');
+
+function fdc_amigos_enquiry_form_submit($form, &$form_state) {
+
+//	print_r($form);
+
+	$form_code = $form_state['values']['fdc_enquiry_form_code'];
+	$form_name = $form_state['values']['fdc_enquiry_form_name'];
+	$form_email = $form_state['values']['fdc_enquiry_form_email'];
+	$form_number = $form_state['values']['fdc_enquiry_form_contact_number'];
+	$form_where = $form_state['values']['fdc_enquiry_form_where'];
+	$form_extra = $form_state['values']['fdc_enquiry_form_extra'];
+	$form_more = $form_state['values']['fdc_enquiry_form_more_info'];
+
+	if (!empty($form_email)) {
+
+		$msg = "";
+
+		if (!empty($form_more)) {
+			$msg .= "<br/>" . "	" . $form_more;
+		}
+		if (!empty($form_code)) {
+			$msg .= "<br/>" . "REFERENCE CODE:	" . $form_code;
+		}
+		if (!empty($form_name)) {
+			$msg .= "<br/>" . " Name: " . $form_name;
+		}
+		if (!empty($form_email)) {
+			$msg .= "<br/>" . " Email: " . $form_email;
+		}
+		if (!empty($form_number)) {
+			$msg .= "<br/>" . " Contact Number: " . $form_number;
+		}
+		if (!empty($form_where)) {
+			$msg .= "<br/>" . " They know you from: " . $form_where;
+		}
+		if (!empty($form_extra)) {
+			$msg .= "<br/>" . "Comments:" . $form_extra;
+		}
+
+		$subject = "Enquiry Form Golf Amigos";
+
+		fdc_amigos_send_email("sales@golfamigos.co.uk", $subject, $msg);
+		if (fdc_amigos_send_email("surft@fdcstudio.co.uk", $subject, $msg)) {
+
+			$url = url('node/45');
+			drupal_goto($url);
+		}
+	}
+}
+
+function fdc_amigos_send_email($to, $subject, $msg) {
+	$message = array(
+		'headers' => array(
+//				'From' => $from,
+//				'Sender' => $from,
+//				'Return-Path' => $from,
+			'MIME-Version' => '1.0',
+			'X-Mailer' => 'Drupal',
+			'Content-Type' => 'text/html; charset=UTF-8;'
+		),
+		'id' => 'pathchange_notice',
+		'to' => $to,
+		'subject' => $subject,
+		'body' => array($msg),
+	);
+	$system = drupal_mail_system('mime', 'notice');
+	$message = $system->format($message);
+	$system->mail($message);
+	return true;
+}

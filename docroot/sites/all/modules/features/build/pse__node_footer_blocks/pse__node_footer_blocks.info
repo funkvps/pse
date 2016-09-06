@@ -1,0 +1,7 @@
+name = PSE: Footer Blocks
+core = 7.x
+package = Content
+dependencies[] = features
+features[field_instance][] = node-footer_blocks-field_block_footer
+features[node][] = footer_blocks
+features[features_api][] = api:2

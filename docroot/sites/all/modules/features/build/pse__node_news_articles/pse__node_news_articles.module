@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: News articles feature.
+ */
+
+include_once 'pse__node_news_articles.features.inc';

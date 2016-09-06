@@ -1,0 +1,251 @@
+/**
+
+ *	 PSE
+
+ *
+
+ *	 Additions from PSE and legacy styles for older pages PSE
+
+ */
+
+
+
+
+
+	/* legacy html floats 
+
+	do not re-use when making new pages, use the aside column instead*/
+
+	
+
+	.secondary, .rightcolumngrey {
+
+	font-size: 90%;
+
+	/*float: right;
+
+	width: 220px;*/
+
+	/*margin-right: -315px;*/
+
+}
+
+
+
+
+
+
+
+.bodyquote{
+
+	line-height: 160%;
+
+	display: inline-block;
+
+	min-height: 5em;
+
+	max-width: 500px;
+
+	padding-left: 40px;
+
+	background-image: url(../img/quoteopen3.png);
+
+	background-repeat: no-repeat;
+
+	margin: 0;
+
+	vertical-align: top;
+
+
+
+}
+
+
+
+.bodyquoteclose{
+
+	font-size: 75%;
+
+	background-image: url(../img/quoteclose3.png);
+
+	background-repeat: no-repeat;
+
+	background-position: 5px 0px;
+
+	min-height: 5em;
+
+	min-width: 5em;
+
+	display: inline-block;
+
+		margin: 0;
+
+			vertical-align: top;
+
+}
+
+
+
+
+
+
+
+.quote{
+
+	line-height: 160% !important;
+
+	display: block;
+
+	min-height: 3em;
+
+	padding-top: 40px !important;
+
+	background-image: url(../img/quoteopen.png);
+
+	background-repeat: no-repeat;
+
+	margin: 0;
+
+
+
+}
+
+
+
+.quotename{
+
+	font-size: 75%;
+
+	text-transform: uppercase;
+
+	font-weight: bold;
+
+	letter-spacing: .2em;
+
+	background-image: url(../img/quoteclose.png);
+
+	background-repeat: no-repeat;
+
+	background-position: 182px 0px;
+
+	min-height: 3.5em;
+
+
+
+}
+
+
+
+.quotenoname{
+
+	font-size: 75%;
+
+	text-transform: uppercase;
+
+	font-weight: bold;
+
+	letter-spacing: .2em;
+
+	background-image: url(../img/quoteclose.png);
+
+	background-repeat: no-repeat;
+
+	background-position: 182px 0px;
+
+	min-height: 2.5em;
+
+}
+
+
+
+
+
+.quote2{
+
+	line-height: 160%;
+
+	display: block;
+
+	min-height: 3em;
+
+	padding-top: 40px;
+
+	background-image: url(../img/quoteopen.png);
+
+	background-repeat: no-repeat;
+
+		margin: 0;
+
+
+
+
+
+}
+
+
+
+.quotename2{
+
+	font-size: 75%;
+
+	display: block;
+
+	text-transform: uppercase;
+
+	font-weight: bold;
+
+	letter-spacing: .2em;
+
+	background-image: url(../img/quoteclose.png);
+
+	background-repeat: no-repeat;
+
+	background-position: 182px 0px;
+
+	min-height: 2.5em;
+
+	padding-right: 5.75em;
+
+}
+
+
+
+
+
+
+
+#pdfbox, #toolbox {display: none;}
+
+
+
+
+
+/*classes for handling images in text*/
+
+.imageright {
+
+	float: right;
+
+	margin-left: 1em;
+
+}
+
+.imageleft {
+
+	float: left;
+
+	margin-right: 1em;
+
+}
+
+
+
+.inline {
+
+	float: left;
+
+	margin: 0; padding: 0;}
+
+	
+
+.spacious {margin-top: 3em; margin-bottom: 3em;}

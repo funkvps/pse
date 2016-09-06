@@ -1,0 +1,567 @@
+<?php
+/**
+ * hook_menu
+ */
+function pse_user_import_menu() {
+  $items = array();
+  $items['admin/people/pse_user_import'] = array(
+    'title' => t('Import users'),
+    'description' => '...',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pse_user_import_form'),
+    'access arguments' => array('pse import users'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * hook_permission
+ */
+function pse_user_import_permission() {
+  return array(
+    'pse import users' => array( //ex role 12
+      'title' => t('PSE Import users'),
+    ),
+  );
+}
+
+
+/**
+ * Form callback
+ * main callback allow to upload csv file
+ */
+function pse_user_import_form($form, $form_submit) {
+  $form['history'] = array(
+    '#markup' => pse_user_import_history(),
+  );
+  $form['upload'] = array(
+    '#name' => 'files',
+    '#type' => 'file',
+    '#title' => t('Choose a CSV file'),
+    '#size' => 22,
+//    '#description' => 'Upload CSV file in agreed format.',
+    '#prefix' => '<br><br><br><br><h4>New import</h4>',
+    '#suffix' => '<div class="description">Upload CSV file in agreed format.<br>Columns: SAGE ID,	Company name,	Company type,	Company country, First name, Last name,	Email</div>',
+    '#theme_wrappers' => array(),
+  );
+  $form['import'] = array(
+    '#prefix' => '<br>',
+    '#type' => 'submit',
+    '#value' => 'Import'
+  );
+  $imports_history = variable_get('pse_user_imports_history', array());
+  if (!empty($imports_history['imports'])) {
+    $form['email_description'] = array(
+      '#markup' => '<div style="margin: 100px 0; padding: 20px; border: 2px solid #DDDD55"><h3>Information about welcome emails</h3><p>
+For welcome emails we are using text template from system email "Welcome (new user created by administrator)". <br> 
+You can find this text and change it <a href="/admin/config/people/accounts">here</a>.</p><p>It is safe to delete imported users, you can reimport them. Sending <strong>welcome emails</strong> is more severe because it effects people.</p></div>',
+    );
+  }
+  return $form;
+}
+
+/**
+ * Main form submit handler
+ */
+function pse_user_import_form_submit($form, $form_state) {
+  set_time_limit(6000);
+  $csv = array_map('str_getcsv', file($_FILES['files']['tmp_name']));
+  unset($csv[0]); // first line should be headers
+  $import_history = array(
+    'import date' => date('Y.m.d H:i:s'),
+    'file name' => $_FILES['files']['name'],
+    'file size' => format_size($_FILES['files']['size']),
+    'emails sent date' => '',
+    'file rows' => count($csv),
+    'users' => array(),
+    'companies' => array(),
+  );
+  foreach ($csv as $csv_line) {
+//    dsm($csv_line);
+    if (empty($csv_line[6])) {
+      continue;
+    }
+    $user_data = pse_external_to_internal_data($csv_line);
+    if (!valid_email_address($user_data['email'])) {
+      drupal_set_message('User ' . check_plain($user_data['first_name'] . ' ' . $user_data['last_name'])  . 'doesn\'t have valid email');
+      dsm($csv_line);
+      if (!empty($user_data['first_name']) && !empty($user_data['last_name'])) {
+        $user_data['email'] = preg_replace("/[^a-zA-Z0-9]+/", "", $user_data['first_name'] . ' ' . $user_data['last_name']);
+        $user_data['email'] .= '_' . rand(1000, 9999);
+      }
+      //continue;
+    }
+    $account = pse_import_get_create_user($user_data);
+    $company = pse_import_get_create_company($user_data, $account);
+    if (!empty($account->pse_new)) {
+      $import_history['users'][] = array('mail' => $user_data['email'], 'uid' => $account->uid);
+    }
+    if (!empty($company->pse_new)) {
+      $import_history['companies'][] = array('mail' => $company->title, 'nid' => $company->nid);
+    }
+
+  }
+  $imports_history = variable_get('pse_user_imports_history', array());
+  $imports_history['imports'][] = $import_history;
+  variable_set('pse_user_imports_history', $imports_history);
+}
+
+
+/**
+ * Show statistic and control for previous imports
+ * + Execute actions with previous imports
+ * Actions are: delete users and content, delete import history, send welcome emails
+ */
+function pse_user_import_history() {
+  set_time_limit(6000);
+  $imports_history = variable_get('pse_user_imports_history', array());
+  if (isset($_GET['import-history-delete'])) {
+    unset($imports_history['imports'][$_GET['import-history-delete']]);
+    variable_set('pse_user_imports_history', $imports_history);
+    drupal_goto('admin/people/pse_user_import');
+  }
+  if (isset($_GET['import-data-delete'])) {
+    drupal_set_message('Deleting companies');
+    $delta = intval($_GET['import-data-delete']);
+    $message_buffer = '';
+    foreach($imports_history['imports'][$delta]['companies'] as $node) {
+      $node = node_load($node['nid']);
+      if (!empty($node->nid)) {
+        $message_buffer .= $node->nid . ', ';
+        node_delete($node->nid);
+      }
+    }
+    dsm('deleted nodes ' . $message_buffer);
+    $message_buffer = '';
+    drupal_set_message('Deleting users');
+    foreach($imports_history['imports'][$delta]['users'] as $user) {
+      $account = user_load($user['uid']);
+      if (!empty($account->uid)) {
+        $message_buffer .= $account->mail . ', ';
+        user_delete($account->uid);
+      }
+    }
+    dsm('deleted users ' . $message_buffer);
+    drupal_goto('admin/people/pse_user_import');
+  }
+
+  if (isset($_GET['send-emails'])) {
+    drupal_set_message('Sending welcome emails');
+    $delta = intval($_GET['send-emails']);
+    foreach($imports_history['imports'][$delta]['users'] as $user) {
+      $account = user_load($user['uid']);
+      if (!valid_email_address($account->mail)) {
+        drupal_set_message('No valid email for ' . $account->username, 'error');
+        continue;
+      }
+      if (!empty($account->mail)) {
+        drupal_set_message('Email is sent to ' . $account->mail);
+        _user_mail_notify('register_admin_created', $account); // function from core module "user"
+      }
+    }
+    $imports_history['imports'][$delta]['emails sent date'] = date('Y:m:d H:i:s');
+    variable_set('pse_user_imports_history', $imports_history);
+    drupal_goto('admin/people/pse_user_import');
+  }
+
+//  dsm($imports_history);
+  $output = '';
+  if (!empty($imports_history['imports'])) {
+    $output .= '<h4>Imports history</h4><table><tr>
+<th>Date</th>
+<th>Email sent date</th>
+<th>File name</th>
+<th>File size</th>
+<th>File rows</th>
+<th>Users</th>
+<th>Companies</th>
+<th>Companies and users</th>
+<th>Import history</th>
+<th>Send welcome emails</th>
+</tr>';
+    foreach ($imports_history['imports'] as $delta => $import) {
+      $output .= '<tr>';
+      $output .= '<td>' . $import['import date'] . '</td>';
+      $output .= '<td>' . $import['emails sent date'] . '</td>';
+      $output .= '<td>' . $import['file name'] . '</td>';
+      $output .= '<td>' . $import['file size'] . '</td>';
+      $output .= '<td>' . $import['file rows'] . '</td>';
+      $output .= '<td>' . count($import['users']) . '</td>';
+      $output .= '<td>' . count($import['companies']) . '</td>';
+      $output .= '<td>' . l('delete', 'admin/people/pse_user_import', array('query' => array('import-data-delete' => $delta))) . '</td>';
+      $output .= '<td>' . l('delete', 'admin/people/pse_user_import', array('query' => array('import-history-delete' => $delta))) . '</td>';
+      $output .= '<td>' . l('send welcome emails', 'admin/people/pse_user_import', array('query' => array('send-emails' => $delta), 'attributes' => array('style' => 'color: red;'))) . '</td>';
+      $output .= '</tr>';
+    }
+    $output .= '</table>';
+  }
+  return $output;
+}
+
+
+/**
+ * change csv format to internal
+ * if csv will change, we will need to change just this file
+ */
+function pse_external_to_internal_data($csv_line) {
+  return array(
+    'sage_id' => $csv_line[0],
+    'company_name' => $csv_line[1],
+    'company_type' => $csv_line[2],
+    'company_country' => $csv_line[3],
+    'first_name' => $csv_line[4],
+    'last_name' => $csv_line[5],
+    'email' => $csv_line[6],
+  );
+}
+
+
+/**
+ * Create new user
+ */
+function pse_import_get_create_user($user_data) {
+  $uid = db_query("SELECT uid FROM users WHERE mail = :mail ", array(':mail' => $user_data['email']))->fetchField();
+  if ($uid) {
+    drupal_set_message('User ' . $user_data['email'] . ' already exists');
+    return user_load($uid);
+  }
+  $new_user = array(
+    'name' => $user_data['email'],
+    'pass' => rand(1, 99999) . time(),
+    'mail' => $user_data['email'],
+    'status' => 1,
+    'init' => $user_data['email'],
+    'roles' => array(
+//      38 => 'Industrial customer',
+//      39 => 'Academic customer',
+    ),
+    'field_profile_first_name' => array('und' => array(array('value' => $user_data['first_name']))),
+    'field_profile_last_name' => array('und' => array(array('value' => $user_data['last_name']))),
+    'field_profile_company' => array('und' => array(array('value' => $user_data['company_name']))),
+    'field_profile_country' => array('und' => array(array('value' => pse_user_import_get_country($user_data['company_country'])))),
+  );
+  if ($user_data['company_type'] == 'industrial') {
+    $new_user['roles'][38] = 'Industrial customer';
+  }
+  if ($user_data['company_type'] == 'academic') {
+    $new_user['roles'][39] = 'Academic customer';
+  }
+  $account = user_save(NULL, $new_user);
+  $account->pse_new = true;
+  return $account;
+}
+
+/*
+ * Create new company
+ */
+function pse_import_get_create_company($user_data, $account) {
+  $nid = db_query("SELECT nid FROM node WHERE title = :name AND type = 'company' ", array(':name' => $user_data['company_name']))->fetchField();
+  if ($nid) {
+    drupal_set_message('Company ' . $user_data['company_name'] . ' already exists');
+    return node_load($nid);
+  }
+
+  $node = new stdClass();
+  $node->title = $user_data['company_name'];
+  $node->type = 'company';
+  node_object_prepare($node); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
+  $node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+  $node->uid = $account->uid;
+  $node->status = 1; //(1 or 0): published or not
+  $node->promote = 0; //(1 or 0): promoted to front page
+  $node->comment = 1; // 0 = comments disabled, 1 = read only, 2 = read/write
+  $node->field_company_owner = array('und' => array(array('target_id' => $account->uid, 'target_type' => 'user')));
+  $node->field_country = array('und' => array(array('value' => pse_user_import_get_country($user_data['company_country']))));
+  $node->field_sage_id = array('und' => array(array('value' => $user_data['sage_id'])));
+  $node->field_company_type = array('und' => array(array('value' => $user_data['company_type'])));
+//  $node->field_col_company_users = array('und' => array(array('value' => $account->uid)));
+
+
+  $node = node_submit($node); // Prepare node for saving
+  node_save($node);
+
+  $fc_item = entity_create('field_collection_item', array('field_name' => 'field_col_company_users'));
+  $fc_item->setHostEntity('node', $node);
+  $fc_wrapper = entity_metadata_wrapper('field_collection_item', $fc_item);
+  $fc_wrapper->field_company_users->set($account->uid);
+  $fc_wrapper->save(TRUE);
+
+  node_save($node);
+
+//  $fc_values = array();
+//  $fc_values['field_company_users'] = $account->uid;
+//  $fc_values['is_new'] = 1;
+////  $fc_values['others'] = 'values';
+//
+//  $fc = new FieldCollectionItemEntity($fc_values);
+//
+//  $fc->setHostEntity('node', $node);
+//  $fc->save();
+
+  $node->pse_new = true;
+  return $node;
+}
+
+/*
+ * Helper to change country name to more understandable format.
+ */
+function pse_user_import_get_country($orig_country) {
+  $countries = "United Kingdom|United Kingdom
+----|----
+Albania|Albania
+Algeria|Algeria
+American Samoa|American Samoa
+Andorra|Andorra
+Angola|Angola
+Anguilla|Anguilla
+Antarctica|Antarctica
+Antigua and Barbuda|Antigua and Barbuda
+Argentina|Argentina
+Armenia|Armenia
+Aruba|Aruba
+Australia|Australia
+Austria|Austria
+Azerbaijan|Azerbaijan
+Bahamas|Bahamas
+Bahrain|Bahrain
+Bangladesh|Bangladesh
+Barbados|Barbados
+Belarus|Belarus
+Belgium|Belgium
+Belize|Belize
+Benin|Benin
+Bermuda|Bermuda
+Bhutan|Bhutan
+Bolivia|Bolivia
+Bosnia and Herzegowina|Bosnia and Herzegowina
+Botswana|Botswana
+Bouvet Island|Bouvet Island
+Brazil|Brazil
+British Indian Ocean Territory|British Indian Ocean Territory
+Brunei Darussalam|Brunei Darussalam
+Bulgaria|Bulgaria
+Burkina Faso|Burkina Faso
+Burundi|Burundi
+Cambodia|Cambodia
+Cameroon|Cameroon
+Canada|Canada
+Cape Verde|Cape Verde
+Cayman Islands|Cayman Islands
+Central African Republic|Central African Republic
+Chad|Chad
+Chile|Chile
+China|China
+Christmas Island|Christmas Island
+Cocos (Keeling) Islands|Cocos (Keeling) Islands
+Colombia|Colombia
+Comoros|Comoros
+Congo|Congo
+Congo, the Democratic Republic of the|Congo, the Democratic Republic of the
+Cook Islands|Cook Islands
+Costa Rica|Costa Rica
+Cote d'Ivoire|Cote d'Ivoire
+Croatia (Hrvatska)|Croatia (Hrvatska)
+Cuba|Cuba
+Cyprus|Cyprus
+Czech Republic|Czech Republic
+Denmark|Denmark
+Djibouti|Djibouti
+Dominica|Dominica
+Dominican Republic|Dominican Republic
+East Timor|East Timor
+Ecuador|Ecuador
+Egypt|Egypt
+El Salvador|El Salvador
+Equatorial Guinea|Equatorial Guinea
+Eritrea|Eritrea
+Estonia|Estonia
+Ethiopia|Ethiopia
+Falkland Islands (Malvinas)|Falkland Islands (Malvinas)
+Faroe Islands|Faroe Islands
+Fiji|Fiji
+Finland|Finland
+France|France
+France Metropolitan|France Metropolitan
+French Guiana|French Guiana
+French Polynesia|French Polynesia
+French Southern Territories|French Southern Territories
+Gabon|Gabon
+Gambia|Gambia
+Georgia|Georgia
+Germany|Germany
+Ghana|Ghana
+Gibraltar|Gibraltar
+Greece|Greece
+Greenland|Greenland
+Grenada|Grenada
+Guadeloupe|Guadeloupe
+Guam|Guam
+Guatemala|Guatemala
+Guinea|Guinea
+Guinea-Bissau|Guinea-Bissau
+Guyana|Guyana
+Haiti|Haiti
+Heard and Mc Donald Islands|Heard and Mc Donald Islands
+Holy See (Vatican City State)|Holy See (Vatican City State)
+Honduras|Honduras
+Hong Kong|Hong Kong
+Hungary|Hungary
+Iceland|Iceland
+India|India
+Indonesia|Indonesia
+Iran (Islamic Republic of)|Iran (Islamic Republic of)
+Iraq|Iraq
+Ireland|Ireland
+Israel|Israel
+Italy|Italy
+Jamaica|Jamaica
+Japan|Japan
+Jordan|Jordan
+Kazakhstan|Kazakhstan
+Kenya|Kenya
+Kiribati|Kiribati
+Korea, Democratic People's Republic of|Korea, Democratic People's Republic of
+Korea, Republic of|Korea, Republic of
+Kuwait|Kuwait
+Kyrgyzstan|Kyrgyzstan
+Lao, People's Democratic Republic|Lao, People's Democratic Republic
+Latvia|Latvia
+Lebanon|Lebanon
+Lesotho|Lesotho
+Liberia|Liberia
+Libyan Arab Jamahiriya|Libyan Arab Jamahiriya
+Liechtenstein|Liechtenstein
+Lithuania|Lithuania
+Luxembourg|Luxembourg
+Macau|Macau
+Macedonia, The Former Yugoslav Republic of|Macedonia, The Former Yugoslav Republic of
+Madagascar|Madagascar
+Malawi|Malawi
+Malaysia|Malaysia
+Maldives|Maldives
+Mali|Mali
+Malta|Malta
+Marshall Islands|Marshall Islands
+Martinique|Martinique
+Mauritania|Mauritania
+Mauritius|Mauritius
+Mayotte|Mayotte
+Mexico|Mexico
+Micronesia, Federated States of|Micronesia, Federated States of
+Moldova, Republic of|Moldova, Republic of
+Monaco|Monaco
+Mongolia|Mongolia
+Montserrat|Montserrat
+Morocco|Morocco
+Mozambique|Mozambique
+Myanmar|Myanmar
+Namibia|Namibia
+Nauru|Nauru
+Nepal|Nepal
+Netherlands|Netherlands
+Netherlands Antilles|Netherlands Antilles
+New Caledonia|New Caledonia
+New Zealand|New Zealand
+Nicaragua|Nicaragua
+Niger|Niger
+Nigeria|Nigeria
+Niue|Niue
+Norfolk Island|Norfolk Island
+Northern Mariana Islands|Northern Mariana Islands
+Norway|Norway
+Oman|Oman
+Pakistan|Pakistan
+Palau|Palau
+Panama|Panama
+Papua New Guinea|Papua New Guinea
+Paraguay|Paraguay
+Peru|Peru
+Philippines|Philippines
+Pitcairn|Pitcairn
+Poland|Poland
+Portugal|Portugal
+Puerto Rico|Puerto Rico
+Qatar|Qatar
+Reunion|Reunion
+Romania|Romania
+Russian Federation|Russian Federation
+Rwanda|Rwanda
+Saint Kitts and Nevis|Saint Kitts and Nevis
+Saint Lucia|Saint Lucia
+Saint Vincent and the Grenadines|Saint Vincent and the Grenadines
+Samoa|Samoa
+San Marino|San Marino
+Sao Tome and Principe|Sao Tome and Principe
+Saudi Arabia|Saudi Arabia
+Senegal|Senegal
+Seychelles|Seychelles
+Sierra Leone|Sierra Leone
+Singapore|Singapore
+Slovakia (Slovak Republic)|Slovakia (Slovak Republic)
+Slovenia|Slovenia
+Solomon Islands|Solomon Islands
+Somalia|Somalia
+South Africa|South Africa
+South Georgia and the South Sandwich Islands|South Georgia and the South Sandwich Islands
+Spain|Spain
+Sri Lanka|Sri Lanka
+St. Helena|St. Helena
+St. Pierre and Miquelon|St. Pierre and Miquelon
+Sudan|Sudan
+Suriname|Suriname
+Svalbard and Jan Mayen Islands|Svalbard and Jan Mayen Islands
+Swaziland|Swaziland
+Sweden|Sweden
+Switzerland|Switzerland
+Syrian Arab Republic|Syrian Arab Republic
+Taiwan, Province of China|Taiwan, Province of China
+Tajikistan|Tajikistan
+Tanzania, United Republic of|Tanzania, United Republic of
+Thailand|Thailand
+Togo|Togo
+Tokelau|Tokelau
+Tonga|Tonga
+Trinidad and Tobago|Trinidad and Tobago
+Tunisia|Tunisia
+Turkey|Turkey
+Turkmenistan|Turkmenistan
+Turks and Caicos Islands|Turks and Caicos Islands
+Tuvalu|Tuvalu
+Uganda|Uganda
+Ukraine|Ukraine
+United Arab Emirates|United Arab Emirates
+United States|United States
+United States Minor Outlying Islands|United States Minor Outlying Islands
+Uruguay|Uruguay
+Uzbekistan|Uzbekistan
+Vanuatu|Vanuatu
+Venezuela|Venezuela
+Vietnam|Vietnam
+Virgin Islands (British)|Virgin Islands (British)
+Virgin Islands (U.S.)|Virgin Islands (U.S.)
+Wallis and Futuna Islands|Wallis and Futuna Islands
+Western Sahara|Western Sahara
+Yemen|Yemen
+Yugoslavia|Yugoslavia
+Zambia|Zambia
+Zimbabwe|Zimbabwe";
+  $countries = explode("\n", $countries);
+  foreach ($countries as $country) {
+    $country = explode('|', $country);
+    $country = $country[0];
+//    dsm(strtolower($orig_country) . '-' . strtolower($country));
+    if (strtolower($orig_country) == strtolower($country)) {
+      return $country;
+    }
+  }
+  if (strtolower($orig_country) == 'taiwan') {
+    return 'Taiwan, Province of China';
+  }
+
+  if (strtolower($orig_country) == strtolower('YUGOSLAVIA (now Serbia and Montenegro)')) {
+    return 'Yugoslavia';
+  }
+  drupal_set_message('NO COUNTRY for "' . $orig_country . '"', 'error');
+
+}

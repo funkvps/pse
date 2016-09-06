@@ -1,0 +1,8 @@
+name = PSE: Error Page
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-error_page-field_col_content
+features[node][] = error_page
+features[features_api][] = api:2

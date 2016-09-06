@@ -1,0 +1,442 @@
+<?php
+
+//include_once(drupal_get_path('module', 'fdc_salesforce') . '/soapclient/SforceEnterpriseClient.php');
+//define('CLIENT_ID', "3MVG9Rd3qC6oMalX67TcpnL66Iixh51WEfu5VEsh.awVZL_KePOTvCMsTcDJILn3baCilA0EdyyELTUzZ7RcO");
+//define('CLIENT_SECRET', "7834891242865357366");
+//define('REDIRECT_URI', "https://pse.fdcdev2.co.uk/fdc_salesforce/oath_callback");
+//define('LOGIN_URI', "https://eu5.salesforce.com");
+
+function fdc_salesforce_menu() {
+
+//
+//	$items['fdc_salesforce_oath'] = array(
+//		'title' => 'Events',
+//		'page callback' => 'fdc_salesforce_oath',
+//		'access callback' => TRUE,
+//		'type' => MENU_CALLBACK,
+//	);
+//	$items['fdc_salesforce/oath_callback'] = array(
+//		'title' => 'Events',
+//		'page callback' => 'fdc_salesforce_oath_call_back',
+//		'access callback' => TRUE,
+//		'type' => MENU_CALLBACK,
+//	);
+	$items['fdc_salesforce/test'] = array(
+		'title' => 'Events',
+		'page callback' => 'fdc_salesforce_test',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+
+	return $items;
+}
+
+function fdc_salesforce_push($fields) {
+	
+	$url = 'https://www.salesforce.com/servlet/servlet.WebToLead?';
+	if(!empty($fields))
+	{
+	$fields['oid']	= urlencode("00DD0000000rd9K");
+	$fields['lead_source']	= urlencode("Website - WebForm Completed");
+	$fields['Campaign'] = urlencode("701D0000000lwUs");
+
+	}
+	
+	
+	
+	
+//	$fields = array(
+//		'oid' => urlencode("00DD0000000rd9K"),
+//		'first_name' => urlencode("surf5"),
+//		'last_name' => urlencode("Thakur"),
+//		'email' => urlencode("sthakur@fdcengage.com"),
+//		'company' => urlencode("fdc TEST"),
+//		'city' => urlencode("UK"),
+//		'state' => urlencode("NONE"),
+//		'lead_source' => urlencode("Website - WebForm Completed"),
+//		'Campaign' => urlencode("701D0000000lwUs"),
+//		'position' =>  urlencode("web developer"),	// position
+//		'Title' => urlencode("DEV"),
+//			//'debug' => 1,
+//			//'debugEmail' => "tewenator@gmail.com",
+//	);
+
+	foreach ($fields as $key => $value) {
+		$fields_string .= $key . '=' . $value . '&';
+	}
+	rtrim($fields_string, '&');
+
+	//open connection
+	$ch = curl_init();
+
+	//set the url, number of POST vars, POST data
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_POST, count($fields));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+
+	//execute post
+	 curl_exec($ch);
+
+	//close connection
+	curl_close($ch);
+}
+function fdc_salesforce_test() {
+	
+	$fields = array(
+				"first_name" => "Surf Test 2",
+				"last_name" => "Test ",
+				"email" => "sthakur@fdcengage.com",
+				"company" => "FDC Engage",
+				"title" => "Web Developer",
+				"phone" => "01164 244 244",
+			);
+		fdc_salesforce_push($fields);		//sends data to salesforce module
+	
+}
+function fdc_salesforce_test_old() {
+	$url = 'https://www.salesforce.com/servlet/servlet.WebToLead?';
+	$fields = array(
+		'oid' => urlencode("00DD0000000rd9K"),
+		'first_name' => urlencode("surf5"),
+		'last_name' => urlencode("Thakur"),
+		'email' => urlencode("sthakur@fdcengage.com"),
+		'company' => urlencode("fdc TEST"),
+		'city' => urlencode("UK"),
+		'state' => urlencode("NONE"),
+		'lead_source' => urlencode("Website - WebForm Completed"),
+		'Campaign' => urlencode("701D0000000lwUs"),
+		'position' =>  urlencode("web developer"),	// position
+		'Title' => urlencode("DEV"),
+			//'debug' => 1,
+			//'debugEmail' => "tewenator@gmail.com",
+	);
+
+	foreach ($fields as $key => $value) {
+		$fields_string .= $key . '=' . $value . '&';
+	}
+	rtrim($fields_string, '&');
+
+	//open connection
+	$ch = curl_init();
+
+	//set the url, number of POST vars, POST data
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_POST, count($fields));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+
+	//execute post
+	 curl_exec($ch);
+
+	//close connection
+	curl_close($ch);
+}
+
+function fdc_salesforce_oath_call_back() {
+
+
+	$token_url = LOGIN_URI . "/services/oauth2/token";
+
+	$code = $_GET['code'];
+
+	if (!isset($code) || $code == "") {
+		die("Error - code parameter missing from request!");
+	}
+
+	$params = "code=" . $code
+			. "&grant_type=authorization_code"
+			. "&client_id=" . CLIENT_ID
+			. "&client_secret=" . CLIENT_SECRET
+			. "&redirect_uri=" . urlencode(REDIRECT_URI);
+
+	$curl = curl_init($token_url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_POST, true);
+	curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+
+	$json_response = curl_exec($curl);
+
+	$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+	if ($status != 200) {
+		die("Error: call to token URL $token_url failed with status $status, response $json_response, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl));
+	}
+
+	curl_close($curl);
+
+	$response = json_decode($json_response, true);
+
+	$access_token = $response['access_token'];
+	$instance_url = $response['instance_url'];
+
+	if (!isset($access_token) || $access_token == "") {
+		die("Error - access token missing from response!");
+	}
+
+	if (!isset($instance_url) || $instance_url == "") {
+		die("Error - instance URL missing from response!");
+	}
+
+	$_SESSION['access_token'] = $access_token;
+	$_SESSION['instance_url'] = $instance_url;
+
+
+	$name = "suirf";
+
+	fdc_salesforce_create_account($name, $instance_url, $access_token);
+
+	fdc_salesforce_show_accounts($instance_url, $access_token);
+
+//	return "works";
+}
+
+function fdc_salesforce_oath() {
+
+
+	$auth_url = LOGIN_URI
+			. "/services/oauth2/authorize?response_type=code&client_id="
+			. CLIENT_ID . "&redirect_uri=" . drupal_encode_path(REDIRECT_URI);
+
+//	print_r($auth_url);
+	drupal_goto($auth_url);
+}
+
+function fdc_salesforce_show_accounts($instance_url, $access_token) {
+	$query = "SELECT Name, Id from PSE__c LIMIT 100";
+	$url = "$instance_url/services/data/v20.0/query?q=" . urlencode($query);
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: OAuth $access_token"));
+
+	$json_response = curl_exec($curl);
+	curl_close($curl);
+
+	$response = json_decode($json_response, true);
+
+	$total_size = $response['totalSize'];
+
+	echo "$total_size record(s) returned<br/><br/>";
+	foreach ((array) $response['records'] as $record) {
+		echo $record['Id'] . ", " . $record['Name'] . "<br/>";
+	}
+	echo "<br/>";
+}
+
+function fdc_salesforce_create_account($name, $instance_url, $access_token) {
+	$url = "$instance_url/services/data/v20.0/sobjects/PSE__c/";
+
+	$content = json_encode(array("Name" => $name));
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: OAuth $access_token",
+		"Content-type: application/json"));
+	curl_setopt($curl, CURLOPT_POST, true);
+	curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+
+	$json_response = curl_exec($curl);
+
+	$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+	if ($status != 201) {
+		die("Error: call to URL $url failed with status $status, response $json_response, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl));
+	}
+
+	echo "HTTP status $status creating account<br/><br/>";
+
+	curl_close($curl);
+
+	$response = json_decode($json_response, true);
+
+	$id = $response["id"];
+
+	echo "New record id $id<br/><br/>";
+
+	return $id;
+}
+
+function fdc_salesforce_show_account($id, $instance_url, $access_token) {
+	$url = "$instance_url/services/data/v20.0/sobjects/Account/$id";
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: OAuth $access_token"));
+
+	$json_response = curl_exec($curl);
+
+	$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+	if ($status != 200) {
+		die("Error: call to URL $url failed with status $status, response $json_response, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl));
+	}
+
+	echo "HTTP status $status reading account<br/><br/>";
+
+	curl_close($curl);
+
+	$response = json_decode($json_response, true);
+
+	foreach ((array) $response as $key => $value) {
+		echo "$key:$value<br/>";
+	}
+	echo "<br/>";
+}
+
+function fdc_salesforce_update_account($id, $new_name, $city, $instance_url, $access_token) {
+	$url = "$instance_url/services/data/v20.0/sobjects/Account/$id";
+
+	$content = json_encode(array("Name" => $new_name, "BillingCity" => $city));
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: OAuth $access_token",
+		"Content-type: application/json"));
+	curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PATCH");
+	curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+
+	curl_exec($curl);
+
+	$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+	if ($status != 204) {
+		die("Error: call to URL $url failed with status $status, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl));
+	}
+
+	echo "HTTP status $status updating account<br/><br/>";
+
+	curl_close($curl);
+}
+
+function fdc_salesforce_delete_account($id, $instance_url, $access_token) {
+	$url = "$instance_url/services/data/v20.0/sobjects/Account/$id";
+
+	$curl = curl_init($url);
+	curl_setopt($curl, CURLOPT_HEADER, false);
+	curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: OAuth $access_token"));
+	curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+
+	curl_exec($curl);
+
+	$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+	if ($status != 204) {
+		die("Error: call to URL $url failed with status $status, curl_error " . curl_error($curl) . ", curl_errno " . curl_errno($curl));
+	}
+
+	echo "HTTP status $status deleting account<br/><br/>";
+
+	curl_close($curl);
+}
+
+//
+//function fdc_salesforce_webform_submission_presave($node, &$submission) {
+//
+////	global $user;
+//
+//	if ($node->type = "download_signup_form") {
+//		if (!empty($submission->data[5][0])) {
+//			$node->webform['redirect_url'] = $submission->data[5][0];
+//			
+//		}
+//	}
+////	print_r($user);
+////	print_r($node->type);
+////	print_r(current_path());
+////	print_r($submission->data);
+////	die();
+////	if ($submission->data[11][0] == 'Water Margin Portsmouth') {
+////		$node->webform['redirect_url'] = "portsmouth/thank-you-your-confirmation";
+////		
+////	}
+////	else {
+////		$node->webform['redirect_url'] = "o2-greenwich/thank-you-your-confirmation";
+////	}
+//}
+//
+//
+//
+//function fdc_salesforce_node_insert($node)
+//{
+// if ($node->type == 'contact_us') {
+//    webform_ensure_record($node);
+//    $components = _my_function_webform_components();
+//    foreach($components as $component) {
+//      $component['nid'] = $node->nid;
+//      $component['extra']['title_display'] = 'inline';
+//      $node->webform['components'][] = $component;
+//      webform_component_insert($component);
+//    }
+////    $email = array(
+////      'nid' => $node->nid,
+////      'email' => 'name@example.ch',
+////      'subject' => 'default',
+////      'from_name' => 'default',
+////      'from_address' => 'default',
+////      'template' => 'default',
+////      'excluded_components' => array(),
+////    );
+////    webform_email_insert($email);
+//  }	
+// if ($node->type == 'events_and_webinar') {
+//    webform_ensure_record($node);
+//    $components = _my_function_webform_components();
+//    foreach($components as $component) {
+//      $component['nid'] = $node->nid;
+//      $component['extra']['title_display'] = 'inline';
+//      $node->webform['components'][] = $component;
+//      webform_component_insert($component);
+//    }
+////    $email = array(
+////      'nid' => $node->nid,
+////      'email' => 'name@example.ch',
+////      'subject' => 'default',
+////      'from_name' => 'default',
+////      'from_address' => 'default',
+////      'template' => 'default',
+////      'excluded_components' => array(),
+////    );
+////    webform_email_insert($email);
+//  }	
+//}
+//
+//function _my_function_webform_components() {
+//  $components = array(
+//    0 => array(
+//      'name' => 'Full name',
+//      'form_key' => 'full_name',
+//      'type' => 'textfield',
+//      'mandatory' => 1,
+//      'width' => '40',
+//      'maxlength' => '75',
+//      'weight' => 1,
+//      'pid' => 0
+//    ),
+//    1 => array(
+//      'name' => 'Email',
+//      'form_key' => 'email',
+//      'type' => 'textfield',
+//      'mandatory' => 1,
+//      'width' => '40',
+//      'maxlength' => '75',
+//      'weight' => 2,
+//      'pid' => 0
+//    ),
+//    2 => array(
+//      'name' => 'Organisation',
+//      'form_key' => 'organisation',
+//      'type' => 'textfield',
+//      'mandatory' => 1,
+//      'width' => '40',
+//      'maxlength' => '75',
+//      'weight' => 3,
+//      'pid' => 0
+//    ),
+//  );
+//
+//  return $components;
+//
+//}

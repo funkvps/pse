@@ -1,0 +1,180 @@
+<?php
+
+function pse_sync_training_courses_menu() {
+  $items['admin/pse_sync_training_courses'] = array(
+		'page callback' => 'page_pse_sync_training_courses',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+  return $items;
+}
+
+
+function pse_sync_training_courses_init() {
+  drupal_add_js(drupal_get_path('module', 'pse_sync_training_courses') . '/pse_sync_training_courses.js');
+}
+
+
+function page_pse_sync_training_courses() {
+//  $node_nids = db_query("SELECT * FROM node WHERE type='training_course' ");
+//  foreach($node_nids as $node_nid) {
+//    $node = node_load($node_nid->nid);
+//    node_save($node);
+//  }
+  return 'done';
+}
+
+
+function pse_sync_training_courses_entity_presave($entity, $type) {
+  if ($type == 'commerce_product' && $entity->type == 'training' && !empty($entity->product_id)) {
+    global $pse_sync_training_courses_started; // avoid infinitive loop
+    if ($pse_sync_training_courses_started == false) {
+      $pse_sync_training_courses_started = true;
+      
+//      $training_nodes = _product_id_to_training($entity->product_id);
+      if (!empty($entity->field_pse_training_course['und'][0]['target_id'])) {
+        $training_node_nid = $entity->field_pse_training_course['und'][0]['target_id'];
+        $node = node_load($training_node_nid);
+        if ($node->field_pse_tax_products == $entity->field_pse_tax_products
+            && $node->field_pse_tax_sectors == $entity->field_pse_tax_sectors) {
+          $pse_sync_training_courses_started = false;
+          return; // nothing todo here, no taxonomy changes
+        }
+//        dsm('node->field_pse_tax_products');
+//        dsm($node->field_pse_tax_products);
+//        dsm('entity->field_pse_tax_products');
+//        dsm($entity->field_pse_tax_products);
+        $node->field_pse_tax_products = $entity->field_pse_tax_products;
+        $node->field_pse_tax_sectors = $entity->field_pse_tax_sectors;
+        node_save($node);
+        drupal_set_message('Also updated training node ' . l($node->title, 'node/' . $node->nid));
+        $fields = array(
+          'field_pse_tax_products' => $node->field_pse_tax_products,
+          'field_pse_tax_sectors' => $node->field_pse_tax_sectors, 
+        );
+//        foreach ($node->field_col_courses['und'] as $course) {
+//          $product_id = 0;
+//          if (empty($course['field_courses_course']['und'][0]['product_id'])) {
+//            $collections = entity_load('field_collection_item', array($course['value']));
+//            $product_id = $collections[$course['value']]->field_courses_course['und'][0]['product_id'];
+//          } else if (!empty($course['field_courses_course']['und'][0]['product_id'])) {
+//            $product_id = $course['field_courses_course']['und'][0]['product_id'];
+//          }
+//          if ($product_id && $product_id != $entity->product_id) {
+//          }
+//        }
+        $sql = "SELECT entity_id
+                FROM field_data_field_pse_training_course AS field_pse_training_course 
+                WHERE field_pse_training_course_target_id = :nid 
+                  AND entity_id != :product_id ";
+        $other_products = db_query($sql, array(':nid' => $training_node_nid, ':product_id' => $entity->product_id));
+        foreach ($other_products as $other_product) {
+          $products[] = $other_product->entity_id;
+        }
+        _pse_sync_training_courses_update_fields($fields, $products, 'commerce_product');
+      }
+      $pse_sync_training_courses_started = false;
+    }
+  }
+}
+
+
+function pse_sync_training_courses_node_presave($node) {
+//  dsm($node);
+  if ($node->type == 'training_course') {
+    global $pse_sync_training_courses_started; // avoid infinitive loop
+    if ($pse_sync_training_courses_started == false) {
+      $pse_sync_training_courses_started = true;
+      $fields = array(
+        'field_pse_tax_products' => $node->field_pse_tax_products,
+        'field_pse_tax_sectors' => $node->field_pse_tax_sectors, 
+      );
+      $products = array();
+      $sql = "SELECT entity_id
+                FROM field_data_field_pse_training_course AS field_pse_training_course 
+                WHERE field_pse_training_course_target_id = :nid";
+      $other_products = db_query($sql, array(':nid' => $node->nid));
+      foreach ($other_products as $other_product) {
+        $products[] = $other_product->entity_id;
+      }
+      _pse_sync_training_courses_update_fields($fields, $products, 'commerce_product');
+      $pse_sync_training_courses_started = false;
+    }
+  }
+}
+
+
+function _pse_sync_training_courses_update_fields($fields, $entity_ids, $entity_type) {
+  if ($entity_type == 'commerce_product') {
+    $entities = entity_load('commerce_product', $entity_ids);
+  }
+  foreach ($entities as $entity) {
+    $update = false;
+    foreach ($fields as $field_name => $field_values) {
+      if ($entity->$field_name != $field_values) {
+        if (empty($entity->$field_name) && $field_values == array('und' => array())) {
+          continue;
+        }
+        $update = true;
+        $entity->$field_name = $field_values;
+      }
+    }
+    if ($update) {
+      drupal_set_message('Also updated ' . l($entity->title, 'admin/commerce/products/' . $entity->product_id));
+      entity_save($entity_type, $entity);
+    }
+  }
+}
+
+
+function pse_sync_training_courses_form_alter(&$form, &$form_state, $form_id) {
+//  dsm('form_id');
+//  dsm($form_id);
+  switch ($form_id) {
+    case 'commerce_product_ui_product_form': 
+//      if (!empty($form['#entity']->product_id)) {
+//        if (!isset($form['#prefix'])) {
+//          $form['#prefix'] = '';
+//        }
+//        
+//        $sql = "SELECT node.nid, node.title
+//                FROM {field_data_field_col_courses} AS field_col_courses 
+//                INNER JOIN {field_data_field_courses_course} AS field_courses_course ON field_col_courses_value = field_courses_course.entity_id
+//                LEFT JOIN {node} AS node ON field_col_courses.entity_id = node.nid
+//                WHERE field_courses_course_product_id = :product_id
+//                ";
+//        $trainings = db_query($sql, array(':product_id' => $form['#entity']->product_id));
+//        foreach($trainings as $training) {
+//          $form['#prefix'] .= l($training->title, 'node/' . $training->nid, array('attributes' => array('target' => '_blank'))) . '<br>';
+//        }
+//        if (!empty($form['#prefix'])) {
+//          $form['#groups']['group_taxonomy']->format_settings['instance_settings']['description'] = '<p>Fields <strong>Sector</strong> and <strong>Products</strong> will be synchronised with related node and other related products.</p>';
+//          $form['#groups']['group_taxonomy']->format_settings['instance_settings']['description'] .= 'This product is related to <br>' . $form['#prefix'] . '<br><br>';
+//          $form['#prefix'] = '<strong>This product is related to: </strong><br>' . $form['#prefix'];
+//        }
+//        
+//      }
+      break;
+    case 'training_course_node_form':
+//      $form['#groups']['group_taxonomy']->format_settings['instance_settings']['description'] .= 'Changing Product and Sector values will update them for all related "Training Courses"';
+      break;
+  }
+}
+
+function _product_id_to_training($product_id) {
+  $sql = "SELECT node.nid, node.title
+          FROM {field_data_field_pse_training_course} AS field_pse_training_course 
+          LEFT JOIN {node} AS node ON field_pse_training_course_target_id = node.nid
+          WHERE entity_id = :product_id";
+//  $sql = "SELECT node.nid, node.title
+//          FROM {field_data_field_col_courses} AS field_col_courses 
+//          INNER JOIN {field_data_field_courses_course} AS field_courses_course ON field_col_courses_value = field_courses_course.entity_id
+//          LEFT JOIN {node} AS node ON field_col_courses.entity_id = node.nid
+//          WHERE field_courses_course_product_id = :product_id
+//          ";
+  $trainings = db_query($sql, array(':product_id' => $product_id))->fetchAll();
+//  foreach($trainings as $training) {
+//    $form['#prefix'] .= l($training->title, 'node/' . $training->nid, array('attributes' => array('target' => '_blank'))) . '<br>';
+//  }
+  return $trainings;
+}

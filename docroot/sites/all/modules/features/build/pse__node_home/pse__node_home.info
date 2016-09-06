@@ -1,0 +1,14 @@
+name = PSE: Home
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-home-field_call_sectors
+features[field_instance][] = node-home-field_col_calltoaction
+features[field_instance][] = node-home-field_col_caltoactionfour
+features[field_instance][] = node-home-field_col_content
+features[field_instance][] = node-home-field_col_homepage_banner
+features[field_instance][] = node-home-field_col_sidetestimonial
+features[field_instance][] = node-home-field_collection_metatags
+features[node][] = home
+features[features_api][] = api:2

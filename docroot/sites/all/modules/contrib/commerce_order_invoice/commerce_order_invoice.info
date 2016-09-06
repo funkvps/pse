@@ -1,0 +1,19 @@
+name = Commerce Order Invoice
+description = Invoice support for Drupal Commerce using existing order entity type
+core = 7.x
+
+dependencies[] = commerce
+dependencies[] = commerce_order
+dependencies[] = commerce_line_item
+dependencies[] = commerce_product
+dependencies[] = date
+
+; Views handlers
+files[] = includes/views/handlers/commerce_order_invoice_line_item_handler_field_edit_delete.inc
+
+; Information added by drupal.org packaging script on 2012-05-18
+version = "7.x-1.0-alpha2"
+core = "7.x"
+project = "commerce_order_invoice"
+datestamp = "1337383255"
+

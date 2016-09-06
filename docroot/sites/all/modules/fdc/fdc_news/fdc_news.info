@@ -1,0 +1,6 @@
+name = News Listing
+description = A listing page for news articles, including pagination and categories. Reliant on a News Article content type. (Mitchell Currie @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+core = 7.x
+

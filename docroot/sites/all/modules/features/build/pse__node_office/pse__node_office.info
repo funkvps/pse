@@ -1,0 +1,11 @@
+name = PSE: Office
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-office-field_breadcrumbs
+features[field_instance][] = node-office-field_col_directions
+features[field_instance][] = node-office-field_col_hotels
+features[field_instance][] = node-office-field_col_office
+features[node][] = office
+features[features_api][] = api:2

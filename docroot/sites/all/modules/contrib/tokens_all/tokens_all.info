@@ -1,0 +1,12 @@
+name = Tokens All
+description = Replace all entity values in tokens.
+core = 7.x
+files[] = tokens_all.module
+dependencies[]= entity_token
+
+; Information added by drupal.org packaging script on 2013-09-24
+version = "7.x-1.0-alpha1"
+core = "7.x"
+project = "tokens_all"
+datestamp = "1380049528"
+

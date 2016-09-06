@@ -1,0 +1,256 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - size etc. Used everywhere. Do not modify. use overrides.
+ */
+
+
+ul#assymetricislands .col-island:first-child li,
+div#assymetricislands .col-island:first-child div {
+		margin-left: 4px;
+}
+ul#assymetricislands .col-island:last-child li,
+div#assymetricislands .col-island:last-child div {
+		margin-right: 4px;
+}
+
+div#assymetricislands ul {
+	padding: 0;
+	margin: 0;
+}
+	
+ul#assymetricislands li,
+div#assymetricislands li {
+/*		width: 299px;*/
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+ul#assymetricislands,
+div#assymetricislands {
+		list-style: none;
+		clear: both;
+}
+		
+ul#assymetricislands li,
+div#assymetricislands .col-island .assymetricislands-col-wrap {
+/*		float: left;
+		margin-right: 20px;
+		margin-top: 20px;	
+		overflow: hidden;*/
+		background-color: rgba(255, 255, 255, 0.8);
+		border-radius: 4px;
+}	
+		
+		
+ul#assymetricislands a,
+div#assymetricislands a { 
+		text-decoration: none;
+		color: #006c85;
+		display: inline-block;
+}
+		
+ul#assymetricislands header,
+div#assymetricislands header {		
+		padding-top: 6px;
+		padding-left: 6px;
+}
+		
+ul#assymetricislands h2,
+div#assymetricislands h2 {
+		margin-bottom: 0.5em;
+		width: 99%;
+}
+		
+ul#assymetricislands article img,
+div#assymetricislands article img {
+		float: right;
+		max-width: 75px;
+		margin-right: 9px;
+		margin-left: 2px;
+}
+	
+
+
+ul#assymetricislands footer,
+div#assymetricislands footer {		
+		padding: 5px 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-size: 70%;
+		}
+		
+
+div.event ul#assymetricislands article ul,
+div.event div#assymetricislands article ul {		
+		margin: 0; padding: 0;
+}
+			
+
+div.event ul#assymetricislands article li,
+div.event div#assymetricislands article li {		
+	background-image: url('../img/bullet.png');
+	background-repeat: no-repeat;
+	background-position: 0 0.5em;
+	padding-left: 16px;
+	line-height: 150%;
+	width: 90%;
+	float: none;
+	margin: 0;
+	margin-bottom: 0.5em;
+	}
+
+
+/**
+ *	 nobg versions
+ */
+
+ul#assymetricislandsnobg li:first-child {
+		/*width: 580px;*/
+		/*margin-right: 60px;*/
+}
+
+ul#assymetricislandsnobg li {
+		/*width: 299px;*/
+}
+
+ul#assymetricislandsnobg {
+		list-style: none;
+		clear: both;
+}
+
+ul#assymetricislandsnobg li{
+		float: left;
+		margin-right: 20px;
+		margin-top: 20px;	
+		overflow: hidden;
+		}
+		
+ul#assymetricislandsnobg li a{ 
+		text-decoration: none;
+		}
+		
+ul#assymetricislandsnobg header{		
+		}
+		
+
+		
+ul#assymetricislandsnobg h2 {
+		margin-bottom: 0.5em;
+		width: 299px;}
+		
+ul#assymetricislandsnobg #hubintro {
+	width: 99%;
+	margin-top: 20px;
+	font-size: 120%;
+}	
+	
+			
+
+ul#assymetricislandsnobg article img{
+		float: right;
+		max-width: 75px;
+		margin-left: 2px;}
+	
+
+
+ul#assymetricislandsnobg footer {		
+		padding: 5px 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-size: 70%;
+		}
+		
+
+div.event ul#assymetricislandsnobg article ul {		
+		margin: 0; padding: 0;
+}
+			
+
+div.event ul#assymetricislandsnobg article li {		
+	background-image: url('../img/bullet.png');
+	background-repeat: no-repeat;
+	background-position: 0 0.5em;
+	padding-left: 16px;
+	line-height: 150%;
+	width: 564px;
+	float: none;
+	margin: 0;
+	margin-bottom: 0.5em;
+	
+	}
+	
+
+	
+
+		
+
+
+	
+
+
+/**
+ *	 island base colours - colour masters
+ */
+
+/*mid-grey background graduation*/
+.darkgrey {
+background-image: url(../img/islanddgrey.png);}
+
+/*mid-grey background graduation*/
+.greygrad {
+background-image: url(../img/islandgrey.png);}
+
+.greygrad h2, .greygrad header {color: #fff;}
+
+/*light-grey background graduation*/
+.greygrad2 {
+background-image: url(../img/islandlightgrey.png);}
+
+/*teal background graduation*/
+.teal {
+background-image: url(../img/islandteal.png);}
+
+/*orange background graduation*/
+.orange {
+background-image: url(../img/islandorange.png);}
+
+
+
+/*quote overrides* works for two or less*/
+
+.quote {
+background-image: url(../img/islandbg_quote.png);}
+
+.quoteorange {
+background-image: url(../img/islandbg_quoteorange.png);}
+
+
+/*teal change colour for legibility*/
+#assymetricislands .teal p,
+#assymetricislands .teal h2, 
+#assymetricislands .teal footer,
+
+#assymetricislands .orange p,
+#assymetricislands .orange h2, 
+#assymetricislands .orange footer,
+
+#assymetricislands .darkgrey p,
+#assymetricislands .darkgrey h2, 
+#assymetricislands .darkgrey footer,
+
+#assymetricislands .quote p,
+#assymetricislands .quote h2,
+#assymetricislands .quote a,  
+
+#assymetricislands .quoteorange p,
+#assymetricislands .quoteorange h2,
+#assymetricislands .quoteorenage a,  
+
+{color: #fff;}
+
+
+
+
+

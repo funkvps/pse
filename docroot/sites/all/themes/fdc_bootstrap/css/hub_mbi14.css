@@ -1,0 +1,18 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - overrides and imagery
+ */
+
+
+.mbi_1{
+display:block; background-image: url(../img/islandbg_mbi1.png); background-repeat: no-repeat; background-size: 100% auto; }
+
+.mbi_2{
+display:block; background-image: url(../img/islandbg_mbi2.png); background-repeat: no-repeat; background-size: 100% auto; }
+
+#threeislands .mbi_1 p, #threeislands .mbi_1 h2, #threeislands .mbi_1 a  {
+color: #fff;}
+
+#threeislands .mbi_2 p,#threeislands .mbi_2 h2, #threeislands .mbi_2 a  {
+color: #fff;}

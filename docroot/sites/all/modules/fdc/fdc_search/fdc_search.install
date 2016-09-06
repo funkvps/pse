@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * 	Implementation of hook_schema();
+ */
+function fdc_search_schema() {
+
+	$schema['fdc_search'] = array(
+		'description' => t('Store all search items'),
+		'fields' => array(
+			'uid' => array(
+				'description' => 'The unique ID of a product',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'nid' => array(
+				'description' => 'The Node ID',
+				'type' => 'int',
+				'length' => 10,
+				'not null' => FALSE,
+			),
+			'name' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => FALSE,
+				'default' => '',
+			),
+			'img_fid' => array(
+				'type' => 'int',
+				'length' => 10,
+				'not null' => FALSE,
+			),
+			'img_path' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => FALSE,
+			),
+			'url' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => FALSE,
+			),
+		 
+			'tags' => array(
+				'type' => 'varchar',
+				'length' => 300,
+				'not null' => FALSE,
+				'default' => '',
+			),
+			'description' => array(
+				'type' => 'varchar',
+				'length' => 5000,
+				'not null' => FALSE,
+				'default' => '',
+			),
+		),
+		'unique keys' => array(
+			'uid' => array('uid'),
+		),
+		'primary key' => array('uid'),
+	);
+
+	return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function fdc_search_install() {
+	// Use schema API to create database table.
+	if (!db_table_exists('fdc_search')) {
+		drupal_install_schema('fdc_search_schema');
+		return true;
+	}
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function fdc_search_uninstall() {
+	// Check table exists
+	if (db_table_exists('fdc_search')) {
+		// Remove the table
+		drupal_uninstall_schema('fdc_search_schema');
+		// purge all field infromation
+		field_purge_batch(1000);
+		node_types_rebuild();
+		return;
+	}
+}

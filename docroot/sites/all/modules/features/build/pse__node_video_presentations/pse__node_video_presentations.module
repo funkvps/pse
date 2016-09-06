@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Video Presentations feature.
+ */
+
+include_once 'pse__node_video_presentations.features.inc';

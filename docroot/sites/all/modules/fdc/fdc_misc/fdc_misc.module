@@ -1,0 +1,167 @@
+<?php
+
+/*
+ *	MISC FUNCTIONALITY AND DRUPAL OVERRIDES.
+ *	Mitchell Currie @ FDCstudio.co.uk
+ * 
+ */
+
+
+// DRUPAL OVERRIDES AND ALTERATIONS  --------------------------------------------------------------
+
+/*
+ *	Remove DESCRIPTION field from view for taxonomy terms
+ */
+function fdc_misc_form_taxonomy_form_term_alter(&$form, &$form_state, $form_id) {
+  $form['description']['#access'] = FALSE;
+}
+
+/*
+ *	Disable Access to /node
+ */
+function fdc_misc_menu_alter(&$items) {
+	$items['node']['access callback'] = FALSE;
+	unset($items['node']);
+}
+
+/*
+ *	Override or insert variables into the html template.
+ */
+function fdc_misc_preprocess_html(&$vars) {
+	global $theme_path;
+	//	Add conditional CSS for IE7 and below.
+	//  drupal_add_css($theme_path . '/css/ie.css', array('group' => CSS_THEME, 'browsers' => array('IE' => 'lte IE 7', '!IE' => FALSE), 'preprocess' => FALSE));
+	$vars['head_title'] = strip_tags(drupal_get_title());  
+	//  $vars['head_title'] = implode(' | ', array(drupal_get_title(), variable_get('site_name'), variable_get('site_slogan')));  
+}
+
+/*
+ *	Do something with the menu, though I honestly forget what.
+ */
+function fdc_misc_links($variables) {
+  if (array_key_exists('id', $variables['attributes']) && $variables['attributes']['id'] == 'main-menu-links') {
+      $pid = variable_get('menu_main_links_source', 'main-menu');
+    $tree = menu_tree($pid);
+    return drupal_render($tree);
+  }
+  return theme_links($variables);
+}
+
+/**
+ * Remove sticky/promote entirely from add and edit content type forms.
+ *
+ * Implements hook_form_FORM_ID_alter().
+ */
+function fdc_misc_form_node_type_form_alter(&$form, &$form_state, $form_id) {
+  // Remove sticky/promote entirely from add and edit content type forms.
+  $options = array('promote', 'sticky');
+  foreach ($options as $key) {
+//    if ($key == 'sticky' && !empty($form['#node_type']->type) && $form['#node_type']->type == 'news_articles') {
+//      continue; // keep these options for news
+//    }
+    unset($form['workflow']['node_options']['#options'][$key]);    
+  }
+}
+
+/**
+ * Remove sticky/promote entirely from node/X/edit & node/X/add forms.
+ * 
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function fdc_misc_form_node_form_alter(&$form, &$form_state, $form_id) {
+  $options = array('promote', 'sticky');
+  foreach ($options as $key) {
+//    if ($key == 'sticky' && !empty($form['type']['#value']) && $form['type']['#value'] == 'news_articles') {
+//      continue; // keep these options for news
+//    }
+    $form['options'][$key]['#access'] = FALSE;
+  }
+}
+
+/**
+ * Remove some sticky/promote update options on admin/content.
+ *
+ * Implements hook_form_FORM_ID_alter().
+ */
+function fdc_misc_form_node_admin_content_alter(&$form, &$form_state, $form_id) {
+  $options = array('demote', 'promote', 'sticky', 'unsticky', );
+  foreach ($options as $key) {
+    unset($form['admin']['options']['operation']['#options'][$key]);
+  }
+}
+
+// GENERAL FUNCTIONALITY --------------------------------------------------------------
+
+/*
+ *	Simple function to limit word count within a string. Used for news previews etc if no Summary is set.
+ */
+function limit_word_count($text, $limit) {
+	if (str_word_count($text, 0) > $limit) {
+		$words = str_word_count($text, 2);
+		$pos = array_keys($words);
+		$text = substr($text, 0, $pos[$limit]) . '...';
+	}
+	return $text;
+}
+
+function formatSizeUnits($bytes) {
+	if ($bytes >= 1073741824) {
+		$bytes = number_format($bytes / 1073741824, 2) . ' GB';
+	} elseif ($bytes >= 1048576) {
+		$bytes = number_format($bytes / 1048576, 2) . ' MB';
+	} elseif ($bytes >= 1024) {
+		$bytes = number_format($bytes / 1024, 2) . ' KB';
+	} elseif ($bytes > 1) {
+		$bytes = $bytes . ' bytes';
+	} elseif ($bytes == 1) {
+		$bytes = $bytes . ' byte';
+	} else {
+		$bytes = '0 bytes';
+	}
+
+	return $bytes;
+}
+
+/**
+ *
+ * param string $url
+ *    Full url to file to download
+ * param string $uri
+ *    Drupal uri of where to save file public://archive/test.pdf
+ * param int $save_mode
+ *    File save mode from drupal core, ex FILE_EXISTS_REPLACE
+ */
+function download_external_file($url, $uri, $save_mode = FILE_EXISTS_RENAME, $manage_file = TRUE) {
+ 
+  $url_info = parse_url($url);
+  $url_path_info = pathinfo($url_info['path']);
+   
+  //This helps with filenames with spaces
+  $url = $url_info['scheme'] . '://' . $url_info['host']  . $url_path_info['dirname'] .'/'. rawurlencode($url_path_info['basename']);
+ 
+  //Need to remove the filename from the uri
+  $uri_target = file_uri_target($uri);
+  $uri_scheme = file_uri_scheme($uri);
+  $uri_path_info = pathinfo($uri_target);
+  $directory = file_stream_wrapper_uri_normalize($uri_scheme . "://" . $uri_path_info['dirname']);
+ 
+  if(file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
+    $drupal_result = drupal_http_request($url);
+    if(!empty($drupal_result->data)) {
+      $path = file_stream_wrapper_uri_normalize($uri);
+      if($manage_file) {
+        $new_file = file_save_data($drupal_result->data, $path, $save_mode);
+      } else {
+        return file_unmanaged_save_data($drupal_result->data, $path, $save_mode);
+      }
+    } else {
+      drupal_set_message("Error downloading file, no data recieved for " . $url);
+      return FALSE;
+    }
+ 
+    $new_file->display = 1;
+    return (array)$new_file;
+  } else {
+    drupal_set_message("Could not create directory");
+  }
+}

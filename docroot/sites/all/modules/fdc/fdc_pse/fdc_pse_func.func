@@ -1,0 +1,2259 @@
+<?php
+
+/**
+ *  loads the fdc_pse.js into the footer when the module is initialised
+ */
+function fdc_pse_init() {
+	drupal_add_js(drupal_get_path('module', 'fdc_pse') . '/js/fdc_pse.js', array('scope' => 'footer'));
+}
+
+function fdc_pse_hierachy($nid) {
+
+
+	$query = db_query("
+				SELECT
+					taxonomy_term_data.tid,
+					taxonomy_term_data.vid,
+					taxonomy_term_data.`name` AS parent_location,
+					taxonomy_term_hierarchy.parent,
+					field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+					field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+					file_managed.uri AS img_path
+				FROM
+					taxonomy_term_data
+				INNER JOIN taxonomy_term_hierarchy ON taxonomy_term_data.tid = taxonomy_term_hierarchy.tid
+				LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_hierarchy.tid = field_data_field_taxo_flags.entity_id
+				LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+				WHERE
+					taxonomy_term_data.vid = 31
+				AND taxonomy_term_hierarchy.parent = 0
+				ORDER BY
+					taxonomy_term_data.weight ASC")->fetchAll();
+	if (!empty($query)) {
+
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_prod_hierachy() {
+	
+}
+
+function fdc_pse_term_parent($tid) {
+	if (!empty($tid)) {
+		$query = db_query("
+				SELECT
+					taxonomy_term_data.tid,
+					taxonomy_term_hierarchy.parent,
+					field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+					field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+					file_managed.uri AS img_path,
+					taxonomy_term_data.`name`
+				FROM
+					taxonomy_term_data
+				INNER JOIN taxonomy_term_hierarchy ON taxonomy_term_data.tid = taxonomy_term_hierarchy.tid
+				LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_hierarchy.tid = field_data_field_taxo_flags.entity_id
+				LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+				WHERE
+					taxonomy_term_data.vid = 31
+				AND taxonomy_term_data.tid = :tid", array(":tid" => $tid))->fetchObject();
+		if (!empty($query)) {
+			return fdc_pse_get_parent($query->parent);
+		}
+	}
+}
+
+function fdc_pse_get_parent($tid) {
+	if (!empty($tid)) {
+		$query = db_query("
+				SELECT
+					taxonomy_term_data.tid,
+					taxonomy_term_hierarchy.parent,
+					field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+					field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+					file_managed.uri AS img_path,
+					taxonomy_term_data.`name`
+				FROM
+					taxonomy_term_data
+				INNER JOIN taxonomy_term_hierarchy ON taxonomy_term_data.tid = taxonomy_term_hierarchy.tid
+				LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_hierarchy.tid = field_data_field_taxo_flags.entity_id
+				LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+				WHERE
+					taxonomy_term_data.vid = 31
+				AND taxonomy_term_data.tid = :tid", array(":tid" => $tid))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_products_hierachy($parent_tid, $nid, $vid = 31) {
+  $include_today = strtotime('today'); // show all todays events
+//  dsm(date('Y.m.d H:i:s', $endoftoday));
+	$query = db_query("
+SELECT
+  CURDATE(),
+  FROM_UNIXTIME(
+  field_data_field_prod_start_date.field_prod_start_date_value,
+  '%Y-%m-%d'
+  ) AS f_start_date,
+  taxonomy_term_data.tid,
+  taxonomy_term_data.vid,
+  taxonomy_term_data.`name` AS location,
+  taxonomy_term_hierarchy.parent,
+  commerce_product.product_id,
+  commerce_product.sku,
+  commerce_product.title,
+  commerce_product.type,
+  node.nid,
+  node.title,
+  field_data_field_taxo_currency.field_taxo_currency_value,
+  field_data_field_taxo_flags.field_taxo_flags_alt AS img_alt,
+  field_data_field_taxo_flags.field_taxo_flags_title AS img_title,
+  file_managed.uri AS img_path,
+  field_data_field_prod_start_date.field_prod_start_date_value AS start_date,
+  field_data_field_prod_end_date.field_prod_end_date_value AS end_date,
+  field_data_field_prod_stock.field_prod_stock_value AS stock,
+  field_data_commerce_price.commerce_price_amount AS currency_amount,
+  field_data_commerce_price.commerce_price_currency_code AS currency_code
+FROM taxonomy_term_data
+INNER JOIN taxonomy_term_hierarchy ON taxonomy_term_data.tid = taxonomy_term_hierarchy.tid
+INNER JOIN field_data_field_prod_location ON taxonomy_term_hierarchy.tid = field_data_field_prod_location.field_prod_location_tid
+LEFT JOIN field_data_field_col_commerce ON field_data_field_prod_location.entity_id = field_data_field_col_commerce.field_col_commerce_value
+LEFT JOIN commerce_product ON field_data_field_col_commerce.entity_id = commerce_product.product_id
+LEFT JOIN field_data_field_pse_training_course AS field_pse_training_course ON field_pse_training_course.entity_id = commerce_product.product_id
+LEFT JOIN node ON field_pse_training_course.field_pse_training_course_target_id = node.nid
+LEFT JOIN field_data_field_taxo_currency ON taxonomy_term_data.tid = field_data_field_taxo_currency.entity_id
+LEFT JOIN field_data_field_taxo_flags ON taxonomy_term_data.tid = field_data_field_taxo_flags.entity_id
+LEFT JOIN file_managed ON field_data_field_taxo_flags.field_taxo_flags_fid = file_managed.fid
+LEFT JOIN field_data_field_prod_start_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_start_date.entity_id
+LEFT JOIN field_data_field_prod_end_date ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_end_date.entity_id
+LEFT JOIN field_data_field_prod_stock ON field_data_field_col_commerce.field_col_commerce_value = field_data_field_prod_stock.entity_id
+LEFT JOIN field_data_commerce_price ON commerce_product.product_id = field_data_commerce_price.entity_id
+WHERE taxonomy_term_hierarchy.parent = :tid
+  AND node.nid = :nid 
+  AND field_data_field_prod_end_date.field_prod_end_date_value >= :includetoday
+  AND commerce_product.status = 1
+ORDER BY field_data_field_prod_start_date.field_prod_start_date_value ASC, 
+  field_data_field_prod_end_date.field_prod_end_date_value ASC, 
+  node.title ASC ", array(':tid' => $parent_tid, ':nid' => $nid, ':includetoday' => $include_today))->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+//LEFT JOIN field_data_field_courses_course ON commerce_product.product_id = field_data_field_courses_course.field_courses_course_product_id
+//LEFT JOIN field_data_field_col_courses ON field_data_field_courses_course.entity_id = field_data_field_col_courses.field_col_courses_value
+
+function fdc_pse_ajax_add_to_cart() {
+	if (isset($_GET)) {
+		if ($_GET['product_id'] && $_GET['qty']) {
+			$pid = (int) $_GET['product_id'];
+			$quantity = (int) $_GET['qty'];
+			if ($product = commerce_product_load($pid)) {
+				global $user;
+				$uid = $user->uid;
+				if ($uid) {
+
+					$line_item = commerce_product_line_item_new($product, $quantity);
+					$line_item->field_ticket_type['und'][]['value'] = 0;
+					$line_item = commerce_cart_product_add($uid, $line_item, FALSE);
+
+					print_r($line_item);
+//					fdc_ecommerce_products_user_session($user);
+				}
+				else {
+					commerce_cart_product_add_by_id($pid);
+//					fdc_ecommerce_products_quote_output_guest();
+				}
+			}
+
+			fdc_pse_cart_modification_check_exisiting_cart();
+		}
+		else {
+			drupal_not_found();
+		}
+	}
+}
+
+function fdc_pse_currency_symbols($code) {
+	if (!empty($code)) {
+		if ($code == "JPY") {
+			return "&yen;";
+		}
+		if ($code == "GBP") {
+			return "&pound;";
+		}
+		if ($code == "USD") {
+			return "&dollar;";
+		}
+		if ($code == "EUR") {
+			return "&euro;";
+		}
+	}
+}
+
+function fdc_pse_get_price($val) {
+	$price = (float) $val;
+	$price = $price / 100;
+	return number_format($price, 0);
+}
+
+function fdc_pse_get_price_formatted($val, $currency) {
+	$price = (float) $val;
+	$price = $price / 100;
+	return commerce_currency_format($val, $currency);
+}
+
+function fdc_pse_get_dates() {
+	$number_of_months = 12;
+	$markup = "<select id='fdc_pse_search_form_date' name ='fdc_pse_search_form_date' class='form-control' >
+	<option value='any'> - Date - </option>";
+	for ($i = 0; $i < $number_of_months; $i++) {
+		$date = date("M Y", strtotime("+" . $i . " month"));
+		$str = strtotime("+" . $i . " month");
+		$markup .="<option value ='" . $str . "'>" . $date . "</option>";
+	}
+	$markup .="</select>";
+	return $markup;
+}
+
+function fdc_pse_date_format($timestamp, $type) {
+	if (!empty($type)) {
+		if ($type == "MdY") {
+			if (!empty($timestamp)) {
+//				$date_form = date('M d Y', $timestamp);
+				$date_m = "<span class='date_m'>" . date('M', $timestamp) . "</span>";
+				$date_d = "<span class='date_d'>" . date('d', $timestamp) . "</span>";
+				$date_y = "<span class='date_y'>" . date('Y', $timestamp) . "</span>";
+				$date_form = $date_m . $date_d . $date_y;
+
+				return $date_form;
+			}
+		}
+		if ($type == "dMY") {
+			if (!empty($timestamp)) {
+				$date_m = "<span class='date_m'>" . date('M', $timestamp) . "</span> ";
+				$date_d = "<span class='date_d'>" . date('d', $timestamp) . "</span> ";
+				$date_y = "<span class='date_y'>" . date('Y', $timestamp) . "</span> ";
+				$date_form = $date_d . $date_m . $date_y;
+				return $date_form;
+			}
+		}
+		else
+		if ($type == "tdmydecim") {
+			if (!empty($timestamp)) {
+				$date_form = date('g a d.m.Y', $timestamp);
+				return $date_form;
+			}
+		}
+		else
+		if ($type == "Md") {
+			if (!empty($timestamp)) {
+//                $date_form = date('M d', $timestamp);
+				$date_m = "<span class='date_m'>" . date('M', $timestamp) . "</span>";
+				$date_d = "<span class='date_d'>" . date('d', $timestamp) . "</span>";
+
+				$date_form = $date_m . $date_d;
+
+
+				return $date_form;
+			}
+		}
+		else {
+			return"???";
+		}
+	}
+}
+
+function fdc_pse_isAdmin() {
+
+	if (user_access('bypass node access')) {
+		return true;
+	}
+//	$role = $GLOBALS['user']->roles;
+//	if (array_key_exists(5, $role)) { // site maintainer
+//		return true;
+//	}
+//	else {
+//	}
+  return false;
+}
+
+function fdc_pse_has_marketing_material_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+
+	return user_access('marketting material access'); // used to be role 12
+}
+
+function fdc_pse_has_presentation_download_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+  
+  return user_access('presentation download'); // used to be role 28
+}
+
+function fdc_pse_has_presentation_video_view_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+  return user_access('presentation video viewer'); // used to be role 29
+}
+
+function fdc_pse_has_customer_area_page_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+  return user_access('customer area pages access'); // used to be role 32
+}
+
+function fdc_pse_has_customer_area_downloads_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+  return user_access('customer area downloads access'); // used to be role 34
+}
+
+function fdc_pse_has_customer_area_forms_access() {
+
+	if (fdc_pse_isAdmin()) {
+		return true;
+	}
+  return user_access('customer area forms access'); // used to be role 35
+}
+
+function fdc_pse_isLoggedIn() {
+	if (user_is_logged_in()) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function fdc_pse_get_top_menu() {
+	$query = db_query(
+			"SELECT
+				node.nid,
+				field_data_field_top_menu.field_top_menu_value as menu
+			FROM
+				node
+			INNER JOIN field_data_field_top_menu ON node.nid = field_data_field_top_menu.entity_id
+				")->fetchObject(); // Node type settings
+	if (!empty($query)) {
+		return $query->menu;
+	}
+}
+
+function fdc_pse_get_content_menu() {
+	$query = db_query(
+			" SELECT
+					field_data_field_content_menu.field_content_menu_value AS menu
+				FROM
+					node
+				INNER JOIN field_data_field_content_menu ON node.nid = field_data_field_content_menu.entity_id")->fetchObject();
+	if (!empty($query)) {
+		return $query->menu;
+	}
+}
+
+function fdc_pse_homepage_banner() {
+	$query = db_query("SELECT
+	field_data_field_homepage_banne_link.field_homepage_banne_link_value AS link_url,
+	file_managed.uri AS img_path,
+	field_data_field_homepage_banner_image.field_homepage_banner_image_alt AS img_alt,
+	field_data_field_homepage_banner_image.field_homepage_banner_image_title AS img_title
+FROM
+	node
+INNER JOIN field_data_field_col_homepage_banner ON node.nid = field_data_field_col_homepage_banner.entity_id
+LEFT JOIN field_data_field_homepage_banne_link ON field_data_field_col_homepage_banner.field_col_homepage_banner_value = field_data_field_homepage_banne_link.entity_id
+LEFT JOIN field_data_field_homepage_banner_image ON field_data_field_col_homepage_banner.field_col_homepage_banner_value = field_data_field_homepage_banner_image.entity_id
+LEFT JOIN file_managed ON field_data_field_homepage_banner_image.field_homepage_banner_image_fid = file_managed.fid
+ORDER BY field_data_field_col_homepage_banner.delta ASC")->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_banner($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_home_banner_bg_img.field_home_banner_bg_img_fid AS bg_img_fid,
+					field_data_field_home_banner_float_img.field_home_banner_float_img_fid AS fl_img_fid,
+					field_data_field_home_banner_float_img.field_home_banner_float_img_alt AS fl_img_alt,
+					field_data_field_home_banner_float_img.field_home_banner_float_img_title AS fl_img_title,
+					field_data_field_home_banner_h1.field_home_banner_h1_value AS h1_val,
+					field_data_field_home_banner_h2.field_home_banner_h2_value AS h2_val,
+					field_data_field_home_banner_h3.field_home_banner_h3_value AS h3_val,
+					field_data_field_home_banner_link.field_home_banner_link_value AS link_val,
+					field_data_field_home_banner_link_color.field_home_banner_link_color_value AS link_color,
+					field_data_field_home_banner_link_text.field_home_banner_link_text_value AS link_text,
+					field_data_field_home_banner_text_color.field_home_banner_text_color_value AS text_color,
+					field_data_field_home_banner_p_tag.field_home_banner_p_tag_value AS paragraph_text,
+					field_data_field_home_banner_sec_color.field_home_banner_sec_color_value AS secondary_link_color,
+					field_data_field_home_banner_sec_text.field_home_banner_sec_text_value AS secondary_link_text,
+					field_data_field_home_banner_sec_url.field_home_banner_sec_url_value AS secondary_link_url
+				FROM
+					node
+					INNER JOIN field_data_field_col_home_banner ON node.nid = field_data_field_col_home_banner.entity_id
+					LEFT JOIN field_data_field_home_banner_bg_img ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_bg_img.entity_id
+					LEFT JOIN field_data_field_home_banner_float_img ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_float_img.entity_id
+					LEFT JOIN field_data_field_home_banner_h1 ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_h1.entity_id
+					LEFT JOIN field_data_field_home_banner_h2 ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_h2.entity_id
+					LEFT JOIN field_data_field_home_banner_h3 ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_h3.entity_id
+					LEFT JOIN field_data_field_home_banner_link ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_link.entity_id
+					LEFT JOIN field_data_field_home_banner_link_color ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_link_color.entity_id
+					LEFT JOIN field_data_field_home_banner_link_text ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_link_text.entity_id
+					LEFT JOIN field_data_field_home_banner_text_color ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_text_color.entity_id
+					LEFT JOIN field_data_field_home_banner_p_tag ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_p_tag.entity_id
+					LEFT JOIN field_data_field_home_banner_sec_color ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_sec_color.entity_id
+					LEFT JOIN field_data_field_home_banner_sec_text ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_sec_text.entity_id
+					LEFT JOIN field_data_field_home_banner_sec_url ON field_data_field_col_home_banner.field_col_home_banner_value = field_data_field_home_banner_sec_url.entity_id
+				WHERE
+					node.nid = :nid
+					ORDER BY
+					field_data_field_col_home_banner.delta ASC"
+				, array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+
+			foreach ($query as &$q) {
+
+				$q->bg_images = fdc_pse_get_fid_image($q->bg_img_fid);
+				$q->float_images = fdc_pse_get_fid_image($q->fl_img_fid);
+			}
+			return $query;
+		}
+	}
+}
+
+/** page * */
+function fdc_pse_page_banner($nid) {
+	if (!empty($nid)) {
+		return fdc_pse_banner($nid);
+	}
+}
+
+function fdc_pse_get_fid_image($fid) {
+	if (!empty($fid)) {
+		$query = db_query(
+				"SELECT
+					file_managed.fid,
+					file_managed.uri as img_path
+				FROM
+					file_managed
+				WHERE file_managed.fid = :fid"
+				, array(":fid" => $fid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * 
+  Testimonials
+ */
+function fdc_pse_get_testimonial($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				" SELECT
+					node.nid,
+					node.`status`,
+					field_data_field_col_testimonial.field_col_testimonial_value,
+					field_data_field_testimonial_name.field_testimonial_name_value AS testimonial_name,
+					field_data_field_testimonial_image.field_testimonial_image_alt AS img_alt,
+					field_data_field_testimonial_image.field_testimonial_image_title AS img_title,
+					field_data_field_testimonial_body.field_testimonial_body_value AS testimonial_body,
+					file_managed.uri as img_path
+				FROM
+					node
+				INNER JOIN field_data_field_col_testimonial ON node.nid = field_data_field_col_testimonial.entity_id
+				LEFT JOIN field_data_field_testimonial_name ON field_data_field_col_testimonial.field_col_testimonial_value = field_data_field_testimonial_name.entity_id
+				LEFT JOIN field_data_field_testimonial_image ON field_data_field_col_testimonial.field_col_testimonial_value = field_data_field_testimonial_image.entity_id
+				LEFT JOIN field_data_field_testimonial_body ON field_data_field_col_testimonial.field_col_testimonial_value = field_data_field_testimonial_body.entity_id
+				LEFT JOIN file_managed ON field_data_field_testimonial_image.field_testimonial_image_fid = file_managed.fid
+				WHERE
+					node.nid = :nid
+					and node.status = 1", array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_node_testimonial($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				" SELECT
+					node.nid,
+					node.`status`,
+					field_data_field_sidetestimonial.field_sidetestimonial_target_id AS target_nid
+				FROM
+					node
+				INNER JOIN field_data_field_col_sidetestimonial ON node.nid = field_data_field_col_sidetestimonial.entity_id
+				LEFT JOIN field_data_field_sidetestimonial ON field_data_field_col_sidetestimonial.field_col_sidetestimonial_value = field_data_field_sidetestimonial.entity_id
+				WHERE
+					node.nid = :nid
+				ORDER BY
+					field_data_field_col_sidetestimonial.delta ASC
+"
+				, array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->testimonial = fdc_pse_get_testimonial($value->target_nid);
+			}
+			return $query;
+		}
+	}
+}
+
+/**
+ * 
+  Call to action
+ */
+function fdc_pse_get_cta($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					node.nid,
+					field_data_field_calltoaction_body.field_calltoaction_body_value AS body,
+					field_data_field_calltoaction_button.field_calltoaction_button_value AS btn_val,
+					field_data_field_calltoaction_link.field_calltoaction_link_value AS btn_link,
+					field_data_field_calltoaction_title.field_calltoaction_title_value AS title,
+					field_data_field_calltoaction_bg_ref.field_calltoaction_bg_ref_target_id AS target_id,
+					field_data_field_calltoaction_body_color.field_calltoaction_body_color_value AS body_color,
+					field_data_field_calltoaction_title_color.field_calltoaction_title_color_value AS title_color,
+					field_data_field_calltoaction_link_color.field_calltoaction_link_color_value AS btn_link_color,
+					field_data_field_calltoaction_image.field_calltoaction_image_fid as img_fid
+				FROM
+					node
+				INNER JOIN field_data_field_col_calltoaction ON node.nid = field_data_field_col_calltoaction.entity_id
+				LEFT JOIN field_data_field_calltoaction_body ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_body.entity_id
+				LEFT JOIN field_data_field_calltoaction_button ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_button.entity_id
+				LEFT JOIN field_data_field_calltoaction_link ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_link.entity_id
+				LEFT JOIN field_data_field_calltoaction_title ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_title.entity_id
+				LEFT JOIN field_data_field_calltoaction_title_color ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_title_color.entity_id
+				LEFT JOIN field_data_field_calltoaction_body_color ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_body_color.entity_id
+				LEFT JOIN field_data_field_calltoaction_link_color ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_link_color.entity_id
+				LEFT JOIN field_data_field_calltoaction_image ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_image.entity_id
+				left JOIN field_data_field_calltoaction_bg_ref ON field_data_field_col_calltoaction.field_col_calltoaction_value = field_data_field_calltoaction_bg_ref.entity_id
+				WHERE
+					node.`status` = 1
+					and node.nid = :nid
+				ORDER BY
+					field_data_field_col_calltoaction.delta ASC"
+				, array(":nid" => $nid))->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->img = fdc_pse_get_cta_background($value->target_id);
+				$value->sec_img = fdc_pse_get_fid_image($value->img_fid);
+			}
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_row4($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					node.nid,
+					field_data_field_caltoactionfour_title.field_caltoactionfour_title_value AS title,
+					field_data_field_caltoactionfour_body.field_caltoactionfour_body_value AS body,
+					field_data_field_caltoactionfour_button.field_caltoactionfour_button_value AS btn_val,
+					field_data_field_caltoactionfour_link.field_caltoactionfour_link_value AS btn_link,
+					field_data_field_caltoactionfour_bg_ref.field_caltoactionfour_bg_ref_target_id AS target_id,
+					field_data_field_caltoactionfour_t_color.field_caltoactionfour_t_color_value AS title_color,
+					field_data_field_caltoactionfour_b_color.field_caltoactionfour_b_color_value AS body_color,
+					field_data_field_caltoactionfour_link_color.field_caltoactionfour_link_color_value AS btn_link_color,
+					field_data_field_calltoactionfour_image.field_calltoactionfour_image_fid AS img_fid
+				FROM
+					node
+				INNER JOIN field_data_field_col_caltoactionfour ON node.nid = field_data_field_col_caltoactionfour.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_body ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_body.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_button ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_button.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_link ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_link.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_title ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_title.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_t_color ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_t_color.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_b_color ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_b_color.entity_id
+				LEFT JOIN field_data_field_caltoactionfour_link_color ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_link_color.entity_id
+				LEFT JOIN field_data_field_calltoactionfour_image ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_calltoactionfour_image.entity_id
+				INNER JOIN field_data_field_caltoactionfour_bg_ref ON field_data_field_col_caltoactionfour.field_col_caltoactionfour_value = field_data_field_caltoactionfour_bg_ref.entity_id
+				WHERE
+					node.`status` = 1
+					and node.nid = :nid
+				ORDER BY
+					field_data_field_col_caltoactionfour.delta ASC"
+				, array(":nid" => $nid))->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->img = fdc_pse_get_cta_background($value->target_id);
+				$value->sec_img = fdc_pse_get_fid_image($value->img_fid);
+			}
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_cta_background($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_background_image.field_background_image_alt AS img_alt,
+field_data_field_background_image.field_background_image_title AS img_title,
+file_managed.uri AS img_path
+FROM
+node
+INNER JOIN field_data_field_background_image ON node.nid = field_data_field_background_image.entity_id
+LEFT JOIN file_managed ON field_data_field_background_image.field_background_image_fid = file_managed.fid
+where node.nid = :nid"
+				, array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_product_side_menu($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_hide_side_menu.field_hide_side_menu_value as bool
+FROM
+node
+INNER JOIN field_data_field_hide_side_menu ON node.nid = field_data_field_hide_side_menu.entity_id
+WHERE
+node.nid = :nid"
+				, array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query->bool;
+		}
+	}
+}
+
+function fdc_pse_hide_siblings_menu($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+	field_data_field_hide_siblings_menu.field_hide_siblings_menu_value as bool,
+	node.nid
+FROM
+	node
+INNER JOIN field_data_field_hide_siblings_menu ON node.nid = field_data_field_hide_siblings_menu.entity_id
+WHERE
+node.nid = :nid"
+				, array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query->bool;
+		}
+	}
+}
+
+/**
+ * 
+  Sectors
+ */
+function fdc_pse_get_sectors_reference($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+node.nid,
+field_data_field_reference_sector.field_reference_sector_target_id AS target_nid
+FROM
+node
+INNER JOIN field_data_field_call_sectors ON node.nid = field_data_field_call_sectors.entity_id
+LEFT JOIN field_data_field_reference_sector ON field_data_field_call_sectors.field_call_sectors_value = field_data_field_reference_sector.entity_id
+WHERE
+node.nid = :nid
+order by field_data_field_call_sectors.delta asc
+"
+				, array(":nid" => $nid))->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value = fdc_pse_get_sector_summary($value->target_nid);
+			}
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_sector_summary($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+node.title,
+node.nid,
+field_data_field_sector_icon.field_sector_icon_alt as img_alt,
+field_data_field_sector_icon.field_sector_icon_title as img_title,
+file_managed.uri as img_path
+FROM
+node
+INNER JOIN field_data_field_sector_icon ON node.nid = field_data_field_sector_icon.entity_id
+LEFT JOIN file_managed ON field_data_field_sector_icon.field_sector_icon_fid = file_managed.fid
+Where node.nid = :nid
+"
+				, array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_sector($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+node.title,
+node.nid,
+field_data_field_sector_icon.field_sector_icon_alt as img_alt,
+field_data_field_sector_icon.field_sector_icon_title as img_title,
+file_managed.uri as img_path
+FROM
+node
+INNER JOIN field_data_field_sector_icon ON node.nid = field_data_field_sector_icon.entity_id
+LEFT JOIN file_managed ON field_data_field_sector_icon.field_sector_icon_fid = file_managed.fid
+Where node.nid = :nid
+"
+				, array(":nid" => $nid))->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/** directors * */
+function fdc_pse_get_all_directors() {
+	$query = db_query(
+			"SELECT
+field_data_field_col_directors.field_col_directors_value,
+field_data_field_directors_image.field_directors_image_alt AS img_alt,
+field_data_field_directors_image.field_directors_image_title AS img_title,
+file_managed.uri AS img_path,
+field_data_field_directors_content.field_directors_content_value AS dire_content,
+field_data_field_directors_name.field_directors_name_value AS dir_name,
+field_data_field_directors_position.field_directors_position_value AS dir_position
+FROM
+node
+INNER JOIN field_data_field_col_directors ON node.nid = field_data_field_col_directors.entity_id
+LEFT JOIN field_data_field_directors_content ON field_data_field_col_directors.field_col_directors_value = field_data_field_directors_content.entity_id
+LEFT JOIN field_data_field_directors_image ON field_data_field_col_directors.field_col_directors_value = field_data_field_directors_image.entity_id
+LEFT JOIN field_data_field_directors_name ON field_data_field_col_directors.field_col_directors_value = field_data_field_directors_name.entity_id
+LEFT JOIN field_data_field_directors_position ON field_data_field_col_directors.field_col_directors_value = field_data_field_directors_position.entity_id
+LEFT JOIN file_managed ON field_data_field_directors_image.field_directors_image_fid = file_managed.fid
+ORDER BY
+field_data_field_col_directors.delta ASC
+")->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+/**
+ * right MENU
+ */
+function fdc_pse_right_menu_title($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_menu_heading.field_menu_heading_value AS heading
+FROM
+node
+INNER JOIN field_data_field_menu_heading ON node.nid = field_data_field_menu_heading.entity_id
+WHERE
+node.nid = :nid", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_right_menu($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+node.nid,
+field_data_field_menu_name.field_menu_name_value as menu_name,
+field_data_field_menu_ref.field_menu_ref_target_id as target_nid,
+field_data_field_menu_link.field_menu_link_value as url,
+file_managed.uri as file_path
+FROM
+node
+INNER JOIN field_data_field_col_menu ON node.nid = field_data_field_col_menu.entity_id
+LEFT JOIN field_data_field_menu_name ON field_data_field_col_menu.field_col_menu_value = field_data_field_menu_name.entity_id
+LEFT JOIN field_data_field_menu_ref ON field_data_field_col_menu.field_col_menu_value = field_data_field_menu_ref.entity_id
+LEFT JOIN field_data_field_menu_pdf ON field_data_field_col_menu.field_col_menu_value = field_data_field_menu_pdf.entity_id
+LEFT JOIN field_data_field_menu_link ON field_data_field_col_menu.field_col_menu_value = field_data_field_menu_link.entity_id
+LEFT JOIN file_managed ON field_data_field_menu_pdf.field_menu_pdf_fid = file_managed.fid
+WHERE
+node.nid = :nid", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_right_publication_menu($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_col_sideblock.field_col_sideblock_value,
+					node.nid,
+					field_data_field_side_lock.field_side_lock_value AS lock_bool,
+					field_data_field_sideblock_publication.field_sideblock_publication_target_id AS target_nid,
+					field_data_field_publication_content.field_publication_content_value as content
+				FROM
+					node
+				INNER JOIN field_data_field_col_sideblock ON node.nid = field_data_field_col_sideblock.entity_id
+				LEFT JOIN field_data_field_side_lock ON field_data_field_col_sideblock.field_col_sideblock_value = field_data_field_side_lock.entity_id
+				LEFT JOIN field_data_field_publication_content ON field_data_field_col_sideblock.field_col_sideblock_value = field_data_field_publication_content.entity_id
+				LEFT JOIN field_data_field_sideblock_publication ON field_data_field_col_sideblock.field_col_sideblock_value = field_data_field_sideblock_publication.entity_id
+					WHERE
+					node.nid = :nid
+					AND node.`status` = 1
+				ORDER BY
+					field_data_field_col_sideblock.delta ASC", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->pub = fdc_pse_publication_item($value->target_nid);
+			}
+
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_publication_item($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"
+				SELECT
+					node.nid,
+					field_data_field_publication_image.field_publication_image_alt AS img_alt,
+					field_data_field_publication_image.field_publication_image_title AS img_title,
+					file_managed.uri AS img_path,
+					field_data_field_publication_file.field_publication_file_fid AS file_id
+				FROM
+					node
+				INNER JOIN field_data_field_publication_file ON node.nid = field_data_field_publication_file.entity_id
+				LEFT JOIN field_data_field_publication_image ON node.nid = field_data_field_publication_image.entity_id
+				LEFT JOIN file_managed ON field_data_field_publication_image.field_publication_image_fid = file_managed.fid
+				where node.nid = :nid", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_publication_file($fid) {
+	if (!empty($fid)) {
+		$query = db_query(
+				"SELECT
+				file_managed.uri as file_path
+				FROM
+				file_managed
+				where file_managed.fid =:fid
+				", array(":fid" => $fid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->file_path;
+		}
+	}
+}
+
+function fdc_pse_right_block_menu($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_col_menu_blocks.field_col_menu_blocks_value,
+					field_data_field_menu_block.field_menu_block_target_id as target_id
+				FROM
+					node
+				INNER JOIN field_data_field_col_menu_blocks ON node.nid = field_data_field_col_menu_blocks.entity_id
+				LEFT JOIN field_data_field_menu_block ON field_data_field_col_menu_blocks.field_col_menu_blocks_value = field_data_field_menu_block.entity_id
+				where node.nid = :nid", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_publication_bool($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_publication_to_bottom.field_publication_to_bottom_value as  pub_bool
+				FROM
+					node
+				INNER JOIN field_data_field_publication_to_bottom ON node.nid = field_data_field_publication_to_bottom.entity_id
+				where node.nid = :nid", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->pub_bool;
+		}
+	}
+}
+
+/**
+ * Contact us 
+ */
+function fdc_pse_right_contact_us($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_side_office_email.field_side_office_email_value AS email,
+field_data_field_side_office_email_btn.field_side_office_email_btn_value AS btn_val,
+field_data_field_side_office_email_subj.field_side_office_email_subj_value AS email_sub,
+field_data_field_side_office_fax.field_side_office_fax_value AS fax,
+field_data_field_side_office_name.field_side_office_name_value AS office_name,
+field_data_field_side_office_tel.field_side_office_tel_value AS tel
+FROM
+node
+INNER JOIN field_data_field_col_side_office ON node.nid = field_data_field_col_side_office.entity_id
+LEFT JOIN field_data_field_side_office_email ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_email.entity_id
+LEFT JOIN field_data_field_side_office_email_btn ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_email_btn.entity_id
+LEFT JOIN field_data_field_side_office_email_subj ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_email_subj.entity_id
+LEFT JOIN field_data_field_side_office_fax ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_fax.entity_id
+LEFT JOIN field_data_field_side_office_name ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_name.entity_id
+LEFT JOIN field_data_field_side_office_tel ON field_data_field_col_side_office.field_col_side_office_value = field_data_field_side_office_tel.entity_id
+WHERE
+node.nid = :nid
+Order By
+field_data_field_col_side_office.delta ASC		
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * Webiners, conference
+ */
+function fdc_pse_events_get_all_group_dates() {
+	$query = db_query(
+			"SELECT
+				CURDATE(),
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m-%d'
+				) AS f_start_date,
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%M %Y'
+				) AS f_g_start_date,
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m'
+				) AS group_start_date,
+				field_data_field_event_start_date.field_event_start_date_value AS start_date,
+				node.nid
+			FROM
+				node
+			INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+			LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+			WHERE
+				FROM_UNIXTIME(
+					field_data_field_event_end_date.field_event_end_date_value,
+					'%Y-%m-%d'
+				) > CURDATE()
+			GROUP BY
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m'
+				)
+			ORDER BY
+				field_data_field_event_start_date.field_event_start_date_value ASC"
+			)->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_events_get_term_group_dates($cat_tid) {
+	if (!empty($cat_tid)) {
+		$query = db_query(
+				"SELECT
+				CURDATE(),
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m-%d'
+				) AS f_start_date,
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%M %Y'
+				) AS f_g_start_date,
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m'
+				) AS group_start_date,
+				field_data_field_event_start_date.field_event_start_date_value AS start_date,
+				node.nid,
+				field_data_field_event_cat.field_event_cat_tid as tid,
+				taxonomy_term_data.`name`
+			FROM
+				node
+			INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+			LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+			LEFT JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+			LEFT JOIN taxonomy_term_data ON field_data_field_event_cat.field_event_cat_tid = taxonomy_term_data.tid
+			WHERE
+				FROM_UNIXTIME(
+					field_data_field_event_end_date.field_event_end_date_value,
+					'%Y-%m-%d'
+				) > CURDATE()
+			AND 
+			field_data_field_event_cat.field_event_cat_tid = :tid
+			GROUP BY
+				FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m'
+				)
+			ORDER BY
+				field_data_field_event_start_date.field_event_start_date_value ASC"
+				, array(":tid" => $cat_tid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_events_list($tid = null) {
+	$std = new stdClass();
+
+	if (!empty($tid)) {
+		$event_dates = fdc_pse_events_get_term_group_dates($tid);
+
+		$node_ref_id = fdc_pse_content_by_event_cat($tid);
+
+		$node = new stdClass();
+		$node->nid = $node_ref_id;
+
+		if (!empty($event_dates)) {
+			foreach ($event_dates as $key => $gdates) {
+				$std->training->$key->date = $gdates->f_g_start_date;
+
+				$std->training->$key->events = fdc_pse_training_get_all_events_by_date($gdates->group_start_date);
+			}
+
+			return theme('fdc_pse_events_tpl', array('results' => $std, "tid" => $tid, "node" => $node));
+		}
+		else {
+			return theme('fdc_pse_events_tpl', array('no-results' => true, "node" => $node));
+		}
+	}
+	else {
+		$event_dates = fdc_pse_events_get_all_group_dates();
+		$node = new stdClass();
+		$node->nid = 484;
+		if (!empty($event_dates)) {
+			foreach ($event_dates as $key => $gdates) {
+        if (empty($std->training)) {
+          $std->training = new stdClass();
+        }
+        if (empty($std->training->$key)) {
+          $std->training->$key = new stdClass();
+        }
+				$std->training->$key->date = $gdates->f_g_start_date;
+
+				$std->training->$key->events = fdc_pse_training_get_all_events_by_date($gdates->group_start_date);
+			}
+
+			return theme('fdc_pse_events_tpl', array('results' => $std, "node" => $node));
+		}
+	}
+}
+
+function fdc_pse_content_by_event_cat($tid) {
+	if (!empty($tid)) {
+		$query = db_query(
+				"
+				SELECT
+					node.nid,
+					field_data_field_event_cat.field_event_cat_tid,
+					node.type
+				FROM
+					node
+				INNER JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+				WHERE
+					node.type = 'events_page'
+				AND field_data_field_event_cat.field_event_cat_tid = :tid	
+
+", array(":tid" => $tid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->nid;
+		}
+	}
+}
+
+function fdc_pse_event_content_url($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"
+				SELECT
+					node.nid,
+					field_data_field_event_cat.field_event_cat_tid,
+					node.type,
+					taxonomy_term_data.`name`
+				FROM
+					node
+				INNER JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+				LEFT JOIN taxonomy_term_data ON field_data_field_event_cat.field_event_cat_tid = taxonomy_term_data.tid
+				WHERE
+					node.type = 'events_page'
+				AND node.nid = :nid
+				", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+
+			$name = $query->name;
+
+			$url = 'events/' . fdc_pse_urlSanitizer($name);
+
+
+			drupal_goto($url);
+//			return $query->nid;
+		}
+		else {
+			drupal_goto('events');
+		}
+	}
+}
+
+function fdc_pse_event_tbc($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+						field_data_field_bool_tbc.field_bool_tbc_value AS tbc_bool
+					FROM
+						node
+					INNER JOIN field_data_field_bool_tbc ON node.nid = field_data_field_bool_tbc.entity_id
+							Where node.nid = :nid
+			", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->tbc_bool;
+		}
+	}
+}
+
+function fdc_pse_event_link($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+								field_data_field_event_no_link.field_event_no_link_value as link_bool
+							FROM
+								node
+							INNER JOIN field_data_field_event_no_link ON node.nid = field_data_field_event_no_link.entity_id
+							Where node.nid = :nid
+			", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->link_bool;
+		}
+	}
+}
+
+function fdc_pse_training_get_all_events_by_date($date) {
+	if (!empty($date)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_event_start_date.field_event_start_date_value AS start_date,
+					field_data_field_event_end_date.field_event_end_date_value AS end_date,
+					field_data_field_event_location.field_event_location_value AS location,
+					field_data_field_pse_involvement.field_pse_involvement_tid AS involve_tid,
+					field_data_field_event_icon.field_event_icon_alt AS img_alt,
+					field_data_field_event_icon.field_event_icon_title AS img_title,
+					field_data_field_events_type.field_events_type_tid AS event_type_tid,
+					field_data_field_event_external.field_event_external_value AS external_link,
+					field_data_field_event_page_ref.field_event_page_ref_target_id AS page_ref,
+					field_data_field_col_content.field_col_content_value AS page,
+					node.nid,
+					node.title,
+					file_managed.uri
+				FROM
+					node
+					INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+					LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+					LEFT JOIN field_data_field_event_location ON node.nid = field_data_field_event_location.entity_id
+					LEFT JOIN field_data_field_pse_involvement ON node.nid = field_data_field_pse_involvement.entity_id
+					LEFT JOIN field_data_field_event_icon ON node.nid = field_data_field_event_icon.entity_id
+					LEFT JOIN field_data_field_events_type ON node.nid = field_data_field_events_type.entity_id
+					LEFT JOIN field_data_field_event_external ON node.nid = field_data_field_event_external.entity_id
+					LEFT JOIN field_data_field_event_page_ref ON node.nid = field_data_field_event_page_ref.entity_id
+					LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+					LEFT JOIN file_managed ON field_data_field_event_icon.field_event_icon_fid = file_managed.fid
+				WHERE
+					FROM_UNIXTIME(
+					field_data_field_event_end_date.field_event_end_date_value,
+					'%Y-%m-%d'
+					) > CURDATE()
+					AND FROM_UNIXTIME(
+					field_data_field_event_start_date.field_event_start_date_value,
+					'%Y-%m'
+					)  = :date_group
+					ORDER BY
+					field_data_field_event_start_date.field_event_start_date_value ASC
+			", array(":date_group" => $date)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/* * *********** SUUUUUUUURRRRRFFFFFFFF SEE BELOW AND TALK TO ME -- ALEX * */
+
+function fdc_pse_training_get_training_heading() {
+
+	$query = db_query(
+			"SELECT
+			 field_data_field_content_heading.field_content_heading_value AS event_heading
+			node.nid,
+			node.title,
+			file_managed.uri
+			FROM
+			node
+			INNER JOIN field_data_field_content_heading ON field_data_field_col_content.field_col_content_value = field_data_field_content_heading.entity_id
+			"
+			)->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_get_event_by_nid($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+	CURRENT_DATE (),
+	FROM_UNIXTIME(
+		field_data_field_event_start_date.field_event_start_date_value,
+		'%Y-%m-%d'
+	),
+	field_data_field_event_start_date.field_event_start_date_value AS start_date,
+	field_data_field_event_end_date.field_event_end_date_value AS end_date,
+	field_data_field_event_location.field_event_location_value AS location,
+	field_data_field_pse_involvement.field_pse_involvement_tid AS involve_tid,
+	field_data_field_event_icon.field_event_icon_alt AS img_alt,
+	field_data_field_event_icon.field_event_icon_title AS img_title,
+	field_data_field_events_type.field_events_type_tid AS event_type_tid,
+	field_data_field_event_cat.field_event_cat_tid AS category_tid,
+	field_data_field_event_external.field_event_external_value AS external_link,
+	field_data_field_event_page_ref.field_event_page_ref_target_id AS page_ref,
+	field_data_field_col_content.field_col_content_value AS page,
+	node.nid,
+	node.title
+FROM
+	node
+INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+LEFT JOIN field_data_field_event_location ON node.nid = field_data_field_event_location.entity_id
+LEFT JOIN field_data_field_pse_involvement ON node.nid = field_data_field_pse_involvement.entity_id
+LEFT JOIN field_data_field_event_icon ON node.nid = field_data_field_event_icon.entity_id
+LEFT JOIN field_data_field_events_type ON node.nid = field_data_field_events_type.entity_id
+LEFT JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+LEFT JOIN field_data_field_event_external ON node.nid = field_data_field_event_external.entity_id
+LEFT JOIN field_data_field_event_page_ref ON node.nid = field_data_field_event_page_ref.entity_id
+LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+WHERE
+	 node.nid = :nid
+ORDER BY
+	field_data_field_event_start_date.field_event_start_date_value ASC
+
+", array(":nid" => $nid))->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_get_events() {
+	$query = db_query(
+			"SELECT
+	CURRENT_DATE (),
+	FROM_UNIXTIME(
+		field_data_field_event_start_date.field_event_start_date_value,
+		'%Y-%m-%d'
+	),
+	field_data_field_event_start_date.field_event_start_date_value AS start_date,
+	field_data_field_event_end_date.field_event_end_date_value AS end_date,
+	field_data_field_event_location.field_event_location_value AS location,
+	field_data_field_pse_involvement.field_pse_involvement_tid AS involve_tid,
+	field_data_field_event_icon.field_event_icon_alt AS img_alt,
+	field_data_field_event_icon.field_event_icon_title AS img_title,
+	field_data_field_events_type.field_events_type_tid AS event_type_tid,
+	field_data_field_event_cat.field_event_cat_tid AS category_tid,
+	field_data_field_event_external.field_event_external_value AS external_link,
+	field_data_field_event_page_ref.field_event_page_ref_target_id AS page_ref,
+	field_data_field_col_content.field_col_content_value AS page,
+	node.nid,
+	node.title
+FROM
+	node
+INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+LEFT JOIN field_data_field_event_location ON node.nid = field_data_field_event_location.entity_id
+LEFT JOIN field_data_field_pse_involvement ON node.nid = field_data_field_pse_involvement.entity_id
+LEFT JOIN field_data_field_event_icon ON node.nid = field_data_field_event_icon.entity_id
+LEFT JOIN field_data_field_events_type ON node.nid = field_data_field_events_type.entity_id
+LEFT JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+LEFT JOIN field_data_field_event_external ON node.nid = field_data_field_event_external.entity_id
+LEFT JOIN field_data_field_event_page_ref ON node.nid = field_data_field_event_page_ref.entity_id
+LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+WHERE
+	FROM_UNIXTIME(
+		field_data_field_event_start_date.field_event_start_date_value,
+		'%Y-%m-%d'
+	) > CURDATE()
+ORDER BY
+	field_data_field_event_start_date.field_event_start_date_value ASC
+LIMIT 3
+")->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_events($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_event_start_date.field_event_start_date_value AS start_date,
+					field_data_field_event_end_date.field_event_end_date_value AS end_date,
+					field_data_field_event_location.field_event_location_value AS location,
+					field_data_field_pse_involvement.field_pse_involvement_tid AS involve_tid,
+					field_data_field_event_icon.field_event_icon_alt AS img_alt,
+					field_data_field_event_icon.field_event_icon_title AS img_title,
+					field_data_field_events_type.field_events_type_tid AS event_type_tid,
+					field_data_field_event_cat.field_event_cat_tid AS category_tid,
+					field_data_field_event_external.field_event_external_value AS external_link,
+					field_data_field_event_page_ref.field_event_page_ref_target_id AS page_ref,
+					field_data_field_col_content.field_col_content_value AS page,
+					node.nid,
+					file_managed.uri
+				FROM
+					node
+					INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+					LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+					LEFT JOIN field_data_field_event_location ON node.nid = field_data_field_event_location.entity_id
+					LEFT JOIN field_data_field_pse_involvement ON node.nid = field_data_field_pse_involvement.entity_id
+					LEFT JOIN field_data_field_event_icon ON node.nid = field_data_field_event_icon.entity_id
+					LEFT JOIN field_data_field_events_type ON node.nid = field_data_field_events_type.entity_id
+					LEFT JOIN field_data_field_event_cat ON node.nid = field_data_field_event_cat.entity_id
+					LEFT JOIN field_data_field_event_external ON node.nid = field_data_field_event_external.entity_id
+					LEFT JOIN field_data_field_event_page_ref ON node.nid = field_data_field_event_page_ref.entity_id
+					LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+					LEFT JOIN file_managed ON field_data_field_event_icon.field_event_icon_fid = file_managed.fid
+				where node.nid = :nid;
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_has_form($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_bool_has_form.field_bool_has_form_value as  has_form
+				FROM
+					node
+				INNER JOIN field_data_field_bool_has_form ON node.nid = field_data_field_bool_has_form.entity_id
+				where node.nid = :nid					
+			", array(":nid" => $nid))->fetchObject();
+
+		if (!empty($query)) {
+			return $query->has_form;
+		}
+	}
+}
+
+//node contents
+function fdc_pse_node_content($nid) {
+	if (!empty($nid)) {
+    $type = db_query('SELECT type FROM node WHERE nid = :nid', array(':nid' => $nid))->fetchField();
+    switch ($type) {
+      case 'customer_area_download': 
+        $sql = "SELECT field_data_field_content_heading.field_content_heading_value as heading,
+          field_data_field_content_body.field_content_body_value as body
+				FROM node
+        LEFT JOIN field_data_field_content_heading ON node.nid = field_data_field_content_heading.entity_id
+        LEFT JOIN field_data_field_content_body ON node.nid = field_data_field_content_body.entity_id
+				WHERE node.nid = :nid ";
+        break;
+      default: 
+        $sql = "SELECT field_data_field_content_heading.field_content_heading_value as heading,
+          field_data_field_content_body.field_content_body_value as body
+				FROM field_data_field_col_content
+          LEFT JOIN field_data_field_content_heading ON field_data_field_col_content.field_col_content_value = field_data_field_content_heading.entity_id
+          LEFT JOIN field_data_field_content_body ON field_data_field_col_content.field_col_content_value = field_data_field_content_body.entity_id
+          LEFT JOIN node ON node.nid = field_data_field_col_content.entity_id
+				WHERE node.nid = :nid ";
+        break;
+    }
+		$query = db_query($sql, array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_node_side_content($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_side_content.field_side_content_value AS content,
+					node.nid
+				FROM
+					node
+					INNER JOIN field_data_field_side_content ON node.nid = field_data_field_side_content.entity_id
+				Where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->content;
+		}
+	}
+}
+
+function fdc_pse_node_bottom_content($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_bottom_content.field_bottom_content_value as body,
+					node.nid
+				FROM
+					node
+					INNER JOIN field_data_field_bottom_content ON node.nid = field_data_field_bottom_content.entity_id
+				WHERE
+					node.nid = :nid 
+				AND
+					node.`status` = 1;
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * Location 
+ */
+function fdc_pse_location_information($nid) {
+
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_loc_hotel_name.field_loc_hotel_name_target_id as target_id
+FROM
+node
+INNER JOIN field_data_field_co_loc_hotels ON node.nid = field_data_field_co_loc_hotels.entity_id
+LEFT JOIN field_data_field_loc_hotel_name ON field_data_field_co_loc_hotels.field_co_loc_hotels_value = field_data_field_loc_hotel_name.entity_id
+where node.nid = :nid;
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->hotel = fdc_pse_hotel_tid($value->target_id);
+				$value->hotel_images = "";
+				$value->hotel_top_content = fdc_pse_hotel_above_content($value->target_id);
+//				$value->hotel_images = fdc_pse_hotel_images($value->target_id);
+			}
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_hotel_above_content($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+			field_data_field_hotel_above_content.field_hotel_above_content_value
+		FROM
+			node
+		INNER JOIN field_data_field_hotel_above_content ON node.nid = field_data_field_hotel_above_content.entity_id
+		Where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->field_hotel_above_content_value;
+		}
+	}
+}
+
+function fdc_pse_hotel_tid($nid) {
+
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					node.nid,
+					field_data_field_hotel_information.field_hotel_information_value,
+					field_data_field_hotel_name.field_hotel_name_value as hotel_name,
+					field_data_field_hotel_address.field_hotel_address_value as hotel_address,
+					field_data_field_location.field_location_tid as location_tid,
+					field_data_field_hotel_booking_url.field_hotel_booking_url_value as booking_url,
+					field_data_field_hotel_body.field_hotel_body_value as body,
+					field_data_field_loc_hotel_name.field_loc_hotel_name_target_id
+				FROM
+					node
+					INNER JOIN field_data_field_co_loc_hotels ON node.nid = field_data_field_co_loc_hotels.entity_id
+					LEFT JOIN field_data_field_loc_hotel_name ON field_data_field_co_loc_hotels.field_co_loc_hotels_value = field_data_field_loc_hotel_name.entity_id
+					LEFT JOIN field_data_field_hotel_information ON field_data_field_loc_hotel_name.field_loc_hotel_name_target_id = field_data_field_hotel_information.entity_id
+					LEFT JOIN field_data_field_hotel_name ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_name.entity_id
+					LEFT JOIN field_data_field_hotel_address ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_address.entity_id
+					LEFT JOIN field_data_field_location ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_location.entity_id
+					LEFT JOIN field_data_field_hotel_booking_url ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_booking_url.entity_id
+					LEFT JOIN field_data_field_hotel_body ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_body.entity_id
+				WHERE
+					field_data_field_loc_hotel_name.field_loc_hotel_name_target_id = :nid
+
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_hotel_images($nid) {
+
+	return false;
+}
+
+function fdc_pse_hotel_info($col_val) {
+
+	if (!empty($col_val)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_hotel_name.field_hotel_name_value,
+					field_data_field_hotel_address.field_hotel_address_value,
+					field_data_field_location.field_location_tid,
+					field_data_field_hotel_booking_url.field_hotel_booking_url_value,
+					field_data_field_hotel_body.field_hotel_body_value,
+					field_data_field_hotel_information.field_hotel_information_value
+				FROM
+					field_data_field_hotel_information
+					INNER JOIN field_data_field_hotel_name ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_name.entity_id
+					LEFT JOIN field_data_field_location ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_location.entity_id
+					LEFT JOIN field_data_field_hotel_booking_url ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_booking_url.entity_id
+					LEFT JOIN field_data_field_hotel_body ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_body.entity_id
+					LEFT JOIN field_data_field_hotel_address ON field_data_field_hotel_information.field_hotel_information_value = field_data_field_hotel_address.entity_id
+				WHERE
+					field_data_field_hotel_information.field_hotel_information_value = :col_val
+", array(":col_val" => $col_val)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_collection_images($col_val) {
+	if (!empty($col_val)) {
+		$query = db_query(
+				"SELECT
+field_data_field_col_image.field_col_image_alt AS img_alt,
+field_data_field_col_image.field_col_image_title AS img_title,
+file_managed.uri AS img_path
+FROM
+field_data_field_col_images
+INNER JOIN field_data_field_col_image ON field_data_field_col_images.field_col_images_value = field_data_field_col_image.entity_id
+LEFT JOIN file_managed ON field_data_field_col_image.field_col_image_fid = file_managed.fid
+WHERE field_data_field_col_images.field_col_images_value = :col_id
+", array(":col_id" => $col_val)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_sector_list($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_col_sectors.field_col_sectors_value,
+field_data_field_sector.field_sector_target_id as target_nid
+FROM
+node
+INNER JOIN field_data_field_col_sectors ON node.nid = field_data_field_col_sectors.entity_id
+LEFT JOIN field_data_field_sector ON field_data_field_col_sectors.field_col_sectors_value = field_data_field_sector.entity_id
+where node.nid = :nid
+ORDER BY
+field_data_field_col_sectors.delta ASC
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			foreach ($query as &$value) {
+				$value->list = fdc_pse_sector_summary($value->target_nid);
+			}
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_sector_summary($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+node.nid,
+node.title,
+field_data_field_sector_summary.field_sector_summary_value AS summary,
+field_data_field_sector_icon.field_sector_icon_alt AS img_alt,
+field_data_field_sector_icon.field_sector_icon_title AS img_title,
+file_managed.uri AS img_path
+FROM
+node
+LEFT JOIN field_data_field_sector_summary ON node.nid = field_data_field_sector_summary.entity_id
+LEFT JOIN field_data_field_sector_icon ON node.nid = field_data_field_sector_icon.entity_id
+LEFT JOIN file_managed ON field_data_field_sector_icon.field_sector_icon_fid = file_managed.fid
+WHERE
+node.nid = :nid
+AND node.type = 'sector'
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_sector($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_col_sectors.field_col_sectors_value,
+field_data_field_sector.field_sector_target_id  as target_nid
+FROM
+node
+INNER JOIN field_data_field_col_sectors ON node.nid = field_data_field_col_sectors.entity_id
+LEFT JOIN field_data_field_sector ON field_data_field_col_sectors.field_col_sectors_value = field_data_field_sector.entity_id
+where node.nid = :nid
+ORDER BY
+field_data_field_col_sectors.delta ASC
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_sector_side_image($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_sector_side_image.field_sector_side_image_alt AS img_alt,
+field_data_field_sector_side_image.field_sector_side_image_title AS img_title,
+file_managed.uri AS img_path
+FROM
+node
+INNER JOIN field_data_field_sector_side_image ON node.nid = field_data_field_sector_side_image.entity_id
+LEFT JOIN file_managed ON field_data_field_sector_side_image.field_sector_side_image_fid = file_managed.fid
+where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+/**
+ * News module
+ */
+function fdc_pse_news_features() {
+	$query = db_query(
+			"SELECT
+field_data_field_news_settings_featured.field_news_settings_featured_target_id AS feature1_nid,
+field_data_field_news_settings_fl.field_news_settings_fl_target_id AS feature2_nid,
+field_data_field_news_settings_fm.field_news_settings_fm_target_id AS feature3_nid,
+field_data_field_news_settings_fr.field_news_settings_fr_target_id AS feature4_nid
+FROM
+node
+INNER JOIN field_data_field_col_news_settings ON node.nid = field_data_field_col_news_settings.entity_id
+LEFT JOIN field_data_field_news_settings_featured ON field_data_field_col_news_settings.field_col_news_settings_value = field_data_field_news_settings_featured.entity_id
+LEFT JOIN field_data_field_news_settings_fl ON field_data_field_col_news_settings.field_col_news_settings_value = field_data_field_news_settings_fl.entity_id
+LEFT JOIN field_data_field_news_settings_fm ON field_data_field_col_news_settings.field_col_news_settings_value = field_data_field_news_settings_fm.entity_id
+LEFT JOIN field_data_field_news_settings_fr ON field_data_field_col_news_settings.field_col_news_settings_value = field_data_field_news_settings_fr.entity_id
+order by field_data_field_col_news_settings.delta asc
+"
+			)->fetchObject();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_news_summary($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_news_summary.field_news_summary_value AS summary
+FROM
+node
+INNER JOIN field_data_field_collection_newsarticle ON node.nid = field_data_field_collection_newsarticle.entity_id
+LEFT JOIN field_data_field_news_summary ON field_data_field_collection_newsarticle.field_collection_newsarticle_value = field_data_field_news_summary.entity_id
+where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_news_press_pdf_link($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+file_managed.uri AS file_path,
+node.nid
+FROM
+node
+INNER JOIN field_data_field_press_release_pdf ON node.nid = field_data_field_press_release_pdf.entity_id
+LEFT JOIN file_managed ON field_data_field_press_release_pdf.field_press_release_pdf_fid = file_managed.fid
+WHERE
+node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_news_additional_link($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_additional_link_text.field_additional_link_text_value AS link_text,
+field_data_field_additional_link_url.field_additional_link_url_value AS link_url
+FROM
+node
+INNER JOIN field_data_field_col_additional_link ON node.nid = field_data_field_col_additional_link.entity_id
+LEFT JOIN field_data_field_additional_link_text ON field_data_field_col_additional_link.field_col_additional_link_value = field_data_field_additional_link_text.entity_id
+LEFT JOIN field_data_field_additional_link_url ON field_data_field_col_additional_link.field_col_additional_link_value = field_data_field_additional_link_url.entity_id
+where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_news_press_media($nid) {
+  if (function_exists('dpm')) {
+    dpm('Functon fdc_pse_news_press_media is deprecated, use code in node-news_article.php');
+  }
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+field_data_field_media_download.field_media_download_fid,
+node.nid,
+file_managed.uri AS file_path,
+file_managed.filename as file_name
+FROM
+node
+INNER JOIN field_data_field_media_download ON node.nid = field_data_field_media_download.entity_id
+LEFT JOIN file_managed ON field_data_field_media_download.field_media_download_fid = file_managed.fid
+
+where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+// directions
+function fdc_pse_direction_address($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"
+					SELECT
+						node.nid,
+						field_data_field_col_address.field_col_address_value,
+						field_data_field_address_title.field_address_title_value as address_title,
+						field_data_field_address_firstline.field_address_firstline_value as firstline,
+						field_data_field_address_secondline.field_address_secondline_value as secondline,
+						field_data_field_address_county.field_address_county_value as county,
+						field_data_field_address_country.field_address_country_value as country,
+						field_data_field_address_postcode.field_address_postcode_value as postcode,
+						field_data_field_address_more_info.field_address_more_info_value as more_info
+					FROM
+						node
+					INNER JOIN field_data_field_col_address ON node.nid = field_data_field_col_address.entity_id
+					LEFT JOIN field_data_field_address_title ON field_data_field_col_address.field_col_address_value = field_data_field_address_title.entity_id
+					LEFT JOIN field_data_field_address_firstline ON field_data_field_col_address.field_col_address_value = field_data_field_address_firstline.entity_id
+					LEFT JOIN field_data_field_address_secondline ON field_data_field_col_address.field_col_address_value = field_data_field_address_secondline.entity_id
+					LEFT JOIN field_data_field_address_county ON field_data_field_col_address.field_col_address_value = field_data_field_address_county.entity_id
+					LEFT JOIN field_data_field_address_country ON field_data_field_col_address.field_col_address_value = field_data_field_address_country.entity_id
+					LEFT JOIN field_data_field_address_postcode ON field_data_field_col_address.field_col_address_value = field_data_field_address_postcode.entity_id
+					LEFT JOIN field_data_field_address_more_info ON field_data_field_col_address.field_col_address_value = field_data_field_address_more_info.entity_id
+					where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_directions($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+	field_data_field_instructions_body.field_instructions_body_value as body,
+	field_data_field_instructions_title.field_instructions_title_value as title
+FROM
+	node
+INNER JOIN field_data_field_col_direc_instructions ON node.nid = field_data_field_col_direc_instructions.entity_id
+LEFT JOIN field_data_field_instructions_body ON field_data_field_col_direc_instructions.field_col_direc_instructions_value = field_data_field_instructions_body.entity_id
+LEFT JOIN field_data_field_instructions_title ON field_data_field_col_direc_instructions.field_col_direc_instructions_value = field_data_field_instructions_title.entity_id
+where node.nid = :nid
+ORDER BY
+	field_data_field_col_direc_instructions.delta ASC
+", array(":nid" => $nid)
+				)->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+//Related
+
+function fdc_pse_get_related_items($nid) {
+  $node = node_load($nid);
+	$relvalue = array();
+  if (0 && $node->type == 'news_articles') {
+    // Brightlemon, brightlemon, Audrius
+    // New related content logic, use direct term references instead of field_collection
+    $sql = "SELECT node.nid, node.title, COUNT(taxonomy_term_data.tid) AS matching_terms
+				FROM node
+				LEFT JOIN taxonomy_index ON taxonomy_index.nid = node.nid
+				LEFT JOIN taxonomy_term_data ON taxonomy_index.tid = taxonomy_term_data.tid
+				WHERE node.nid != :nid 
+          AND taxonomy_term_data.tid IN (:current_node_tids)
+        GROUP BY node.nid
+				ORDER BY matching_terms DESC
+        LIMIT 10";
+    $tids = db_query('SELECT tid FROM {taxonomy_index} WHERE nid = :nid', array(':nid' => $nid));
+    $current_node_tids = array();
+    foreach($tids as $tid) {
+      $current_node_tids[] = $tid->tid;
+    }
+    if (empty($current_node_tids)) {
+      $node_nids = array();
+    } else {
+      $node_nids = db_query($sql, array(':nid' => $nid, ':current_node_tids' => $current_node_tids));
+    }
+    foreach ($node_nids as $node_nid) {
+      $relvalue[] = $node_nid;
+    }
+//    if ($relvalue) {
+//      $relvalue = array($relvalue); // Legacy
+//    }
+  } else {
+    if (!empty($nid)) {
+      $results = db_query(
+          "SELECT
+            field_data_field_related_content.field_related_content_tid,
+            taxonomy_term_data.name,
+            taxonomy_term_data.tid,
+            node.nid
+          FROM
+            node
+          INNER JOIN field_data_field_col_related ON node.nid = field_data_field_col_related.entity_id
+          LEFT JOIN field_data_field_related_content ON field_data_field_col_related.field_col_related_value = field_data_field_related_content.entity_id
+          LEFT JOIN taxonomy_term_data ON field_data_field_related_content.field_related_content_tid = taxonomy_term_data.tid
+          WHERE
+            node.nid = :nid
+          ORDER BY
+            field_data_field_col_related.delta ASC
+          LIMIT 3
+  ", array(":nid" => $nid)
+          )->fetchAll();
+      if (!empty($results)) {
+        foreach ($results as &$value) {
+          $items = fdc_pse_get_related_item_content($value->tid);
+          foreach($items as $item) {
+            $relvalue[] = $item;
+            if (count($relvalue) >= 3) {
+              return $relvalue;
+            }
+          }
+        }
+      }
+    }
+//    uasort($relvalue, function ($i, $j) {
+//        $a = $i->created;
+//        $b = $j->created;
+//        if ($a == $b) return 0;
+//        elseif ($a > $b) return 1;
+//        else return -1;
+//    });
+  }
+    
+  
+//  $relvalue = array_slice($relvalue, 0, 3);
+  
+	return $relvalue;
+}
+
+function fdc_pse_get_related_item_content($tid) {
+	//echo $tid."<br>";
+	if (!empty($tid)) {
+				$results = db_query ("SELECT
+					node.nid,
+					field_data_field_related_content.field_related_content_tid,
+					taxonomy_term_data.name,
+					node.title,
+          node.created
+					FROM
+					taxonomy_term_data,
+					field_data_field_related_content,
+					field_data_field_col_related,
+					node
+					WHERE
+					field_data_field_related_content.field_related_content_tid = taxonomy_term_data.tid
+					AND
+					field_data_field_related_content.field_related_content_tid = :tid
+					AND
+					field_data_field_col_related.field_col_related_value = field_data_field_related_content.entity_id
+					AND
+					field_data_field_col_related.entity_id = node.nid
+          ORDER BY node.created DESC ", array(":tid" => $tid))->fetchAll();
+		if (!empty($results)) {
+//      dsm('results');
+//      dsm($results);
+			return $results;
+		}
+	}
+}
+
+function fdc_pse_get_related_events_webinars($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+	taxonomy_term_data.tid,
+	taxonomy_term_data.name
+FROM
+	taxonomy_term_data
+WHERE
+	taxonomy_term_data.tid = :tid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->name;
+		}
+	}
+}
+
+//taxonomy
+function fdc_pse_term_name($tid) {
+	if (!empty($tid)) {
+		$query = db_query(
+				"SELECT
+	taxonomy_term_data.tid,
+	taxonomy_term_data.name
+FROM
+	taxonomy_term_data
+WHERE
+	taxonomy_term_data.tid = :tid
+", array(":tid" => $tid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->name;
+		}
+	}
+}
+
+function fdc_pse_footer($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT	
+					field_data_field_block_footer.field_block_footer_value as footer_val
+				FROM
+					node
+				INNER JOIN field_data_field_alt_footer ON node.nid = field_data_field_alt_footer.entity_id
+				LEFT JOIN field_data_field_block_footer ON field_data_field_alt_footer.field_alt_footer_target_id = field_data_field_block_footer.entity_id
+				WHERE
+					node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_footer_default($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					field_data_field_block_footer.field_block_footer_value AS footer_val
+				FROM
+					node
+				INNER JOIN field_data_field_block_footer ON node.nid = field_data_field_block_footer.entity_id
+				where
+					node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_pse_breadcrumbs($nid) {
+	if (!empty($nid)) {
+		$query = db_query(
+				"SELECT
+					node.nid,
+					field_data_field_breadcrumbs.field_breadcrumbs_value as breadcrumb
+				FROM
+					node
+				INNER JOIN field_data_field_breadcrumbs ON node.nid = field_data_field_breadcrumbs.entity_id
+				where node.nid = :nid
+", array(":nid" => $nid)
+				)->fetchObject();
+		if (!empty($query)) {
+			return $query->breadcrumb;
+		}
+	}
+}
+
+/**
+  template
+ * $query = db_query(
+  ""
+  )->fetchAll();
+  if(!empty($query))
+  {
+  return $query;
+
+  }
+ */
+function fdc_pse_video_presentation($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+			
+				SELECT
+					field_data_field_col_video_present.field_col_video_present_value,
+					field_data_field_video_present_vid_date.field_video_present_vid_date_value AS date_title,
+					field_data_field_video_present_vid_url.field_video_present_vid_url_value AS video_url,
+					field_data_field_video_present_vid_speakers.field_video_present_vid_speakers_value AS speakers,
+					field_data_field_video_present_vid_title.field_video_present_vid_title_value AS video_title,
+					node.nid,
+					node.`status`,
+					field_data_field_video_present_vid_url_2.field_video_present_vid_url_2_value AS video_url_2,
+					field_data_field_video_present_vid_title_2.field_video_present_vid_title_2_value AS video_title_2,
+					field_data_field_video_present_vid_speaker2.field_video_present_vid_speaker2_value AS speakers_2
+				FROM
+					node
+				INNER JOIN field_data_field_col_video_present ON node.nid = field_data_field_col_video_present.entity_id
+				LEFT JOIN field_data_field_video_present_vid_date ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_date.entity_id
+				LEFT JOIN field_data_field_video_present_vid_url ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_url.entity_id
+				LEFT JOIN field_data_field_video_present_vid_speakers ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_speakers.entity_id
+				LEFT JOIN field_data_field_video_present_vid_title ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_title.entity_id
+				LEFT JOIN field_data_field_video_present_vid_url_2 ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_url_2.entity_id
+				LEFT JOIN field_data_field_video_present_vid_title_2 ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_title_2.entity_id
+				LEFT JOIN field_data_field_video_present_vid_speaker2 ON field_data_field_col_video_present.field_col_video_present_value = field_data_field_video_present_vid_speaker2.entity_id
+					WHERE
+						node.nid = :nid
+					ORDER BY
+						field_data_field_col_video_present.delta ASC", array(":nid" => $nid))->fetchAll();
+
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_pse_presentation($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+			SELECT
+					field_data_field_presentation_date.field_presentation_date_value AS date_title,
+					file_managed.uri AS file_path,
+					field_data_field_presentation_heading.field_presentation_heading_value AS heading,
+					field_data_field_presentation_presenters.field_presentation_presenters_value AS speakers,
+					field_data_field_presentation_title.field_presentation_title_value AS title
+				FROM
+					node
+				INNER JOIN field_data_field_col_presentation ON node.nid = field_data_field_col_presentation.entity_id
+				LEFT JOIN field_data_field_presentation_date ON field_data_field_col_presentation.field_col_presentation_value = field_data_field_presentation_date.entity_id
+				LEFT JOIN field_data_field_presentation_file ON field_data_field_col_presentation.field_col_presentation_value = field_data_field_presentation_file.entity_id
+				LEFT JOIN field_data_field_presentation_heading ON field_data_field_col_presentation.field_col_presentation_value = field_data_field_presentation_heading.entity_id
+				LEFT JOIN field_data_field_presentation_presenters ON field_data_field_col_presentation.field_col_presentation_value = field_data_field_presentation_presenters.entity_id
+				LEFT JOIN field_data_field_presentation_title ON field_data_field_col_presentation.field_col_presentation_value = field_data_field_presentation_title.entity_id
+				LEFT JOIN file_managed ON field_data_field_presentation_file.field_presentation_file_fid = file_managed.fid
+
+			WHERE
+				node.nid = :nid
+			ORDER BY
+				field_data_field_col_presentation.delta ASC", array(":nid" => $nid))->fetchAll();
+
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_pse_presentation_bulkfiles($nid) {
+	if (!empty($nid)) {
+		$sql = db_query("
+			SELECT
+				file_managed.uri as file_path,
+				field_data_field_zips_title.field_zips_title_value as file_name,
+				file_managed.filesize
+			FROM
+				node
+			INNER JOIN field_data_field_col_zips ON node.nid = field_data_field_col_zips.entity_id
+			LEFT JOIN field_data_field_zips_file ON field_data_field_col_zips.field_col_zips_value = field_data_field_zips_file.entity_id
+			LEFT JOIN field_data_field_zips_title ON field_data_field_col_zips.field_col_zips_value = field_data_field_zips_title.entity_id
+			LEFT JOIN file_managed ON field_data_field_zips_file.field_zips_file_fid = file_managed.fid
+			where node.nid = :nid
+			ORDER BY
+				field_data_field_col_zips.delta ASC", array(":nid" => $nid))->fetchAll();
+
+		if (!empty($sql)) {
+			return $sql;
+		}
+	}
+}
+
+function fdc_pse_get_vimeoid($url) {
+	$regex = '~
+		# Match Vimeo link and embed code
+		(?:<iframe [^>]*src=")?         # If iframe match up to first quote of src
+		(?:                             # Group vimeo url
+				https?:\/\/             # Either http or https
+				(?:[\w]+\.)*            # Optional subdomains
+				vimeo\.com              # Match vimeo.com
+				(?:[\/\w]*\/videos?)?   # Optional video sub directory this handles groups links also
+				\/                      # Slash before Id
+				([0-9]+)                # $1: VIDEO_ID is numeric
+				[^\s]*                  # Not a space
+		)                               # End group
+		"?                              # Match end quote if part of src
+		(?:[^>]*></iframe>)?            # Match the end of the iframe
+		(?:<p>.*</p>)?                  # Match any title information stuff
+		~ix';
+
+	preg_match($regex, $url, $matches);
+
+	return $matches[1];
+}
+
+function fdc_pse_get_presentation_form_contents() {
+	$query = db_query("SELECT
+	field_data_field_presentation_form_heading.field_presentation_form_heading_value AS heading,
+	field_data_field_presentation_form_body.field_presentation_form_body_value AS body,
+	node.nid
+FROM
+	node
+INNER JOIN field_data_field_presentation_form_heading ON node.nid = field_data_field_presentation_form_heading.entity_id
+LEFT JOIN field_data_field_presentation_form_body ON node.nid = field_data_field_presentation_form_body.entity_id where node.nid = 46")->fetchObject();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_pse_get_events_home() {
+	$query = db_query("
+SELECT
+	field_data_field_event_start_date.field_event_start_date_value AS start_date,
+	field_data_field_event_end_date.field_event_end_date_value AS end_date,
+	field_data_field_event_location.field_event_location_value AS location,
+	field_data_field_pse_involvement.field_pse_involvement_tid AS involve_tid,
+	field_data_field_event_icon.field_event_icon_alt AS img_alt,
+	field_data_field_event_icon.field_event_icon_title AS img_title,
+	field_data_field_events_type.field_events_type_tid AS event_type_tid,
+	field_data_field_event_external.field_event_external_value AS external_link,
+	field_data_field_event_page_ref.field_event_page_ref_target_id AS page_ref,
+	field_data_field_col_content.field_col_content_value AS page,
+	field_data_field_event_no_link.field_event_no_link_value AS no_link,
+	node.nid,
+	node.title,
+	file_managed.uri
+FROM
+	node
+INNER JOIN field_data_field_event_start_date ON node.nid = field_data_field_event_start_date.entity_id
+LEFT JOIN field_data_field_event_end_date ON node.nid = field_data_field_event_end_date.entity_id
+LEFT JOIN field_data_field_event_location ON node.nid = field_data_field_event_location.entity_id
+LEFT JOIN field_data_field_pse_involvement ON node.nid = field_data_field_pse_involvement.entity_id
+LEFT JOIN field_data_field_event_icon ON node.nid = field_data_field_event_icon.entity_id
+LEFT JOIN field_data_field_events_type ON node.nid = field_data_field_events_type.entity_id
+LEFT JOIN field_data_field_event_external ON node.nid = field_data_field_event_external.entity_id
+LEFT JOIN field_data_field_event_page_ref ON node.nid = field_data_field_event_page_ref.entity_id
+LEFT JOIN field_data_field_col_content ON node.nid = field_data_field_col_content.entity_id
+LEFT JOIN file_managed ON field_data_field_event_icon.field_event_icon_fid = file_managed.fid
+LEFT JOIN field_data_field_event_no_link ON node.nid = field_data_field_event_no_link.entity_id
+WHERE
+	FROM_UNIXTIME(
+		field_data_field_event_end_date.field_event_end_date_value,
+		'%Y-%m-%d'
+	) >= CURDATE()
+ORDER BY
+	field_data_field_event_start_date.field_event_start_date_value ASC
+LIMIT 3
+")->fetchAll();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+//
+//function fdc_membership_utils_related_events($tid) {
+//	if (!empty($tid)) {
+//		$sql = db_query("
+//				SELECT
+//					taxonomy_term_data.`name`,
+//					taxonomy_term_data.tid,
+//					node.nid,
+//					node.title,
+//					node.type
+//				FROM
+//					field_data_field_related_content
+//				INNER JOIN field_data_field_col_related ON field_data_field_related_content.entity_id = field_data_field_col_related.field_col_related_value
+//				LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_related_content.field_related_content_tid
+//				LEFT JOIN node ON field_data_field_col_related.entity_id = node.nid
+//				WHERE
+//					taxonomy_term_data.tid = :tid
+//					and node.type = 'events_and_webinar'
+//			", array(":tid" => $tid))->fetchObject();
+//		if (!empty($sql)) {
+//			return $sql;
+//		}
+//	}
+//}

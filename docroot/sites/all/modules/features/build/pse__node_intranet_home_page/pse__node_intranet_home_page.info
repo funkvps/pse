@@ -1,0 +1,8 @@
+name = PSE: Intranet Home Page
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-intranet_home_page-field_col_content
+features[node][] = intranet_home_page
+features[features_api][] = api:2

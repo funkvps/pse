@@ -1,0 +1,5 @@
+name = FDC  Growler
+description = Creates Growler (Surfaraz Thakur @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+core = 7.x

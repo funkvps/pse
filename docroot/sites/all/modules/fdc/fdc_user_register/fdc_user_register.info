@@ -1,0 +1,6 @@
+name = FDC User Registration rules
+description = Will stop users from registering with certain email addresses (Surfaraz Thakur @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+version = "7.x-0.1"
+core = 7.x

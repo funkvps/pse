@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Fine tunes commerce user experience.
+ */
+
+/**
+ * Implements hook_form_alter().
+ */
+function pse_commerce_form_alter(&$form, &$form_state, $form_id) {
+
+  // Checkout page.
+  if ($form_id == 'commerce_checkout_form_checkout') {
+    $form['buttons']['#attributes']['class'][] = 'pse-commerce';
+    unset($form['buttons']['cancel']['#prefix']);
+    $form['buttons']['continue']['#prefix'] = '<span class="button-operator">or</span>';
+    $form['buttons']['continue']['#weight'] = 1;
+  }
+
+  // Review page.
+  if ($form_id == 'commerce_checkout_form_review') {
+    $form['buttons']['#attributes']['class'][] = 'pse-commerce';
+    unset($form['buttons']['back']['#prefix']);
+    $form['buttons']['back']['#value'] = t('Back');
+    $form['buttons']['continue']['#prefix'] = '<span class="button-operator">or</span>';
+    $form['buttons']['continue']['#weight'] = 1;
+  }
+}

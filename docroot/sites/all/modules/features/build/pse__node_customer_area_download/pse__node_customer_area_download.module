@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Customer Area Download feature.
+ */
+
+include_once 'pse__node_customer_area_download.features.inc';

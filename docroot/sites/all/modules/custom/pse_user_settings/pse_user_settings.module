@@ -1,0 +1,143 @@
+<?php
+
+function pse_user_settings() {
+  $items['admin/pse_sync_training_courses'] = array(
+		'page callback' => 'page_pse_sync_training_courses',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+  return $items;
+}
+
+/*
+ * implements hook_init
+ * set facet values from user or users_companies preferences
+ */
+function pse_user_settings_init() {
+  if ($_GET['q'] == 'user/dashboard' && empty($_GET['f'])) {
+//    _d('$_SERVER');
+//    _d($_SERVER);
+//    _d('_GET');
+//    _d($_GET);
+//    _d('_POST');
+//    _d($_POST);
+    _pse_user_settings_set_default_facets_values();
+  }
+}
+
+
+function pse_user_settings_form_alter(&$form, $form_state, $form_id) {
+//  dsm('pse_user_settings_form_alter');
+//  dsm($form_id);
+  switch ($form_id) {
+    case 'user_register_form':
+//      dsm($form);
+      foreach ($form['#groups'] as $no => $group) {
+        $group->parent_name = '';
+        $group->format_type = 'fieldset';
+      }
+      foreach ($form['#group_children'] as $field => $parent) {
+        if ($parent == 'group_horizontal') {
+          unset($form['#group_children'][$field]);
+        }
+      }
+      break;
+  }
+}
+
+
+function _pse_user_settings_set_default_facets_values() {
+  global $user;
+  $account = user_load($user->uid);
+  $setting_fields = $account;
+  $company = false;
+  if (empty($account->field_pse_tax_sectors['und']) && empty($account->field_pse_tax_products['und']) && empty($account->field_pse_tax_regions['und'])) {
+    $sql = 'SELECT field_col_company_users.entity_id 
+              FROM field_data_field_company_users AS field_company_users
+              LEFT JOIN field_data_field_col_company_users AS field_col_company_users ON field_company_users.entity_id = field_col_company_users_value
+              WHERE field_company_users_target_id = :uid';
+    $company_nid = db_query($sql, array(':uid' => $user->uid))->fetchField();
+    if (empty($company_nid)) {
+      $sql = 'SELECT field_company_owner.entity_id 
+              FROM field_data_field_company_owner AS field_company_owner
+              WHERE field_company_owner_target_id = :uid';
+      $company_nid = db_query($sql, array(':uid' => $user->uid))->fetchField();
+    }
+    if (!empty($company_nid)) {
+      $company = node_load($company_nid);
+      $setting_fields = $company;
+    }
+  }
+//  _d('setting_fields');
+//  _d($setting_fields);
+  if (!empty($setting_fields->field_pse_tax_sectors)) {
+    _pse_user_settings_set_default_facet_values('field_pse_tax_sectors', $setting_fields->field_pse_tax_sectors);
+  }
+  if (!empty($setting_fields->field_pse_tax_products)) {
+    _pse_user_settings_set_default_facet_values('field_pse_tax_products', $setting_fields->field_pse_tax_products);
+  }
+  if (!empty($setting_fields->field_pse_tax_regions)) {
+    _pse_user_settings_set_default_facet_values('field_pse_tax_regions', $setting_fields->field_pse_tax_regions);
+  }
+//  _d($user);
+//  _d($account);
+//  _d('init');
+//  dsm($_GET);
+}
+
+function _pse_user_settings_set_default_facet_values($field_name, $field) {
+//  dsm('_pse_user_settings_set_default_facet_values');
+//  dsm($field_name);
+//  dsm($field);
+  if (!empty($field['und'])) {
+    foreach ($field['und'] as $delta => $term_ref) {
+      $_GET['f'][] = $field_name . ':' . $term_ref['tid']; // %3A = :
+    }
+  }
+}
+
+
+function pse_user_settings_block_view_alter(&$data, $block) {
+  if ($_GET['q'] == 'user/dashboard') {
+    __remove_numbers_from_facet_labels($data, 'field_pse_tax_sectors');
+    __remove_numbers_from_facet_labels($data, 'field_pse_tax_products');
+    __remove_numbers_from_facet_labels($data, 'field_pse_tax_regions');
+  }
+}
+
+/*
+ * implements hook_pse_facetapi_widget_alter
+ */
+function pse_user_settings_pse_facetapi_widget_alter(&$widget) {
+  if ($_GET['q'] == 'user/dashboard') {
+    $widget->settings['widget'] = 'facetapi_checkbox_links';
+  }
+}
+
+
+/*
+ * 
+ */
+function pse_user_settings_js_alter(&$javascript) {
+  if ($_GET['q'] == 'user/dashboard' && isset($_GET['f'])) {
+    foreach($javascript['settings']['data'] as $delta => $module_settings) {
+      if (empty($module_settings['collapsiblock'])) {
+        continue;
+      }
+      foreach ($module_settings['collapsiblock']['blocks'] as $id => $setting) {
+        $javascript['settings']['data'][$delta]['collapsiblock']['blocks'][$id] = 2;
+      }
+    }
+  }
+}
+
+
+function __remove_numbers_from_facet_labels(&$data, $field) {
+  if (empty($data['content'][$field]['#items'])) {
+    return;
+  }
+  foreach ($data['content'][$field]['#items'] as &$item) {
+    //$item = preg_replace("/\([0-9]+\)/", '', $item);
+    $item['data'] = preg_replace("/\([0-9]+\)/", '', $item['data']);
+  }
+}

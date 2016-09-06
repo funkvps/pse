@@ -1,0 +1,13 @@
+name = PSE: Sector Listing Page
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+dependencies[] = image
+features[field_instance][] = node-sector_listing_page-field_bottom_content
+features[field_instance][] = node-sector_listing_page-field_col_content
+features[field_instance][] = node-sector_listing_page-field_col_sectors
+features[field_instance][] = node-sector_listing_page-field_collection_metatags
+features[field_instance][] = node-sector_listing_page-field_sector_side_image
+features[node][] = sector_listing_page
+features[features_api][] = api:2

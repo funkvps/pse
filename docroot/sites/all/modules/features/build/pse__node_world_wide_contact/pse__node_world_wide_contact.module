@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: World Wide Contact feature.
+ */
+
+include_once 'pse__node_world_wide_contact.features.inc';

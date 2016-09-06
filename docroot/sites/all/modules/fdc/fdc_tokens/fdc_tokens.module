@@ -1,0 +1,210 @@
+<?php
+
+/**
+ * @surf
+ * if you require assistance on this, please read all 4 items 
+ * http://www.whenwhowhere.com/tech-blog/create-custom-token-drupal-7
+ * http://www.rahulsingla.com/blog/2012/05/drupal-7-displaying-available-tokens-in-ui-and-replacing-tokens-in-code
+ * https://www.drupal.org/node/390482
+ * https://www.drupal.org/node/1143842
+ */
+
+/**
+ * Implements hook_token_info().
+ */
+function fdc_tokens_token_info() {
+	$info['tokens']['node']['user_full_name'] = array(
+		'name' => t('Full Name'),
+		'description' => t('Returns the First Name of current user'),
+	);
+	$info['tokens']['node']['user_first_name'] = array(
+		'name' => t('First Name'),
+		'description' => t('Returns the Last Name of current user'),
+	);
+	$info['tokens']['node']['user_last_name'] = array(
+		'name' => t('Last Name'),
+		'description' => t('Returns the Full Name of current user'),
+	);
+	$info['tokens']['node']['user_email'] = array(
+		'name' => t('Email'),
+		'description' => t('Returns the Email of current user'),
+	);
+	$info['tokens']['node']['user_company'] = array(
+		'name' => t('company'),
+		'description' => t('Returns the company of current user'),
+	);
+	$info['tokens']['node']['user_telephone'] = array(
+		'name' => t('Telephone'),
+		'description' => t('Returns the telephone of current user'),
+	);
+	$info['tokens']['node']['user_job_title'] = array(
+		'name' => t('Position / jobtitle'),
+		'description' => t('Returns the position/jobtitle of current user'),
+	);
+//	$info['tokens']['fdc']['fullname'] = array(
+//		'name' => t('First Name'),
+//		'description' => t('Returns the Full Name of current user'),
+//	);
+	return $info;
+}
+
+function fdc_tokens_tokens($type, $tokens, array $data = array(), array $options = array()) {
+	$replacements = array();
+
+	if ($type == 'node' && !empty($data['node'])) {
+		$node = $data['node'];
+
+    
+    
+		if (isset($tokens['user_full_name'])) {
+			$replacements[$tokens['user_full_name']] = fdc_tokens_get_full_name(); 
+		}
+		if (isset($tokens['user_email'])) {
+			$replacements[$tokens['user_email']] = fdc_tokens_get_email(); 
+		}
+		if (isset($tokens['user_company'])) {
+			$replacements[$tokens['user_company']] = fdc_tokens_get_company(); 
+		}
+		if (isset($tokens['user_job_title'])) {
+			$replacements[$tokens['user_job_title']] = fdc_tokens_get_job_title(); 
+		}
+		if (isset($tokens['user_telephone'])) {
+			$replacements[$tokens['user_telephone']] = fdc_tokens_get_job_telephone(); 
+		}
+		if (isset($tokens['user_first_name'])) {
+			$replacements[$tokens['user_first_name']] = fdc_tokens_get_first_name(); 
+		}
+		if (isset($tokens['user_last_name'])) {
+			$replacements[$tokens['user_first_name']] = fdc_tokens_get_last_name(); 
+		}
+		
+		
+		
+//		if (isset($tokens['city'])) {
+//			$replacements[$tokens['city']] = "hello"; // pathauto_cleanstring($node->field_location['und'][0]['city']); //here I retrieve the value of the city in the location field.
+//		}
+//				if (isset($tokens['fullname'])) {
+//			$replacements[$tokens['fullname']] = "yes he can"; // pathauto_cleanstring($node->field_location['und'][0]['city']); //here I retrieve the value of the city in the location field.
+//		}
+		
+	}
+
+	return $replacements;
+}
+
+function fdc_tokens_get_full_name() {
+	$full_name = fdc_tokens_get_first_name() . " " . fdc_tokens_get_last_name();
+
+	if (!empty($full_name)) {
+		return $full_name;
+	}
+}
+
+function fdc_tokens_get_first_name() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->first_name)) {
+    $name = $account->first_name;
+		return $name;
+	}
+}
+
+function fdc_tokens_get_last_name() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->last_name)) {
+    $name = $account->last_name;
+		return $name;
+	}
+} 
+
+function fdc_tokens_get_company() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->company)) {
+    $name = $account->company;
+		return $name;
+	}
+}
+
+function fdc_tokens_get_job_title() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->position)) {
+    $name = $account->position;
+		return $name;
+	}
+}
+
+function fdc_tokens_get_job_telephone() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->mobile)) {
+    $name = $account->mobile;
+		return $name;
+	}
+}
+function fdc_tokens_get_email() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->email)) {
+    $name = $account->email;
+		return $name;
+	}
+}
+function fdc_tokens_get_street() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->street)) {
+    $name = $account->street;
+		return $name;
+	}
+}
+function fdc_tokens_get_city() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->city)) {
+    $name = $account->city;
+		return $name;
+	}
+}
+function fdc_tokens_get_postcode() {
+  $account = fdc_tokens_get_user_profile();
+	if (!empty($account->postcode)) {
+    $name = $account->postcode;
+		return $name;
+	}
+}
+
+function fdc_tokens_get_user_profile() {
+	global $user;
+	if ($user->uid > 0) {
+		$q = db_query("SELECT
+	field_data_field_profile_country.field_profile_country_value AS country,
+	field_data_field_profile_city.field_profile_city_value AS city,
+	field_data_field_profile_company.field_profile_company_value AS company,
+	field_data_field_profile_department.field_profile_department_value AS department,
+	field_data_field_profile_division.field_profile_division_value AS division,
+	field_data_field_profile_last_name.field_profile_last_name_value AS last_name,
+	field_data_field_profile_first_name.field_profile_first_name_value AS first_name,
+	field_data_field_profile_mobile.field_profile_mobile_value AS mobile,
+	field_data_field_profile_position.field_profile_position_value AS position,
+	field_data_field_profile_postcode.field_profile_postcode_value AS postcode,
+	field_data_field_profile_state.field_profile_state_value AS state,
+	field_data_field_profile_street.field_profile_street_value AS street,
+	users.mail as email
+FROM
+	users
+INNER JOIN field_data_field_profile_country ON users.uid = field_data_field_profile_country.entity_id
+LEFT JOIN field_data_field_profile_city ON users.uid = field_data_field_profile_city.entity_id
+LEFT JOIN field_data_field_profile_company ON users.uid = field_data_field_profile_company.entity_id
+LEFT JOIN field_data_field_profile_department ON users.uid = field_data_field_profile_department.entity_id
+LEFT JOIN field_data_field_profile_division ON users.uid = field_data_field_profile_division.entity_id
+LEFT JOIN field_data_field_profile_last_name ON users.uid = field_data_field_profile_last_name.entity_id
+LEFT JOIN field_data_field_profile_first_name ON users.uid = field_data_field_profile_first_name.entity_id
+LEFT JOIN field_data_field_profile_mobile ON users.uid = field_data_field_profile_mobile.entity_id
+LEFT JOIN field_data_field_profile_position ON users.uid = field_data_field_profile_position.entity_id
+LEFT JOIN field_data_field_profile_postcode ON users.uid = field_data_field_profile_postcode.entity_id
+LEFT JOIN field_data_field_profile_state ON users.uid = field_data_field_profile_state.entity_id
+LEFT JOIN field_data_field_profile_street ON users.uid = field_data_field_profile_street.entity_id
+WHERE
+	users.uid = :uid", array(":uid" => $user->uid))->fetchObject();
+
+		if (!empty($q)) {
+			return $q;
+		}
+	}
+  return $user;
+}

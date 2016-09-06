@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Fine tunes user registration experience.
+ */
+
+/**
+ * Implements hook_user_insert().
+ */
+function pse_user_registration_user_insert(&$edit, $account, $category) {
+
+  // New acccount alert.
+  $module = 'pse_user_registration';
+  $key = 'pse_user_registration_alert';
+  $to = variable_get('site_mail', 'noreply@example.com');
+  $language = language_default();
+  $params = array(
+    'first_name' => $account->field_profile_first_name[LANGUAGE_NONE][0]['value'],
+    'last_name' => $account->field_profile_last_name[LANGUAGE_NONE][0]['value'],
+    'company' => $account->field_profile_company[LANGUAGE_NONE][0]['value'],
+    'email' => $account->mail,
+  );
+  $from = variable_get('site_mail', 'noreply@example.com');
+  drupal_mail($module, $key, $to, $language, $params, $from);
+}
+
+/**
+ * Implements hook_mail().
+ */
+function pse_user_registration_mail($key, &$message, $params) {
+  switch ($key) {
+
+    // Define new accoutn alert.
+    case 'pse_user_registration_alert':
+
+      // Subject. 
+      $message['subject'] = t('Request to create an account from @company', array(
+        '@company' => $params['company'],
+      ));
+
+      // Body.
+      $message['body'][] = t('<p>Dear MyPSE admin,</p>');
+      $message['body'][] = t('<p>A new website visitor has just registered from the website.</p>');
+      $message['body'][] = t('<p>Details are:<br />Name: @first_name @last_name<br />Company: @company<br />Email: @email</p>', array(
+        '@first_name' => $params['first_name'],
+        '@last_name' => $params['last_name'],
+        '@company' => $params['company'],
+        '@email' => $params['email'],
+      ));
+      $message['body'][] = t('<p>Please check the People list to allocate to the correct company type.</p>');
+      $message['body'][] = t('<p>Thanks</p>');
+      break;
+  }
+}
+
+/**
+ * Implements hook_mail_alter().
+ */
+function pse_user_registration_mail_alter(&$message) {
+  switch ($message['id']) {
+
+    // User registration email.
+    case 'user_register_no_approval_required':
+
+      // Alter mail headers.
+//      $message['from'] = $message['headers']['From'] = '"PSE marketing" <pse_marketing@psenterprise.com>';
+      break;
+  }
+}

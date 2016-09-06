@@ -1,0 +1,14 @@
+## 
+31/03/2016
+Developer: Audrius Vaitonis
+Reason "Support Search API Solr view"
+Applied patch from https://www.drupal.org/node/2462247
+patch https://www.drupal.org/files/issues/entityreference_view_widget-support_search_api_solr-2462247-1.patch
+
+Original patch didn't work, so I did two small changes
+
+FROM: $entity_id = $row->_entity_properties[$this->view->base_field];
+TO: $entity_id = $row->entity;
+
+FROM: $entity_id = $values->_entity_properties[$this->view->base_field];
+TO: $entity_id = $values->entity;

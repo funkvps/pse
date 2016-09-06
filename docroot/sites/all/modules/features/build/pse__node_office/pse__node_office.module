@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Office feature.
+ */
+
+include_once 'pse__node_office.features.inc';

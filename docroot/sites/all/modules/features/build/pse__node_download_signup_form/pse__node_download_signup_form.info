@@ -1,0 +1,8 @@
+name = PSE: Download Signup Form
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-download_signup_form-field_col_content
+features[node][] = download_signup_form
+features[features_api][] = api:2

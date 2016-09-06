@@ -1,0 +1,246 @@
+<?php
+/**
+ * @file
+ * Add invoiincg support to commerce orders.
+ */
+
+/**
+ * Implements hook_views_api().
+ */
+function commerce_order_invoice_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'commerce_order_invoice') . '/includes/views',
+  );
+}
+
+/**
+ * Implements hook_permissions().
+ */
+function commerce_order_invoice_permission() {
+  return array(
+    'adminster commerce order invoices' => array(
+      'title' => t('Adminster invoices'),
+      'description' => t('Add or remove line items from an invoice.'),
+    ),
+    'administer commerce product invoicing' => array(
+      'title' => t('Adminster product invoicing'),
+      'description' => t('Configure whether or not products are to be invoiced.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ *
+ * Adds the invoice property to all product types.
+ */
+function commerce_order_invoice_field_extra_fields() {
+  $extra = array();
+
+  // Iterate over each of the product types, adding the invoice property to
+  // the form for each.
+  foreach (commerce_product_types() as $type => $product_type) {
+    $extra['commerce_product'][$type] = array(
+      'form' => array(
+        'invoice' => array(
+          'label' => t('Invoice'),
+          'description' => t('If checked, the product should be invoiced and ' .
+            'can not be removed from an order. This can be overridden by the ' .
+            'invoice property of the line item.'),
+          'weight' => 40,
+        ),
+      ),
+    );
+  }
+
+  return $extra;
+}
+
+/**
+ * Callback function to determine whether the order has line items that should
+ * be invoiced.
+ *
+ * @param stdClass $order
+ *   Commmerce order to be evaluated.
+ *
+ * @return boolean
+ *   Whether or not the order has invoiced line items.
+ */
+function commerce_order_invoice_order_has_invoice_items($order) {
+  if (!empty($order->commerce_line_items)) {
+    $order_wrapper = entity_metadata_wrapper($type = 'commerce_order', $entity = $order);
+    foreach ($order_wrapper->commerce_line_items as $line_item_wrapper) {
+      $line_item_id = $line_item_wrapper->line_item_id->value();
+      $commerce_line_item = commerce_line_item_load($line_item_id);
+      if (!empty($commerce_line_item->invoice) && $commerce_line_item->invoice == '1') {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Sets the invoice proerty of new commere line items appropriatly.
+ */
+function commerce_order_invoice_entity_presave($entity, $type) {
+  // We only want to set the invoice property on new line items.
+  if ('commerce_line_item' == $type && isset($entity->is_new)) {
+    // If the line item does not have a product then we can leave the invoice
+    // property empty. If the line item does have a product, we set the invoice
+    // property only if it is not already set.
+    if (!empty($entity->commerce_product) && empty($entity->invoice)) {
+      // Get the product from the line item and set the line item's invoice
+      // property to be the same as the products.
+      $wrapper = entity_metadata_wrapper($type, $entity);
+      $product = $wrapper->commerce_product->value();
+      if (!isset($entity->invoice)) {
+        $entity->invoice = $product->invoice;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adds the default invoice setting to the product type form.
+ */
+function commerce_order_invoice_form_commerce_product_ui_product_type_form_alter(&$form, &$form_state, $form_id) {
+  $form['product_type']['invoice'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Default products of this type to be invoiced.'),
+    '#default_value' => $form_state['product_type']['invoice'],
+    '#description' => t('If checked, when a product of this type is created ' .
+      'the default configuration will be to invoice the product so that the ' .
+      'user has to pay for it.'),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Adds the invoice property to the product form.
+ */
+function commerce_order_invoice_form_commerce_product_product_form_alter(&$form, &$form_state, $form_id) {
+  $product = $form_state['commerce_product'];
+  if (isset($product->is_new) && !isset($product->invoice)) {
+    // Load the product type to get the default invoice setting.
+    $product_type = commerce_product_type_load($product->type);
+    $default = $product_type['invoice'];
+  }
+  else {
+    $default = $product->invoice;
+  }
+
+  $form['invoice'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Invoice'),
+    '#description' => t('If checked, the product should be invoiced and can ' .
+      'not be removed from an order. This can be overridden by the invoice ' .
+      'property of the line item.'),
+    '#default_value' => $default,
+    '#weight' => 40,
+    '#access' => user_access('administer commerce product invoicing'),
+  );
+
+  $form['actions']['submit']['#submit'][] = 'commerce_order_invoice_product_form_submit';
+}
+
+/**
+ * Submit handler that sets the value of the invoice handler from the form on to
+ * the product entity.
+ */
+function commerce_order_invoice_product_form_submit($form, &$form_state) {
+  $form_state['commerce_product']->invoice = $form_state['values']['invoice'];
+  commerce_product_save($form_state['commerce_product']);
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Removes the cart line item delete submit callback for line item delete
+ * buttons that are part of an invoice. Also disables the line item quantity
+ * field if the user does not have permission to administer invoices.
+ */
+function commerce_order_invoice_form_alter(&$form, &$form_state, $form_id) {
+  // If the edit delete element is present on this form then it is likely that
+  // it is part of a commerce order.
+  if (!empty($form['edit_delete'])) {
+    foreach (element_children($form['edit_delete']) as $key) {
+      if (!empty($form['edit_delete'][$key]['#line_item_id'])) {
+        // If the line item is part of an invoice, remove the cart line item
+        // delete submit callback.
+        $line_item_id = $form['edit_delete'][$key]['#line_item_id'];
+        $line_item = commerce_line_item_load($line_item_id);
+        if ($line_item->invoice) {
+          $form['edit_delete'][$key]['#submit'] = $form['#submit'];
+        }
+      }
+    }
+  }
+
+  // If the edit delete quantity is present on this form then it is likely that
+  // it is part of a commerce order.
+  if (!empty($form['edit_quantity'])) {
+    foreach (element_children($form['edit_quantity']) as $key) {
+      if (!empty($form['edit_quantity'][$key]['#line_item_id'])) {
+        // If the line item is part of an invoice and the user does not have
+        // permission to administer invoices then disable the quantity field.
+        $line_item_id = $form['edit_quantity'][$key]['#line_item_id'];
+        $line_item = commerce_line_item_load($line_item_id);
+        if ($line_item->invoice && !user_access('adminster commerce order invoices')) {
+          $form['edit_quantity'][$key]['#disabled'] = TRUE;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Converts an order to an invoice state.
+ *
+ * @param stdClass $order
+ *   Order to be converted
+ */
+function commerce_order_invoice_convert_order($order) {
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+
+  // Iterate over the order's line items, deleting any that do not belong on the
+  // invoice.
+  $invoice_line_items = array();
+  $line_items = $order_wrapper->commerce_line_items->value();
+  foreach ($line_items as $line_item) {
+    if ($line_item->invoice) {
+      $invoice_line_items[] = $line_item;
+    }
+    else {
+      commerce_line_item_delete($line_item->line_item_id);
+    }
+  }
+
+  // Update the line items and status of the order before saving it.
+  $order_wrapper->commerce_line_items->value($invoice_line_items);
+  $order->status = 'invoice';
+  commerce_order_save($order);
+
+  drupal_set_message(t('Order !order_number has been moved back to the invoice state.',
+    array('!order_number' => $order->order_number)));
+}
+
+/**
+ * Determines whether or not an order is an invoice.
+ *
+ * @param stdClass $order
+ *   Commerce order entity to be evaluated.
+ *
+ * @return boolean
+ *   Whether or not the order is an invoice.
+ */
+function commerce_order_invoice_is_invoice($order) {
+  return (commerce_order_get_properties($order, array(), 'state') == 'invoice'
+    || commerce_order_invoice_order_has_invoice_items($order));
+}

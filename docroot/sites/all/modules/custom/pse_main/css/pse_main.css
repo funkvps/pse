@@ -1,0 +1,188 @@
+@media (min-width: 1300px) {
+  .page-node-add-customer-area-download .node-form .vertical-tabs,
+  .page-node-add-news-articles .node-form .vertical-tabs,
+  .page-node-add-events-and-webinar .node-form  .vertical-tabs,
+  .page-node-add-training-course .node-form  .vertical-tabs,
+  .page-node-add-page .node-form  .vertical-tabs,
+  .page-node-edit.node-type-customer-area-download .node-form  .vertical-tabs,
+  .page-node-edit.node-type-news-articles .node-form .vertical-tabs,
+  .page-node-edit.node-type-events-and-webinar .node-form  .vertical-tabs,
+  .page-node-edit.node-type-training-course .node-form  .vertical-tabs,
+  .page-node-edit.node-type-page .node-form .vertical-tabs{
+    margin-right: 400px;
+  }
+  .page-node-add-events-and-webinar .node-form  .form-actions,
+  .page-node-add-news-articles .node-form  .form-actions,
+  .page-node-add-training-course .node-form  .form-actions,
+  .page-node-add-customer-area-download .node-form .form-actions,
+  .page-node-add-page .node-form .form-actions,
+  .page-node-edit.node-type-customer-area-download .node-form .form-actions,
+  .page-node-edit.node-type-events-and-webinar .node-form .form-actions,
+  .page-node-edit.node-type-training-course .node-form .form-actions,
+  .page-node-edit.node-type-page .node-form .form-actions,
+  .page-node-edit.node-type-news-articles .node-form .form-actions{
+    max-width: 400px;
+    position: fixed;
+    top: 170px;
+    right: 20px;
+  }
+}
+.field-widget-entityreference-view-widget table th,
+.field-widget-entityreference-view-widget table td,
+.field-widget-entityreference-view-widget tr.odd .form-item,
+.field-widget-entityreference-view-widget tr.even .form-item{
+  white-space: normal;
+}
+.field-name-field-menu-ref td.field-multiple-drag {
+  width: 1px!important;
+}
+
+@media (min-width: 1200px) {
+  .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons, 
+  .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons, 
+  .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons 
+  {
+    float: left;
+    margin-right: 90px;
+    margin-bottom: 50px;
+  }
+  
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons label, 
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons label, 
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons label,
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons label, 
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons label, 
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons label,
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons label,
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons label,
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons label {
+    width: auto;
+    float: none;
+    text-align: left;
+  }
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons .form-checkboxes, 
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons .form-checkboxes, 
+  .page-node-edit.node-type-company .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons .form-checkboxes,
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons .form-checkboxes, 
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons .form-checkboxes, 
+  .page-user-register .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons .form-checkboxes,
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-regions.field-widget-options-buttons .form-checkboxes, 
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-sectors.field-widget-options-buttons .form-checkboxes, 
+  .page-user-edit .field-type-taxonomy-term-reference.field-name-field-pse-tax-products.field-widget-options-buttons .form-checkboxes{
+    width: auto;
+    float: none;
+  }
+  form .field-name-field-profile-sector-interest label {
+    text-align: left;
+  }
+}
+
+.form-item-htmlmail-plaintext {
+  margin-left: 205px;
+}
+.form-item-htmlmail-plaintext .help-block {
+  margin-left: 0;
+}
+
+form.node-form .field-name-field-profile-sector-interest {
+  clear: both;
+}
+
+
+.form-item.form-type-checkbox.form-item-invoice {
+  display: none;
+}
+
+.node-form .form-wrapper {
+  margin-bottom: 30px;
+}
+
+#edit-field-collection-newsarticle-und-0-field-news-content-und-0-format,
+#edit-field-col-media-und-1-field-media-description-und-0-format,
+#field-col-media-und-0-field-media-description-add-more-wrapper {
+/*  display: none;*/
+}
+.text-format-wrapper .filter-wrapper{
+  height: 1px;
+  overflow: hidden;
+  margin: 0!important;
+  padding: 0!important;
+  border: 0 none!important;
+}
+
+.vertical-tabs-pane .fieldset-wrapper .fieldset-description {
+  margin-bottom: 20px;
+}
+
+#admin-menu #admin-menu-menu .content-type-group-name {
+  background-color: #666;
+  color: #FFFFFF;
+  font-size: 12px;
+  line-height: 25px;
+}
+
+#block-system-main .content-type-group-name{
+  font-size: 2em;
+  list-style-image: none;
+  background: transparent;
+  margin-top: 50px;
+}
+
+.number-of-existing-nodes {
+  display: inline-block;
+}
+
+body.page-node-add #block-system-main > .content > ul.admin-list .label > a{
+  display: inline-block;
+  min-width: 200px;
+}
+
+body.page-node-add #block-system-main ul.admin-list li {
+  margin-bottom: 13px;
+}
+
+.pse-commonly-used h3,
+.pse-rarely-used h3{
+  margin-top: 60px;
+  margin-bottom: 10px;
+}
+
+/*.pse-commonly-used {
+  margin-top: 30px;
+}*/
+
+body.html div.dev-query {
+  color: #000;
+}
+body.html.adminimal-theme > div.dev-query {
+  color: #666;
+  background-color: transparent;
+}
+
+.page-admin-people-permissions #page {
+  overflow: auto;
+}
+
+#edit-field-field-permissions-permissions {
+  width: 95vw;
+  overflow: auto;
+}
+
+#preview-wrapper .responsive {
+  float: right;
+  height: 100%;
+}
+
+#preview-wrapper .responsive:before {
+  content: 'resized preview';
+  float: right;
+}
+#preview-wrapper .responsive img{
+  border: 5px solid #CCCCCC;
+  padding: 5px;
+  width: auto;
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  float: right;
+}

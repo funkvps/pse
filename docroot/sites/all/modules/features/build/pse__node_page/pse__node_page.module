@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Page feature.
+ */
+
+include_once 'pse__node_page.features.inc';

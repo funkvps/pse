@@ -1,0 +1,8 @@
+name = PSE: Backgrounds
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = image
+features[field_instance][] = node-backgrounds-field_background_image
+features[node][] = backgrounds
+features[features_api][] = api:2

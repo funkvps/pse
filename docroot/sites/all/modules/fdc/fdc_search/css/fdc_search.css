@@ -1,0 +1,130 @@
+#search {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0.8);
+
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+    -ms-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+
+    -webkit-transform: translate(0px, -100%) scale(0, 0);
+    -moz-transform: translate(0px, -100%) scale(0, 0);
+    -o-transform: translate(0px, -100%) scale(0, 0);
+    -ms-transform: translate(0px, -100%) scale(0, 0);
+    transform: translate(0px, -100%) scale(0, 0);
+
+    opacity: 0;
+}
+
+#search.open {
+    -webkit-transform: translate(0px, 0px) scale(1, 1);
+    -moz-transform: translate(0px, 0px) scale(1, 1);
+    -o-transform: translate(0px, 0px) scale(1, 1);
+    -ms-transform: translate(0px, 0px) scale(1, 1);
+    transform: translate(0px, 0px) scale(1, 1); 
+    opacity: 1;
+}
+
+#search input[type="search"] {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    /*color: rgb(255, 255, 255);*/
+    color: rgb(255, 136, 48);
+    background: rgba(0, 0, 0, 0);
+    font-size: 30px;
+    font-weight: 300;
+    text-align: center;
+    border: 0px;
+    margin: 0px auto;
+    margin-top: -51px;
+    padding-left: 30px;
+    padding-right: 30px;
+    outline: none;
+}
+#search .btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: 61px;
+    margin-left: -45px;
+}
+#search .close {
+    position: fixed;
+    /*top: 15px;*/
+    top: 115px;
+    right: 15px;
+    color: #fff;
+    background-color: #428bca;
+    border-color: #357ebd;
+    opacity: 1;
+    padding: 10px 17px;
+    font-size: 27px;
+}
+
+.header_search #search_input {
+    width: 200px;
+    padding: 5px;
+}
+.header_search #search_results {
+    font-size: .8em;
+}
+
+
+
+#scrollable-dropdown-menu .tt-dropdown-menu {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+
+#search_results div.wrap {
+	padding: 5px;
+}
+#search_results .wrap {
+	position: absolute;
+    right: 0;
+	z-index: 999;
+	/*width: 100%;*/
+	/*left: 0;*/
+	
+	background: #fff;
+	-moz-box-shadow: 0 10px 10px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 10px 10px rgba(0,0,0,0.5);
+	box-shadow: 0 10px 10px rgba(0,0,0,0.5);
+}
+.search-item {
+    padding: 3px 0;
+}
+.search-item strong {
+    font-weight: 400;
+}
+.search-item a {
+    color: #666;
+}
+.search-item a:hover {
+    color: #000;
+}
+.more_suggestions a {
+    margin-top: 10px;
+    display: block;
+    padding: 5px;
+    border-top: 1px solid #ccc;
+}
+
+
+.search_url
+{
+	font-size: .8em
+}
+
+.search_occurrence
+{
+	
+	font-size: 0.7em
+}

@@ -1,0 +1,89 @@
+/**
+ *	 PSE
+ *
+ *	 Menu only
+ */
+
+
+
+
+#div1, #div2, #div3, 
+#div4, #div5, #div6, #div7 
+{width: 920px;
+display: hidden;
+padding-left: 20px;
+padding-bottom: 0.75em;		
+padding-top: 0.5em;
+background-color: rgba(102, 102, 102, 0.2);
+border-radius: 4px;
+color: #fff;
+display: none;
+}
+
+
+body#hub div.home #div1, body#hub div.home #div2, body#hub div.home #div3, body#hub div.home #div4, body#hub div.home #div5, body#hub div.home #div6, body#hub div.home #div7
+{background-color: rgba(255, 255, 255, 0.75);}
+
+
+ul.menu {
+vertical-align: top;
+display: inline-block;
+line-height: 100%;
+margin:0; padding: 0;
+margin-right: 1em;
+list-style: none;
+width: 12.75em;
+
+}
+
+ul.menu li {
+padding-top: .5em;
+padding-bottom: .5em;
+border-bottom: 1px solid #eee;
+
+ }
+
+ul.menu li a{
+width: 12.5em;
+display: block;
+color: #006c85;}
+
+ul.menu li a:hover{
+color: #fff;}
+
+
+.close {
+vertical-align: top;
+float: right;
+display: block;
+width: 10px;
+height: 10px;
+position: relative;
+left: -10px;
+top: -2px;
+margin:0; padding: 0;
+list-style: none;
+border: none;
+
+/* IE 8 */
+-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+
+/* IE 5-7 */
+filter: alpha(opacity=100);
+
+/* Netscape */
+-moz-opacity: 1;
+
+/* Safari 1.x */
+-khtml-opacity: 1;
+
+/* Good browsers */
+opacity: 1;
+
+}
+
+
+.button
+{
+    cursor:pointer;
+}

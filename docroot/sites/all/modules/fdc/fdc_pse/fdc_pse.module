@@ -1,0 +1,260 @@
+<?php
+define('PSE_ADMIN_PRODUCTS', 'admin/content/products');
+define('PSE_ADMIN_USERS', 'admin/people/manage');
+
+function fdc_pse_menu() {
+
+	/**
+	 * Training		in fdc_pse_training_cources.inc
+	 */
+	$items['fdc_pse_cart/ajax_add_to_cart'] = array(
+		'page callback' => 'fdc_pse_ajax_add_to_cart',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	
+	
+	$items['fdc_pse_cart/fdc_pse_training_ajax_products/%'] = array(				// function found in fdc_pse_training_courses.inc
+		'page callback' => 'fdc_pse_training_ajax_products',
+		'page arguments' => array(2),
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+	$items['fdc_pse_cart/update_cart'] = array(
+		'page callback' => 'fdc_pse_ajax_cart_update',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+	);
+
+	$items[PSE_ADMIN_PRODUCTS] = array(										// admin menu item
+		'title' => 'Training Products',
+		'page callback' => 'fdc_pse_product_menu',
+		'access callback' => TRUE,
+		'type' => MENU_NORMAL_ITEM,
+	);
+	$items[PSE_ADMIN_USERS] = array(										// admin menu item
+		'title' => 'PSE Manage Users',
+		'page callback' => 'fdc_pse_people_menu',
+		'access callback' => TRUE,
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+
+	$items['events-old'] = array(
+		'title' => 'Events',
+		'page callback' => 'fdc_pse_events_list',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+	$items['templinks'] = array(
+		'title' => 'Events',
+		'page callback' => 'fdc_pse_content_temp',
+		'access callback' => TRUE,
+		'type' => MENU_CALLBACK,
+	);
+
+	$events_terms = taxonomy_get_tree(33);
+	foreach ($events_terms as $e) {
+		$items['events-old/' . fdc_pse_urlSanitizer($e->name)] = array(
+			'title' => $e->name,
+			'page arguments' => array($e->tid),
+			'page callback' => 'fdc_pse_events_list',
+			'access callback' => TRUE,
+			'type' => MENU_CALLBACK,
+		);
+	}
+
+	return $items;
+}
+
+function fdc_pse_theme() {
+	return array(
+		'fdc_pse_view_cart_tpl' => array(
+			'template' => 'fdc_pse_view_cart_tpl',
+		),
+		'fdc_pse_events_tpl' => array(
+			'template' => 'fdc_pse_events_tpl',
+		),
+	);
+}
+
+//function fdc_pse_permission() {
+//	return array(
+//		'fdc challenge utils' => array(
+//			'title' => t('Administrate fdc Settings'),
+//			'description' => t('Stuff'),
+//		),
+//	);
+//}
+
+
+
+include_once(drupal_get_path('module', 'fdc_pse') . '/fdc_pse_func.func');				// all the methods related to the module
+include_once(drupal_get_path('module', 'fdc_pse') . '/fdc_pse_world_wide.inc');			// world wide content methods
+include_once(drupal_get_path('module', 'fdc_pse') . '/fdc_pse_training_courses.inc');	// training course content
+include_once(drupal_get_path('module', 'fdc_pse') . '/fdc_pse_cart_modification.inc');	// shopping cart ajax
+
+
+
+
+function fdc_pse_ajax_cart_update() {
+	global $user;
+	$uid = $user->uid;
+	if ($uid) {									//check if user has logged in
+		fdc_pse_user_session($user);		
+	}
+	else {	
+		fdc_pse_quote_output_guest();			//checkout as a guest
+	}
+}
+function fdc_pse_people_menu()
+{
+	drupal_goto('/admin-view-users');
+}
+function fdc_pse_content_temp() {
+	$url_b = $GLOBALS['base_url'];
+	$query = db_query("SELECT
+	node.nid,
+	node.title,
+	node.`status`,
+	node.type
+FROM
+	node
+WHERE
+	node.type != 'error_page'
+AND node.type != 'backgrounds'
+AND node.type != 'menu_block'
+AND node.type != 'settings'
+AND node.type != 'download_signup_form'
+AND node.type != 'footer_blocks'
+AND node.type != 'publication'
+AND node.type != 'customer_area_page'
+AND node.type != 'company'
+ORDER BY
+	node.title ASC")->fetchAll();
+	if (!empty($query)) {
+		?>
+		<ol>
+			<?php
+			foreach ($query as $key => $value) {
+				?>
+				<li>
+					<a href="<?php echo url('node/' . $value->nid); ?>"><?php echo $value->title; ?> </a> - -<?php echo $value->type; ?>
+					<strong><?php echo $url_b;?><?php echo url('node/' . $value->nid); ?></strong>
+				</li>
+				<?php
+			}
+			?>
+		</ol>
+		<?php
+	}
+}
+
+function fdc_pse_product_menu() {
+	drupal_goto('admin/commerce/products');
+}
+
+function fdc_pse_page($node_id) {
+	if (!empty($node_id)) {
+		if (function_exists('fdc_add_meta')) {   // ADDS META 
+			fdc_add_meta($node_id);
+		}
+	}
+}
+
+function fdc_pse_quote_output($user) {
+	$quantity = 0;
+	$order = commerce_cart_order_load($user->uid);
+	if ($order) {
+		$wrapper = entity_metadata_wrapper('commerce_order', $order);
+		$line_items = $wrapper->commerce_line_items;
+		$quantity = commerce_line_items_quantity($line_items, commerce_product_line_item_types());
+	}
+	return format_plural($quantity, '1', '@count');
+}
+
+function fdc_pse_quote_output_guest() {
+
+	$quantity = 0;
+	$order = commerce_cart_order_load();
+	if ($order) {
+		$wrapper = entity_metadata_wrapper('commerce_order', $order);
+		$line_items = $wrapper->commerce_line_items;
+		$quantity = commerce_line_items_quantity($line_items, commerce_product_line_item_types());
+	}
+	echo  format_plural($quantity, '1', '@count') . "";
+}
+
+function fdc_pse_user_session($user) {
+	if ($user->uid != 0) {
+
+
+		if (fdc_pse_quote_output($user) != 0) {
+//			$result = 'Your Basket contains <a href="/cart">' . fdc_pse_quote_output($user) . "</a>";
+			$result = 'Basket (' . fdc_pse_quote_output($user) . ")";
+			print_r($result);
+			exit();
+		}
+		else {
+//			echo 'Your Basket is empty';
+//			echo $result;
+			exit();
+		}
+	}
+	else {
+//		$result = 'Your Basket contains <a href="/cart">' . fdc_pse_quote_output_guest() . "</a>";
+		$result = 'Basket (' . fdc_pse_quote_output_guest() . ")";
+		echo $result;
+		exit();
+	}
+}
+
+function fdc_pse_urlSanitizer($name) {
+	$url = str_replace(array('--'), array('-'), str_replace('+', '-', urlencode(strtolower(preg_replace('/[^A-Za-z0-9-]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', str_replace(' ', '-', str_replace('&', '', $name))))))));
+	if (!empty($url)) {
+		return $url;
+	}
+}
+
+
+
+function fdc_pse_get_user_profile() {
+	global $user;
+	if ($user->uid > 0) {
+		$q = db_query("SELECT
+	field_data_field_profile_country.field_profile_country_value AS country,
+	field_data_field_profile_city.field_profile_city_value AS city,
+	field_data_field_profile_company.field_profile_company_value AS company,
+	field_data_field_profile_department.field_profile_department_value AS department,
+	field_data_field_profile_division.field_profile_division_value AS division,
+	field_data_field_profile_last_name.field_profile_last_name_value AS last_name,
+	field_data_field_profile_first_name.field_profile_first_name_value AS first_name,
+	field_data_field_profile_mobile.field_profile_mobile_value AS mobile,
+	field_data_field_profile_position.field_profile_position_value AS position,
+	field_data_field_profile_postcode.field_profile_postcode_value AS postcode,
+	field_data_field_profile_state.field_profile_state_value AS state,
+	field_data_field_profile_street.field_profile_street_value AS street,
+	users.mail as email
+FROM
+	users
+INNER JOIN field_data_field_profile_country ON users.uid = field_data_field_profile_country.entity_id
+LEFT JOIN field_data_field_profile_city ON users.uid = field_data_field_profile_city.entity_id
+LEFT JOIN field_data_field_profile_company ON users.uid = field_data_field_profile_company.entity_id
+LEFT JOIN field_data_field_profile_department ON users.uid = field_data_field_profile_department.entity_id
+LEFT JOIN field_data_field_profile_division ON users.uid = field_data_field_profile_division.entity_id
+LEFT JOIN field_data_field_profile_last_name ON users.uid = field_data_field_profile_last_name.entity_id
+LEFT JOIN field_data_field_profile_first_name ON users.uid = field_data_field_profile_first_name.entity_id
+LEFT JOIN field_data_field_profile_mobile ON users.uid = field_data_field_profile_mobile.entity_id
+LEFT JOIN field_data_field_profile_position ON users.uid = field_data_field_profile_position.entity_id
+LEFT JOIN field_data_field_profile_postcode ON users.uid = field_data_field_profile_postcode.entity_id
+LEFT JOIN field_data_field_profile_state ON users.uid = field_data_field_profile_state.entity_id
+LEFT JOIN field_data_field_profile_street ON users.uid = field_data_field_profile_street.entity_id
+WHERE
+	users.uid = :uid", array(":uid" => $user->uid))->fetchObject();
+
+		if (!empty($q)) {
+			return $q;
+		}
+	}
+}
+

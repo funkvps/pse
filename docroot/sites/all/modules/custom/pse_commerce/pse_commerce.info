@@ -1,0 +1,4 @@
+name = PSE commerce
+description = Fine tunes commerce user experience.
+core = 7.x
+package = BrightLemon

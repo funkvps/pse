@@ -1,0 +1,70 @@
+name = FDC Bootstrap
+description = Webdesign & Development by <a href="http://www.fdcstudio.co.uk">FDC</a>
+core = 7.x
+base theme = bootstrap
+
+; My Heart Aches So My Mind Bleeds - this is bad bad theme - Audrius@BrightLemon, 03/03/2016
+
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Regions
+;;;;;;;;;;;;;;;;;;;;;
+
+regions[header]         = 'Top Bar'
+regions[highlighted]    = 'Highlighted'
+regions[before_sidebars] = 'Before sidebars'
+regions[content]        = 'Content'
+regions[content_second_chance]        = 'Content second chance'
+regions[sidebar_first]  = 'Primary sidebar'
+regions[sidebar_second] = 'Secondary sidebar'
+regions[after_sidebars] = 'After sidebars'
+regions[footer]         = 'Footer'
+regions[social_block]         = 'Social Block'
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Stylesheets
+;;;;;;;;;;;;;;;;;;;;;
+
+stylesheets[all][] = css/jquery.fancybox.css
+stylesheets[all][] = css/slick.css
+stylesheets[all][] = css/yamm.css
+stylesheets[all][] = css/main.css
+stylesheets[all][] = css/style.css
+; style after Brightlemon started development
+stylesheets[all][] = css/style_bright.css 
+stylesheets[all][] = css/og_map.css 
+
+; For information on choosing the desired method, please read the Drupal
+; Bootstrap sub-theme "how-to" documentation:
+; https://drupal.org/node/1978010
+
+; ;----------------------------------
+; ; METHOD 1: Bootstrap Source Files
+; ;----------------------------------
+; 
+; ;;;;;;;;;;;;;;;;;;;;;
+; ;; Scripts
+; ;;;;;;;;;;;;;;;;;;;;;
+; 
+; scripts[] = 'bootstrap/js/affix.js'
+; scripts[] = 'bootstrap/js/alert.js'
+; scripts[] = 'bootstrap/js/button.js'
+; scripts[] = 'bootstrap/js/carousel.js'
+; scripts[] = 'bootstrap/js/collapse.js'
+; scripts[] = 'bootstrap/js/dropdown.js'
+; scripts[] = 'bootstrap/js/modal.js'
+; scripts[] = 'bootstrap/js/tooltip.js'
+; scripts[] = 'bootstrap/js/popover.js'
+; scripts[] = 'bootstrap/js/scrollspy.js'
+; scripts[] = 'bootstrap/js/tab.js'
+; scripts[] = 'bootstrap/js/transition.js'
+;
+; ; Disable BootstrapCDN if using Bootstrap source files in your sub-theme.
+ ;settings[bootstrap_cdn] = ''
+
+ scripts[] = 'js/jquery.fancybox.js'
+ scripts[] = 'js/slick.min.js'
+ scripts[] = 'js/noconflict.js'
+ scripts[] = 'js/jquery_menu.js'
+ scripts[] = 'js/theme.js'
+

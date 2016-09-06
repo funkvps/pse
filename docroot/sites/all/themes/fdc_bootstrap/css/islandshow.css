@@ -1,0 +1,107 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - overrides and imagery
+ */
+
+
+
+/** main carousel div **/
+
+#pseshow {
+		width: 940px;
+		height: 450px;
+		display: block;
+		clear: both;
+		background-color: #fff;
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+}
+	
+
+.showtext1, .showtext2, .showtext3, .showtext4, .showtext5 {
+	background-repeat: no-repeat;
+	width: 940px;
+	height: 400px;
+	color: #444;
+	font-size: 140%;
+}
+
+
+.showtext1 h1, .showtext2 h1, .showtext3 h1, .showtext4 h1, .showtext5 h1 {
+		padding-left: 30px;
+		padding-top: 30px;
+		font-size: 200%;
+		font-weight: normal;}
+		
+.showtext1 p,.showtext2 p, .showtext3 p, .showtext4 p, .showtext5 p,
+.showtext1 h2,.showtext2 h2, .showtext3 h2, .showtext4 h2, .showtext5 h2   {
+		padding-left: 30px;
+		colour: #fff;
+}
+
+.hubintro {padding-top: 1em;
+		padding-left: 30px;
+		font-size: 70%;
+		line-height: 140%;
+		color: #333;
+		width: 400px;}
+
+
+
+
+
+
+     
+        .next,
+        .prev {
+            cursor:pointer;
+        }
+        
+        .carousel {
+            margin:0;
+            padding:0;
+            list-style:none;
+            width:940px;
+            height:450px;
+            overflow:hidden;
+
+            
+        }
+        
+        .carousel li {
+            text-align: left;
+            display:block;
+            width:940px;
+            height:450px;
+            
+        }
+        
+        .carousel li img {
+}
+        
+        
+.carousel-pagination li {
+            display:block;
+            position: relative;
+            left: 450px;
+            top: -20px;
+            width:10px;
+            height:10px;
+            margin-right:5px;
+            cursor:pointer;
+            float:left;
+            background:#333;
+		border-radius: 5px;
+		-moz-box-shadow: 0px 0px 5px #fff;
+		-webkit-box-shadow: 0px 0px 5px #fff;
+		box-shadow: 0px 0px 5px #fff;
+            
+        }
+        
+        .carousel-pagination .carousel-pagination-active {
+            background: #5eacbe;
+        }
+

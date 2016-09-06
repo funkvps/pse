@@ -1,0 +1,159 @@
+<?php
+/**
+ * @file
+ * Installation and update hooks for commerce order invoice.
+ */
+
+/**
+ * Implements hook_schema_alter().
+ *
+ * Adds the invoice column to the commerce_product table.
+ */
+function commerce_order_invoice_schema_alter(&$schema) {
+  $schema['commerce_product']['fields']['invoice'] = array(
+    'description' => 'Boolean indicating whether or not the product should be invoiced.',
+    'type' => 'int',
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+
+  $schema['commerce_product_type']['fields']['invoice'] = array(
+    'description' => 'Boolean indicating whether or not products of this type are to be invoiced by default.',
+    'type' => 'int',
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+
+  $schema['commerce_line_item']['fields']['invoice'] = array(
+    'description' => 'Boolean indicating whether or not the line item is part of an invoice.',
+    'type' => 'int',
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Adds fields to entity tables based on the altered schema.
+ */
+function commerce_order_invoice_install() {
+  $schema = array();
+  commerce_order_invoice_schema_alter($schema);
+  foreach ($schema as $table => $table_schema) {
+    foreach ($table_schema['fields'] as $field => $spec) {
+      db_add_field($table, $field, $spec);
+    }
+  }
+  _commerce_order_invoice_create_due_date_field();
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Removes fields from entity tables based on the altered schema.
+ */
+function commerce_order_invoice_uninstall() {
+  $schema = array();
+  commerce_order_invoice_schema_alter($schema);
+  foreach ($schema as $table => $table_schema) {
+    foreach ($table_schema['fields'] as $field => $spec) {
+      db_drop_field($table, $field);
+    }
+  }
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Attach a due date field to orders.
+ */
+function commerce_order_invoice_update_7100() {
+  _commerce_order_invoice_create_due_date_field();
+}
+
+/**
+ * Add a due_date field to the order invoice.
+ */
+function _commerce_order_invoice_create_due_date_field() {
+  $t = get_t();
+  $field_name = 'commerce_order_invoice_due_date';
+  $field = field_info_field($field_name);
+  if (empty($field)) {
+    // Define the due date field.
+    $field_config = array(
+      $field_name => array(
+        'field_name' => $field_name,
+        'cardinality' => 1,
+        'type' => 'datestamp',
+        'module' => 'date',
+        'settings' => array(
+          'granularity' => array(
+            'day' => 'day',
+            'hour' => 0,
+            'minute' => 0,
+            'month' => 'month',
+            'second' => 0,
+            'year' => 'year',
+          ),
+          'repeat' => 0,
+          'timezone_db' => '',
+          'todate' => '',
+          'tz_handling' => 'none',
+        ),
+      ),
+    );
+
+    // Create the field.
+    field_create_field($field_config[$field_name]);
+  }
+
+  $field_instance_existing = field_read_instance('commerce_order', $field_name, 'commerce_order');
+  if (empty($field_instance_existing)) {
+    // Define the date instance for the due date field.
+    $field_instance = array(
+      $field_name => array(
+        'field_name' => $field_name,
+        'label' => $t('Due date for the invoice'),
+        'entity_type' => 'commerce_order',
+        'bundle' => 'commerce_order',
+        'widget' => array(
+          'active' => 1,
+          'module' => 'date',
+          'settings' => array(
+            'display_all_day' => 0,
+            'increment' => '15',
+            'input_format' => 'm/d/Y - H:i:s',
+            'input_format_custom' => '',
+            'label_position' => 'above',
+            'repeat_collapsed' => 0,
+            'text_parts' => array(),
+            'year_range' => '-3:+3',
+          ),
+          'type' => 'date_popup',
+        ),
+        'display' => array(
+          'default' => array(
+            'label' => 'above',
+            'module' => 'date',
+            'settings' => array(
+              'format_type' => 'long',
+              'fromto' => 'both',
+              'multiple_from' => '',
+              'multiple_number' => '',
+              'multiple_to' => '',
+              'show_repeat_rule' => 'show',
+            ),
+            'type' => 'date_default',
+          ),
+        ),
+      ),
+    );
+
+    // Create the instance.
+    $field_instance_created = field_create_instance($field_instance[$field_name]);
+  }
+}

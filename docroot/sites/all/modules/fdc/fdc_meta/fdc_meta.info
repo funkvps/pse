@@ -1,0 +1,6 @@
+name = FDC Meta
+description = Overrides the current meta system (Surfaraz Thakur @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+version = "7.x-0.1"
+core = 7.x

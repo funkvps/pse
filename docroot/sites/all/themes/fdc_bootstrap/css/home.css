@@ -1,0 +1,614 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Home - size etc. Used everywhere. Do not modify. use overrides.
+ */
+
+@import 'search.css';
+
+#pseshow {
+		width: 940px;
+		height: 450px;
+		display: block;
+		clear: both;
+		background-color: #fff;
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+}
+		
+#homegraphic h1 {
+		color: #fff;
+		font-size: 200%;
+		font-weight: normal;
+		width: 619px;}
+		
+a {
+	color: #5eacbe;	}
+
+
+
+
+/**
+ *
+ *	 Intro Islands for homepage - size etc. Used everywhere. Do not modify. use overrides.
+ */
+
+
+ul#introislands {
+list-style: none;
+clear: both;
+
+font-size: 120%;
+line-height: 130%;		
+}
+
+
+ul#introislands li:first-child {
+
+padding-right: 30px;
+margin-top: 20px;	
+
+color: #bbb;
+text-align: top;		
+}		
+
+	
+		
+ul#introislands li:nth-child(2) {
+
+
+vertical-align: top;
+}
+				
+ul#introislands li a{ 
+text-decoration: none;
+		}
+
+ul#introislands footer {		
+padding: 15px 0px;
+text-transform: uppercase;
+letter-spacing: 0.2em;
+font-size: 70%;
+		}
+		
+		
+
+.quote{
+color: #888;
+	font-size: 100%;
+	line-height: 140%;
+	display: block;
+	min-height: 3em;
+	width: 90%;
+	padding-top: 43px;
+	background-image: url(../img/quoteopen2.png);
+	background-repeat: no-repeat;
+
+
+
+}
+
+.quotename {
+	color: #888;
+	font-size: 70%;
+	text-transform: uppercase;
+	font-weight: normal;
+	letter-spacing: .2em;
+	background-image: url(../img/quoteclose2.png);
+	background-repeat: no-repeat;
+	background-position: 265px 0px;
+	min-height: 2.5em;
+	padding-right: 50px;
+}
+
+		
+		
+		
+		
+		
+		
+		
+.column {
+font-size: 80%;
+width: 140px;
+margin-right: 20px;
+display: inline-block;
+float: left;
+		}
+
+
+
+/* sector icons */
+
+
+#sectorbar {padding: 0;
+margin-top: 20px;	
+margin-bottom: 20px;}
+		
+ul.sectors{
+width: 960px;
+
+padding: 0px 0px;
+display: block;
+list-style: none;
+font-size: 85%;
+text-align: top;
+vertical-align: top;
+line-height: 100%;
+}
+
+ul.sectors li {
+
+width: 102px;
+height: 80px;
+
+display: inline-block;
+background-repeat: no-repeat; 
+background-position: 23px 0px;
+vertical-align: top;
+text-align: center;
+padding: 0px 0px;
+list-style: none;
+}
+
+ul.sectors a{
+color: #fff;
+}
+
+ul.sectors li a:hover, 
+{color: #fff;		
+}
+
+ul.sectors li:first-child {
+background-image: url(../img/icon_petrochem.png);
+}
+ul.sectors li:first-child:hover {
+background-image: url(../img/icon_petrochem2.png);
+}
+
+ul.sectors li:nth-child(2) {
+background-image: url(../img/icon_oilgas.png);
+
+}
+ul.sectors li:nth-child(2):hover {
+background-image: url(../img/icon_oilgas2.png);
+}
+
+ul.sectors li:nth-child(3) {
+background-image: url(../img/icon_lifesciences.png);
+
+}
+ul.sectors li:nth-child(3):hover {
+background-image: url(../img/icon_lifesciences2.png);
+}
+
+ul.sectors li:nth-child(4) {
+background-image: url(../img/icon_powerccs.png);
+
+}
+ul.sectors li:nth-child(4):hover {
+background-image: url(../img/icon_powerccs2.png);
+}
+
+
+ul.sectors li:nth-child(5) {
+background-image: url(../img/icon_fuelcells.png);
+}
+ul.sectors li:nth-child(5):hover {
+background-image: url(../img/icon_fuelcells2.png);
+}
+
+
+ul.sectors li:nth-child(6) {
+background-image: url(../img/icon_foodconsumer.png);
+
+}
+ul.sectors li:nth-child(6):hover {
+background-image: url(../img/icon_foodconsumer2.png);
+}
+
+ul.sectors li:nth-child(7) {
+background-image: url(../img/icon_specialtychem.png);
+}
+ul.sectors li:nth-child(7):hover {
+background-image: url(../img/icon_specialtychem2.png);
+}
+
+
+ul.sectors li:nth-child(8) {
+background-image: url(../img/icon_water.png);
+}
+ul.sectors li:nth-child(8):hover {
+background-image: url(../img/icon_water2.png);
+}
+
+ul.sectors li:nth-child(9) {
+background-image: url(../img/icon_academic.png);
+}
+ul.sectors li:nth-child(9):hover {
+background-image: url(../img/icon_academic2.png);
+}
+
+
+
+		
+
+
+ul#doubleislands {
+		list-style: none;
+		}
+		
+
+ul#doubleislands header {		
+		height: 7em;
+		padding-top: 6px;
+		padding-left: 6px;
+		}
+
+ul#doubleislands li.left {
+
+		padding: 0px 0;
+		border: 1px solid #666;
+		float: left;
+		/*margin-top: 20px;	*/
+		margin-top: 10px;
+		overflow: hidden;
+		border-radius: 4px 0px 0px 4px;
+	
+		background-image: linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -o-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -moz-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -webkit-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -ms-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0.021, rgb(83,83,83)),
+	color-stop(0.81, rgb(141,141,141))
+	);
+}	
+		
+		
+
+ul#doubleislands li.right {
+
+
+		padding: 0px 0;
+		border: 1px solid #666;
+		float: left;
+		/*margin-top: 20px;	*/
+		margin-top: 10px;
+		overflow: hidden;
+		border-radius: 0px 4px 4px 0px;
+
+		background-image: linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -o-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -moz-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -webkit-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(231,231,231) 81%);
+	background-image: -ms-linear-gradient(bottom, rgb(83,83,83) 81%, rgb(141,141,141) 81%);
+	background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0.021, rgb(83,83,83)),
+	color-stop(0.81, rgb(141,141,141))
+	);
+	
+}	
+	
+	
+	
+	
+		
+		
+ul#doubleislands li a { 
+		text-decoration: none;
+		color: #fff;
+		}
+		
+ul#doubleislands h2 {
+		margin-top: 0em;
+		font-weight: normal;
+		font-size: 120%;
+		line-height: 100%;
+		margin-bottom: 0.5em;
+		width: 90%;
+		color: #333;}
+		
+ul#doubleislands article {
+		}		
+
+ul#doubleislands article img {
+		max-width: 75px;
+		margin-right: 9px;
+		margin-left: 2px;
+		clear: left;}
+		
+ul#doubleislands p{
+	padding-top: 0.25em;
+	font-size: 90%;
+	line-height: 105%;
+	color: #fff;
+	width: 90%
+		}
+
+ul#doubleislands footer {		
+		padding: 5px 8px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-size: 70%;
+		margin-bottom: 1em;
+		}
+		
+
+
+ul.news {
+		clear: both;}
+
+ul.news li {
+		list-style: none;
+		border: 0px;
+		/*display: inline-block;*/
+		display: block;
+		/*float: left;*/
+		vertical-align: top;
+	
+				}	
+		
+ul.news li a{
+		font-size: 85%; 
+		border: 0px;
+		display: inline-block;
+		float: left;
+		vertical-align: top;
+		/*width: 125px;*/
+		/*height: 60px;*/
+		padding-left: 15px;
+		margin-top: 5px;
+		margin-right: 5px;
+		background-image: url(../img/newsarrow.png);
+		background-repeat: no-repeat;
+		background-position: 0 5px;
+		padding-bottom: 5px;
+		color: #333;}
+
+	ul.news li:first-child{
+		border-left: 0px;}
+						
+
+ul.news li a:hover{
+		/*border-bottom: 1px dashed #555;*/
+}
+
+ul.diary li {
+		list-style: none;
+		border: 0px;
+/*		display: block;
+		float: left;*/
+		vertical-align: top;
+		/*height: 60px;*/		
+}	
+		
+ul.diary li a {
+		font-size: 85%;
+		/*display: inline-block;*/
+		display: block;
+		/*float: left;*/
+		/*height: 60px;*/
+		vertical-align: top;
+		/*width: 140px;*/
+/*		padding-left: 5px;
+		margin-top: 5px;
+		margin-right: 5px;
+		padding-bottom: 5px;*/
+
+		color: #333;}
+		
+		
+ul.diary li:first-child{
+		border-left: 0px;}						
+
+ul.diary li a:hover{
+		border-bottom: 1px dashed #555;}	
+			}	
+				
+ul#outroislands {
+		list-style: none;
+		clear: both;
+		}
+
+
+ul#outroislands li {
+		color: #999;
+		float: left;
+		margin-top: 10px;	
+		overflow: hidden;
+		width: 320px;
+		}
+
+
+ul#outroislands li header {
+		font-size: 85%;
+		}
+		
+		
+ul#outroislands li h2 {
+		color: #999;
+		}
+				
+				
+		
+				
+ul#outroislands li a{ 
+		text-decoration: none;
+		color: #5eacbe;		
+		}
+
+ul#outroislands footer {		
+		padding: 0px 0px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		font-size: 70%;
+		}
+		
+
+
+
+
+
+
+/**
+ *	 localised overrides of general island styles
+ */
+
+
+#threeislands .wwt {
+	background-image: url(../img/islandwwt.png);
+	background-position: 0px 0px;}
+/** legibility override dependent on graphic used */
+ul#threeislands .wwt h1,
+ul#threeislands .wwt h2,
+/* ul#threeislands .wwt p, */
+ul#threeislands .wwt a
+{color: #fff;}
+
+#threeislands .apmf {
+	background-image: url(../img/islandapmf.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .apmf h1,
+ul#threeislands .apmf h2, 
+ul#threeislands .apmf p,
+ul#threeislands .apmf a
+{color: #fff; }
+	
+#threeislands .island_home1 {
+	background-image: url(../img/islandbg_home1.jpg);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .island_home1 h1,
+ul#threeislands .island_home1 h2, 
+ul#threeislands .island_home1 p,
+ul#threeislands .island_home1 a
+{color: #fff;}
+
+ul#threeislands .island_home1 h2, 
+ul#threeislands .island_home1 p {
+	margin-left:85px;}
+
+
+#threeislands .island_home2 {
+	background-image: url(../img/islandbg_pccs.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .island_home2 h1,
+ul#threeislands .island_home2 h2, 
+ul#threeislands .island_home2 p,
+ul#threeislands .island_home2 a
+{color: #fff;}
+
+#threeislands .island_home3 {
+	background-image: url(../img/islandbgapmf3.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .island_home3 h1,
+ul#threeislands .island_home3 h2, 
+ul#threeislands .island_home3 p,
+ul#threeislands .island_home3 a
+{color: #fff;}
+
+<!-- lose this -->
+
+#threeislands .oilgas {
+	background-image: url(../img/islandoilgas.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .oilgas h1,
+ul#threeislands .oilgas h2, 
+ul#threeislands .oilgas p,
+ul#threeislands .oilgas a
+{color: #fff;}
+
+
+#threeislands .platform {
+	background-image: url(../img/banner_platform.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .platform h1,
+ul#threeislands .platform h2, 
+ul#threeislands .platform p,
+ul#threeislands .platform a
+{color: #fff;}
+
+
+#threeislands .video {
+	background-image: url(../img/banner_video.png);
+	background-position: 0px 0px;}
+	
+/** legibility override dependent on graphic used */
+ul#threeislands .video h1,
+ul#threeislands .video h2, 
+ul#threeislands .video p,
+ul#threeislands .video a
+{color: #fff;}
+	
+
+
+
+
+
+
+
+
+
+
+/**
+ *	 home footer
+ */
+
+
+	
+.home footer#bottom ul {
+	font-weight: bold;
+	padding: 0 0 20px;
+	list-style: none;
+	font-size: 95%;
+	color: #666;
+
+	}
+	
+.home footer#bottom ul li{
+	font-size: 110%;
+	font-weight: normal;
+	line-height: 130%;
+	padding-bottom: 0.5em;	
+}
+
+.home footer#bottom a, .home footer#bottom ul li a{
+	font-weight: roman;
+	color: #7e7e7e;
+
+	}
+		
+.home footer#bottom ul li	a:hover {
+	text-decoration: underline;
+	}	
+		
+.home footer#bottom ul li:first-child{
+	border-top: 1px solid #666;
+	padding-top: 0.5em;
+	margin-top: 0.5em;
+	}
+		
+
+
+

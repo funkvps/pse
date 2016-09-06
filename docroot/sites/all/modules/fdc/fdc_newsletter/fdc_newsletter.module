@@ -1,0 +1,302 @@
+<?php 
+/*
+ *	REGISTRATION FORM
+ *	TO DO:
+ *		- List out all registered interest, via admin panel. (SQL)
+ *		- Handle already submitted emails ("Sorry, you have already registered, do you wish to unsubscribe?")
+ */
+
+class fdc_newsletter_MailSystem extends DefaultMailSystem {
+  public function format(array $message) {
+    $message['body'] = implode("\n\n", $message['body']);
+    $message['body'] = drupal_wrap_mail($message['body']);
+    return $message;
+  }
+}
+
+function fdc_newsletter_node_view($node, $view_mode) {
+	// Basically this variable (fdcnewsletter) is added to the content variable within node
+	// thus it will appear on every single node view due to being added on every page load.
+	// so instead we limit it to certain types.
+	if ($node->type !== 'forum' && $view_mode != 'teaser' && $view_mode != 'teaser_with_node_type') {
+		$node->content['fdcnewsletter'] = drupal_get_form('fdc_newsletter_form', $node);
+	}
+}
+
+// Menu Hook
+function fdc_newsletter_menu() {
+	$items = array();
+	$items['admin/config/newslettersignup'] = array(
+		'title' => 'Newsletter Sign-Up',
+		'description' => '',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('fdc_newsletter_admin'),
+		'access arguments' => array('administer fdc_newsletter module'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+	$items['admin/config/newslettersignup/view'] = array(
+		'title' => 'Newsletter Sign-Up List',
+		'description' => 'View a list of all newsletters',
+		'page callback' => 'fdc_newsletter_view',
+		'access arguments' => array('administer fdc_newsletter module'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+	
+	return $items;
+}
+
+// Admin
+function fdc_newsletter_admin() {
+	/*
+	 *	Create admin page via selected fields.
+	 */
+	
+	// Bug in text_format, expects array of value instead of string.
+	// $email_body = variable_get('fdc_newsletter_settings_body', array('value' => '', 'format' => NULL));
+
+	$form = array();
+	
+	$form['fdc_newsletter_settings_markup'] = array(
+		'#markup' => '<p>Newsletter Sign-Up Settings</p><hr>'
+	);
+
+	$form['fdc_newsletter_settings_forward_email'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Forwarding Email'),
+		'#default_value' => variable_get('fdc_newsletter_settings_forward_email', variable_get('site_mail', ini_get('sendmail_from'))),
+		'#size' => 60,
+		'#maxlength' => 60,
+		'#description' => t("The email address all Buying Group Registrations are sent to on completion."),
+		'#required' => TRUE,
+	);
+
+	$form['fdc_newsletter_settings_complete'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Completion URL'),
+		'#default_value' => variable_get('fdc_newsletter_settings_complete', NULL),
+		'#size' => 60,
+		'#maxlength' => 120,
+		'#description' => t("The URL to redirect users to once submitting the form."),
+		'#required' => TRUE,
+	);
+	
+//	$form['fdc_newsletter_settings_markup2'] = array(
+//		'#markup' => '<hr>'
+//	);	
+
+//	$form['fdc_newsletter_settings_subject'] = array(
+//		'#type' => 'textfield',
+//		'#title' => t('Email Subject'),
+//		'#default_value' => variable_get('fdc_newsletter_settings_subject', 'Email Subject'),
+//		'#size' => 60,
+//		'#maxlength' => 60,
+//		'#description' => t("The email subject."),
+//		'#required' => TRUE,
+//	);
+//
+//	$form['fdc_newsletter_settings_body'] = array(
+//		'#type' => 'textarea',
+//		'#title' => t('Email Subject'),
+//		'#default_value' => variable_get('fdc_newsletter_settings_body', 'Email Body'),
+//		'#description' => t("The content of the email to be sent."),
+//		'#required' => TRUE,
+//	);
+	
+//	$form['fdc_newsletter_settings_body'] = array(
+//		'#type' => 'text_format',
+//		'#title' => t('Email Subject'),
+//		'#default_value' => $email_body['value'],
+//		'#format' => 'full_editor',
+//		'#size' => 60,
+//		'#maxlength' => 60,
+//		'#description' => t("The content of the email to be sent."),
+//		'#required' => TRUE,
+//	);
+	
+	/*
+	 *	Return.
+	 */
+	return system_settings_form($form);
+}
+
+function fdc_newsletter_permission() {
+  return array(
+    'administer fdc_newsletter module' => array(
+      'title' => t('Manage Newsletter Sign-Up'),
+      'description' => t('Allow users to manage Newsletter Sign-Up functionality.'),
+    ),
+  );
+}
+
+function fdc_newsletter_admin_validate($form, &$form_state) {
+	/**
+	 *	
+	 */
+}
+
+// View
+function fdc_newsletter_view() {
+	$query = db_query("
+		SELECT
+			fdc_newsletter.uid,
+			fdc_newsletter.email,
+			fdc_newsletter.date
+		FROM
+			fdc_newsletter
+		ORDER BY
+			fdc_newsletter.date DESC		
+		")->fetchAll();
+
+	if (isset($query) && is_array($query)) {
+		foreach ($query as $result) {
+			$rows[] = array(
+				$result->email,
+				date('G:i - l, jS F Y',$result->date),
+			);
+		}
+	}
+
+	if (isset($rows) && $rows) {
+		$table = array(
+			'#theme' => 'table',
+			'#header' => array(t('Email Address'), t('Date of Sign-Up')),
+			'#rows' => $rows
+		);
+		return $table;
+	} else {
+		return 'Sorry, there are currently no current newsletter sign-ups.';
+	}
+}
+
+// Form
+function fdc_newsletter_form($form, &$form_state) {
+	$form = array();
+	$form['fdc_newsletter_email'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Email'),
+		'#required' => TRUE,
+		'#default_value' => '',
+		'#size' => 60,
+		'#maxlength' => 60,
+		'#element_validate' => array('fdc_newsletter_email_element_validate'),
+	);
+	$form['fdc_newsletter_submit'] = array(
+		'#title' => t('Submit'),
+		'#type' => 'submit',
+		'#value' => 'Sign Up',
+	);		
+	return $form;
+}
+function fdc_newsletter_form_validate($form, &$form_state) {
+	
+	// Email Validation
+	$mail = $form_state['values']['fdc_newsletter_email'];
+	// Make sure it's a real email.
+	if (!valid_email_address($mail)) {
+		form_set_error('fdc_newsletter_email', t('Please Enter a valid to email address.'));
+	} elseif (valid_email_address($mail)) {
+		$query = db_query("
+			SELECT
+				fdc_newsletter.email
+			FROM
+				fdc_newsletter
+			WHERE
+				fdc_newsletter.email = :mail
+			", array(
+				':mail' => $mail
+			)
+		)->fetchObject();
+		if (strlen($query->email)) {
+			form_set_error('fdc_newsletter_email', t('You have already subscribed to our newsletter!'));
+		}
+	} 
+	
+}
+function fdc_newsletter_form_submit($form, &$form_state) {
+
+	$email = $form_state['input']['fdc_newsletter_email'];
+	
+	// Insert records into database.
+	$query = db_insert('fdc_newsletter')->fields(
+				array(
+					'email' => $email,
+					'date' => time(),
+				)
+			)->execute();
+		
+	// Send To Admin Email Address
+
+	// Build Params Array
+	$params['subject'] = $_SERVER['HTTP_HOST'] . ' - Newsletter Sign-Up';
+	$params['body'][] = fdc_newsletter_email_body($postcode, $email);
+	
+	// Some stuff
+	$key = 'fdc_newsletter';
+	$to = variable_get('fdc_newsletter_settings_forward_email', variable_get('site_mail', ini_get('sendmail_from')));
+	$from = variable_get('site_mail', ini_get('sendmail_from'));
+	
+	// Send.
+	if (drupal_mail('fdc_newsletter', $key, $to, language_default(), $params, $from, TRUE)) {
+		// Redirect On Completion
+		$form_state['redirect'] = array(variable_get('fdc_newsletter_settings_complete', NULL));
+	} else {
+		// or show an error.
+		drupal_set_message('Sorry, there has been an issue submitting your form.');
+	}	
+	
+}
+
+// Mail 
+function fdc_newsletter_mail($key, &$message, $params) {
+	switch ($key) {
+		case 'fdc_newsletter':
+			$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed';
+			$message['subject'] = $params['subject'];
+			$message['body'] = $params['body'];
+		  break;
+	}
+}
+
+// Extra
+function fdc_newsletter_email_element_validate($element, &$form_state, $form) {
+   if (!valid_email_address($element['#value'])) {
+     form_error($element, t('Please enter a valid email address.'));
+	 return $form;
+   }
+}
+function fdc_newsletter_email_body($postcode, $email) {
+	$body = fdc_newsletter_time_of_day();
+	$body .= '<br><br>';
+	$body .= 'A new user has completed the Newsletter Sign-Up.';
+	$body .= '<br><br>';
+	$body .= '<strong>Email:</strong> ' . $email;	
+	$body .= '<br><br>';
+	$body .= 'Proposal Packages';
+	$body .= '<br>';
+	$body .= '<a href="'.$_SERVER['HTTP_HOST'].'">'.$_SERVER['HTTP_HOST'].'</a>';
+	return $body;
+}
+function fdc_newsletter_time_of_day() {
+
+	$time = time();
+	$hour = date("g", $time);
+	$m = date("A", $time);
+
+	if ($m == "AM") {
+		if ($hour == 12) {
+			return "Good Evening!";
+		} elseif ($hour < 4) {
+			return "Good Evening!";
+		} elseif ($hour > 3) {
+			return "Good Morning!";
+		}
+	} elseif ($m == "PM") {
+		if ($hour == 12) {
+			return "Good Afternoon!";
+		} elseif ($hour < 7) {
+			return "Good Afternoon!";
+		} elseif ($hour > 6) {
+			return "Good Evening!";
+		}
+	}
+}

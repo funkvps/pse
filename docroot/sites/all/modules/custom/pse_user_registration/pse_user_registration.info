@@ -1,0 +1,4 @@
+name = PSE user registration
+description = Fine tunes user registration experience.
+core = 7.x
+package = BrightLemon

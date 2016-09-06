@@ -1,0 +1,13 @@
+<?php 
+
+function fdc_html_email_enable() {
+  $current = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  $addition = array('fdc_html_email' => 'fdc_html_email_MailSystem');
+  variable_set('mail_system', array_merge($current, $addition));
+}
+
+function fdc_html_email_disable() {
+  $mail_system = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  unset($mail_system['fdc_html_email']);
+  variable_set('mail_system', $mail_system);
+}

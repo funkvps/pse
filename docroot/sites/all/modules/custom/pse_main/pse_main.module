@@ -1,0 +1,617 @@
+<?php
+
+function pse_main_init() {
+  drupal_add_js(drupal_get_path('module', 'pse_main') . '/js/pse_main.js');
+  drupal_add_js(drupal_get_path('module', 'pse_main') . '/js/pse_organise-content-types.js');
+  drupal_add_js(drupal_get_path('module', 'pse_main') . '/js/pse_main.js');
+  drupal_add_css(drupal_get_path('module', 'pse_main') . '/css/pse_main.css');
+  drupal_add_css(drupal_get_path('module', 'pse_main') . '/css/pse-frontend.css');
+//  if (isset($_GET['migrate_trainings'])) {
+//    _pse_migrate_data_training_products();
+//  }
+}
+
+function pse_main_search_api_facetapi_keys_alter($keys, $search) {
+//  _d('pse_main_search_api_facetapi_keys_alter');
+//  _d($keys);
+//  _d($search);
+}
+
+//function _pse_migrate_data_training_products() {
+//  $product_ids = db_query("SELECT * FROM commerce_product WHERE type = 'training'");
+//  foreach ($product_ids as $product_id) {
+//    $product = entity_load('commerce_product', array($product_id->product_id));
+//    $product = $product[$product_id->product_id];
+//    if ($product_id->product_id == 99) {
+////      dsm('product');
+////      dsm($product);
+//    }
+//    $sql = "SELECT node.nid, node.title
+//                FROM {field_data_field_col_courses} AS field_col_courses 
+//                INNER JOIN {field_data_field_courses_course} AS field_courses_course ON field_col_courses_value = field_courses_course.entity_id
+//                LEFT JOIN {node} AS node ON field_col_courses.entity_id = node.nid
+//                WHERE field_courses_course_product_id = :product_id
+//                ";
+//    $trainings = db_query($sql, array(':product_id' => $product->product_id))->fetchAll();
+//    if (!empty($trainings[0])) {
+//      $product->field_pse_training_course['und'][0]['target_id'] = $trainings[0]->nid;
+//    }
+//    entity_save('commerce_product', $product);
+////    dsm($product);
+//  }
+//}
+
+
+function pse_main_permission() {
+  return array(
+    'marketting material access' => array( //ex role 12
+      'title' => t('Marketting material access'),
+    ),
+    'presentation download' => array(
+      'title' => t('Presentation download'),
+    ),
+    'presentation video viewer' => array(
+      'title' => t('Presentation video viewer'),
+    ),
+    'customer area pages access' => array(
+      'title' => t('Customer area pages access'),
+    ),
+    'customer area downloads access' => array(
+      'title' => t('Customer area downloads access'),
+    ),
+    'customer area forms access' => array(
+      'title' => t('Customer area forms access'),
+    ),
+    'see create content link' => array(
+      'title' => t('See create content link'),
+    ),
+  );
+}
+
+
+function pse_main_menu_alter(&$items) {
+  // Example - disable the page at node/add
+//  _d('pse_main_menu_alter');
+//  _d($items);
+  // Rename from 'Grant' to 'Access permissions'
+//  $items['user/%user']['title'] = 'MyPSE';
+  $items['user/%user/view']['title'] = 'MyPSE';
+  $items['node/%node/grant']['title'] = 'Access permissions';
+  //$items['node/add']['access callback'] = FALSE;
+}
+
+/*
+ * Implements hook_node_access 
+ * NODE_ACCESS_ALLOW
+ * NODE_ACCESS_DENY
+ * NODE_ACCESS_IGNORE
+ */
+function pse_main_node_access($node, $op, $account) {
+  switch ($op) {
+    case 'update':
+      // Allow editing for company owners
+      if (!empty($node->field_company_owner['und'][0]['target_id'])) {
+        foreach ($node->field_company_owner['und'] as $owner) {
+          if ($owner['target_id'] == $account->uid) {
+            return NODE_ACCESS_ALLOW;
+          }
+        }
+      }
+      break;
+  }
+  return NODE_ACCESS_IGNORE;
+}
+
+
+function pse_main_form_alter(&$form, &$form_state, $form_id) {
+  switch($form_id) {
+    case 'company_node_form':
+      if (!empty($form['#entity']->field_company_owner['und'][0]['target_id'])) {
+        $account = user_load($form['#entity']->field_company_owner['und'][0]['target_id']);
+        if (!empty($account->uid)) {
+          $form['field_company_owner']['und']['#default_value'] = $account->mail . ' (' . $account->uid . ')';
+        }
+      }
+      break;
+    case 'news_articles_node_form':
+      $form['title']['#description'] = 'Page title is visible in top of browser window/tab. It also will be visible for administrators in backend.';
+      $form['field_collection_newsarticle']['und']['#title'] = '';
+      $form['field_collection_newsarticle']['und'][0]['#title'] = '';
+      break;
+    case 'customer_area_download_node_form':
+      $form['title']['#description'] = 'Page title is visible in top of browser window/tab. It also will be visible for administrators in backend.';
+      break;
+    case 'page':
+      $form['title']['#description'] = 'Page title is visible in top of browser window/tab. It also will be visible for administrators in backend.';
+      break;
+    case 'training_course_node_form':
+      $form['title']['#description'] = 'Page title is visible in top of browser window/tab. It also will be visible for administrators in backend.';
+      break;
+    case 'events_and_webinar_node_form': 
+      $form['title']['#description'] = 'This title will appear as the name on the events listing page.';
+      break;
+    case 'commerce_product_ui_product_form':
+//      dsm($form);
+      $form['title']['#description'] = 'This is the title you will see in the Admin interface – naming convention is ‘DDMMYYYY – location – course name';
+      break;
+    case 'nodeaccess_grants_form':
+      // because we don't have weight here,
+      // lets order by role id, not by it's weight
+      ksort($form['rid']);
+      break;
+  }
+  
+  if (!empty($form['field_col_content']['und']['#title'])) {
+    $form['field_col_content']['und']['#title'] = '';
+    $form['field_col_content']['und'][0]['#title'] = '';
+  }
+}
+
+/**
+ * Implements unction hook_form_BASE_FORM_ID_alter().
+ */
+function pse_main_form_node_form_alter(&$form, &$form_state, $form_id) {
+  $content_type = $form['#node']->type;
+  if ($content_type == 'company') {
+    $form['field_company_logo']['#access'] = user_access('administer content');
+    $form['field_country']['#access'] = user_access('administer content');
+    $form['field_sage_id']['#access'] = user_access('administer content');
+    if (!user_access('administer nodes')) {
+      unset($form['#fieldgroups']['group_company_associates']);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function pse_main_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['teaser_with_node_type'] = array(
+    'label' => t('Teaser with node type'),
+    'custom settings' => FALSE,
+  );
+  $entity_info['field_collection_item']['view modes']['teaser'] = array(
+    'label' => t('Teaser'),
+    'custom settings' => FALSE,
+  );
+}
+
+
+/**
+ * Implements hook_entity_dependencies().
+ */
+function pse_main_entity_presave($entity, $entity_type) {
+  // Go through all the entity's text fields and add a dependency on any files
+  // that are referenced there.
+  pse_main_add_entity_image_in_html_usage($entity, $entity_type);
+}
+
+/*
+ * Add images living in html markup to file_usage table
+ */
+function pse_main_add_entity_image_in_html_usage($entity, $entity_type) {
+
+  foreach (pse_main_filter_fields_with_text_filtering($entity_type, $entity) as $field_name) {
+    if ($field_items = field_get_items($entity_type, $entity, $field_name)) {
+      foreach ($field_items as $field_item) {
+        preg_match_all('/img .*?src="(.*?)"/', $field_item['value'], $matches);
+        foreach ($matches[1] as $url) {
+          $file_info = array();
+          if (strpos($url, '/public/') === 0) {
+            $uri = 'public://' . substr($url, 8);
+            $file_info = db_query("SELECT * FROM file_managed WHERE uri = :uri", array(':uri' => $uri))->fetchObject();
+          }
+          if (!empty($file_info)) {
+            $id = '';
+            if (!empty($entity->item_id)) {
+              $id = $entity->item_id;
+            } elseif ($entity->nid) {
+              $id = $entity->nid;
+            } elseif ($entity->id) {
+              $id = $entity->id;
+            }
+            $sql = "SELECT * FROM file_usage WHERE fid = :fid AND `module` = 'pse_main' AND id = :id ";
+            $already_reported = db_query($sql, array(':fid' => $file_info->fid, ':id' => $id))->fetchObject();
+            if ($already_reported == false) {
+              if ($id) {
+                file_usage_add($file_info, 'pse_main', $entity_type, $id, 1);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/**
+ * Returns an array containing the names of all fields that perform text filtering.
+ * copy of media_wysiwyg_filter_fields_with_text_filtering
+ */
+function pse_main_filter_fields_with_text_filtering($entity_type, $entity) {
+  list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
+  $fields = field_info_instances($entity_type, $bundle);
+
+  // Get all of the fields on this entity that allow text filtering.
+  $fields_with_text_filtering = array();
+  foreach ($fields as $field_name => $field) {
+    if (!empty($field['settings']['text_processing'])) {
+      $fields_with_text_filtering[] = $field_name;
+    }
+  }
+
+  return $fields_with_text_filtering;
+}
+
+
+/**
+ * Formater is from module taxonomy_formatter
+ * Implements hook_field_formatter_info()
+ */
+function pse_main_field_formatter_info() {
+  return array(
+    'taxonomy_term_reference_csv' => array(
+      'label' => t('Comma Delimited'),
+      'field types' => array('taxonomy_term_reference'),
+//      'settings'  => array(
+//        'links_option' => FALSE,
+//        'separator_option' => ', ',
+//        'element_option' => '- None -',
+//        'wrapper_option' => '- None -',
+//        'element_class' => '',
+//        'wrapper_class' => '',
+//      ),
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function pse_main_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+//  $settings = $display['settings'];
+  $element = array();
+  $separator = ', ';
+  $wrapper[0] = '';
+  $wrapper[1] = '';
+  $settings['links_option'] = true; // don't print links
+//  if ($settings['element_option'] != '- None -') {
+//    $elementwrap[0] = '<' . $settings['element_option'] . ' class="' . check_plain($settings['element_class']) . '">';
+//    $elementwrap[1] = '</' . $settings['element_option'] . '>';
+//  }
+//  else {
+//    $elementwrap[0] = '';
+//    $elementwrap[1] = '';
+//  }
+//  if ($settings['wrapper_option'] != '- None -') {
+//    $wrapper[0] = '<' . $settings['wrapper_option'] . ' class="' . check_plain($settings['wrapper_class']) . '">';
+//    $wrapper[1] = '</' . $settings['wrapper_option'] . '>';
+//  }
+//  else {
+//    $wrapper[0] = '';
+//    $wrapper[1] = '';
+//  }
+  $formatted = '';
+  foreach ($items as $delta => $item) {
+    $termid = $item['tid'];
+    $term[] = $termid;
+    $actterm = entity_load('taxonomy_term', $term);
+    if(isset($actterm[$termid])) {
+      $uri = entity_uri('taxonomy_term', $actterm[$termid]);
+      if (empty($settings['links_option']) || $settings['links_option'] == false) {
+        $formatted .= l($actterm[$termid]->name, $uri['path'], $uri['options']) . $separator;
+      } else {
+        $formatted .= check_plain($actterm[$termid]->name) . $separator;
+      }
+    }
+  }
+  $length = strlen($separator);
+  $formatted = substr($formatted, 0 , -($length));
+  $formatted = $wrapper[0] . $formatted . $wrapper[1];
+  $element[0]['#markup'] = $formatted;
+  return $element;
+}
+
+
+function pse_main_preprocess(&$variables, $hook) {
+//  dsm('pse_main_preprocess ' . $hook);
+}
+
+/*
+ * Implements hook_preprocess_region()
+ */
+//function pse_main_preprocess_region(&$variables) {
+////  dsm('pse_main_preprocess_region');
+////  dsm($variables);
+//}
+
+/*
+ * Implements hook_preprocess_page()
+ */
+function pse_main_preprocess_page(&$variables) {
+  if (!empty($variables['page']['content']['system_main']['node_table']['#rows'])) {
+    // Add number of existing nodes on to node types admin page /admin/structure/types
+    $variables['page']['content']['system_main']['node_table']['#header'][] = t('Number of nodes');
+    foreach($variables['page']['content']['system_main']['node_table']['#rows'] as $i => $columns) {
+      $matches = array();
+      preg_match('/a href=.*\/(.*?)">/', $columns[1]['data'], $matches);
+      $type = str_replace('-', '_', $matches[1]);
+      $total = db_query('SELECT COUNT(type) AS total FROM node WHERE type = :type', array(':type' => $type))->fetchField();
+      $variables['page']['content']['system_main']['node_table']['#rows'][$i][] = array('data' => $total);
+    }
+  }
+  if ($_GET['q'] == 'node/add' && $variables['page']['content']['system_main']['main']['#markup']) {
+    // Add number of existing nodes on to node types admin page /node/add
+    $content = $variables['page']['content']['system_main']['main']['#markup'];
+    $items = explode('<li ', $content);
+    foreach($items as $i => $item) {
+      $matches = array();
+      preg_match('/a href=.*\/(.*?)">.*<\/a>/', $item, $matches);
+      if (!empty($matches[1])) {
+        $type = str_replace('-', '_', $matches[1]);
+        $total = db_query('SELECT COUNT(type) AS total FROM node WHERE type = :type', array(':type' => $type))->fetchField();
+        $new_html = '</a> <span class="number-of-existing-nodes">Number of existing nodes: <a href="/contentment/' . $matches[1] . '">' . $total . '</a></span>';
+        $items[$i] = str_replace('</a>', $new_html, $items[$i]);
+      }
+    }
+    $variables['page']['content']['system_main']['main']['#markup'] = implode('<li ', $items);
+  }
+  $variables['page']['#post_render'][] = 'pse_main_page_post_render';
+//  dsm('variables');
+//  dsm($variables);
+}
+
+
+function pse_main_page_alter(&$page) {
+  $page['#post_render'][] = 'pse_main_page_post_render';
+//  dsm('pse_main_page_alter');
+//  dsm($page);
+//  die('pse_main_page_alter');
+}
+
+
+function pse_main_views_query_alter(&$view, &$query) {
+//  _d('query');
+//  _d(get_class($query));
+//  _d($query);
+//  dpq($query);
+//  _d((string) $query);
+}
+
+function pse_main_views_pre_execute(&$view) {
+//  _d('pse_main_views_pre_execute');
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***BYPASS_NODE_ACCESS***'] = 1;
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***CURRENT_USER***'] = 1;
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***ADMINISTER_NODES***'] = 1;
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***VIEW_OWN_UNPUBLISHED_NODES***'] = 1;
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***BYPASS_FILE_ACCESS***'] = 1;
+//  $view->build_info['query']->alterMetaData['views_substitutions']['***ADMINISTER_FILES***'] = 1;
+//  _d($view->build_info['query']);
+//  dpq($view->build_info['query']);
+}
+
+
+
+function pse_main_page_post_render($children, $elements) {
+//  dsm('pse_main_page_post_render');
+  if (arg(2) !== 'edit' && strpos($children, '%PSE_LATEST_DOWNLOADS%')) {
+    $pse_latest_downloads = pse_token_pse_latest_downloads();
+    $children = str_replace('%PSE_LATEST_DOWNLOADS%', $pse_latest_downloads, $children);
+  }
+//  dsm($children);
+//  dsm(array_keys($children));
+//  mail('audriusv@gmail.com', 'test post render', 'Testing if code works');
+//  die('#postrender :)');
+  return $children;
+}
+
+function pse_token_pse_latest_downloads() {
+//  global $user;
+  $number = 3;
+  
+  $query = db_select('node', 'n');
+  if (!user_access('bypass node access')) {
+    $query->condition('n.status', NODE_PUBLISHED);
+  }
+  
+  $query->fields('n', array('nid', 'title'))
+    ->fields('field_content_heading', array('field_content_heading_value'));
+  $query->join('field_data_field_content_heading', 'field_content_heading', 'field_content_heading.entity_id = n.nid');
+  $query->orderBy('n.created', 'DESC')
+    ->range(0, $number)
+    ->addTag('node_access');
+  $nodes = $query->execute();
+  
+  $output = '';
+  foreach ($nodes as $node) {
+    //dsm($node);
+//    $output .= l($node->title, 'node/' . $node->nid);
+    $output .= l($node->field_content_heading_value, 'node/' . $node->nid);
+  }
+  
+  return $output;
+}
+
+/*
+ * breadcrumb logic
+ * most breadcrumbs are inherited from other company. Lets do this in more Drupal like way
+ */
+function pse_main__add_breadcrumb() {
+//  dsm('pse_main_preprocess_page');
+//  dsm($variables);
+  $menu_object = false;
+  $breadcrumb = drupal_set_breadcrumb();
+  switch (arg(0)) {
+    case 'events':
+      $breadcrumb = array();
+      $breadcrumb[] = l('PSE', '<front>'); // not visible, because of theme settings
+      $breadcrumb[] = l('> Events', 'events');
+      if (arg(1) == 'webinars') {
+        $breadcrumb[] = l('> Webinars', 'events/webinars');
+      }
+      if (arg(2) == 'archive') {
+        $breadcrumb[] = l('> Webinars archive', 'events/webinars/archive');
+      }
+      break;
+    case 'news':
+      $breadcrumb = array();
+      $breadcrumb[] = l('PSE', '<front>'); // not visible, because of theme settings
+      $breadcrumb[] = l('> News', 'news');
+      if (arg(1) == 'press-releases') {
+        $breadcrumb[] = l('> Press releases', 'news/press-releases');
+      }
+      break;
+    case 'node':
+      $menu_object = menu_get_object();
+      break;
+    case 'taxonomy':
+      if (arg(1) == 'term' && is_numeric(arg(2))) {
+        $menu_object = taxonomy_term_load(arg(2));
+      }
+      break;
+    case 'services':
+      if (arg(1) == 'training' && arg(2) == 'training-courses') {
+        $breadcrumb = array(
+          l('PSE', '<front>'), // not visible, because of theme settings
+          l('> training & support', '/services/training'),
+          l('> training courses', '/services/training/training-courses'),
+        );
+      }
+      break;
+    case 'customer-area':
+      if (arg(1) == 'downloads') {
+        $breadcrumb[] = l('> customer area', 'customer-area');
+      }
+      break;
+    case 'user':
+//        dsm($breadcrumb);
+      $breadcrumb = array(
+          l('MyPSE', '/user/dashboard'),
+      );
+      if (arg(1) == 'register') {
+        $breadcrumb = array();
+      }
+//      if (arg(1) == 'dashboard') {
+//        $breadcrumb = array_slice($breadcrumb, 0, 2);
+//      }
+      break;
+  }
+  
+  
+  $taxonomy_breadcrumbs = array('products', 'sectors', 'regions');
+  if (!empty($menu_object->vocabulary_machine_name) && in_array($menu_object->vocabulary_machine_name, $taxonomy_breadcrumbs)) {
+    $category_name = rtrim($menu_object->vocabulary_machine_name, 's');
+    $breadcrumb = array();
+    $breadcrumb[] = l('PSE', '<front>'); // not visible, because of theme settings
+    $breadcrumb[] = l('> Category - ' . $category_name . ' - ' . $menu_object->name, 'taxonomy/term/' . $menu_object->tid);
+  }
+  
+  
+  if (!empty($menu_object->type)) {
+    switch($menu_object->type) {
+      case 'customer_area_download':
+        if (count($breadcrumb) == 1) {
+          $breadcrumb[] = l('> customer area', 'customer-area');
+          $breadcrumb[] = l('> downloads', 'customer-area/downloads');
+        }
+        break;
+      case 'events_and_webinar':
+        if (count($breadcrumb) == 1) {
+          $breadcrumb[] = l('> events', 'events');
+        }
+        break;
+      case 'news_articles':
+        if (count($breadcrumb) == 1) {
+          $breadcrumb[] = l('> News', 'news');
+        }
+        if (!empty($menu_object->field_pse_tax_news_type['und'])) {
+          foreach ($menu_object->field_pse_tax_news_type['und'] as $value) {
+            if ($value['tid'] == 310) {
+              $breadcrumb[] = l('> Press releases', 'news/press-releases');
+            }
+          }
+        }
+        break;
+      case 'company':
+        $breadcrumb = array(
+          l('MyPSE', '/user/dashboard'),
+        );
+        break;
+    }
+  }
+  drupal_set_breadcrumb($breadcrumb);
+}
+
+
+/*
+ * HELPERS
+ */
+function get_training_product_id__from__training_course_nid($product_id) {
+//  $sql = "SELECT field_col_courses.entity_id
+//          FROM {field_data_field_col_courses} AS field_col_courses
+//          LEFT JOIN {field_data_field_courses_course} AS field_courses_course ON field_col_courses.field_col_courses_value = field_courses_course.entity_id
+//          WHERE field_courses_course_product_id = :product_id ";
+  $sql = "SELECT field_pse_training_course_target_id
+          FROM {field_data_field_pse_training_course} AS field_pse_training_course
+          WHERE entity_id = :product_id ";
+  $results = db_query($sql, array(':product_id' => $product_id))->fetchAll();
+  if (count($results) > 1) {
+    foreach($results as $result) {
+      drupal_set_message('More then one training course is using same product ' . $product_id . '. Node id is ' . $result->entity_id);
+    }
+  }
+  if (empty($results[0]->field_pse_training_course_target_id)) {
+    return false;
+  }
+  return $results[0]->field_pse_training_course_target_id;   
+}
+
+
+function get_parent_term_of_taxonomy_term($tid) {
+  $parents = taxonomy_get_parents($tid);
+  if (empty($parents)) {
+    return false;
+  }
+  return $parents[key($parents)];
+}
+
+
+
+
+/*
+ * debug helper
+ */
+function _d($input, $name = NULL, $type = 'status') {
+//  print '<pre>';
+//  print_r($relvalue);
+//  $export = kprint_r($input, TRUE, $name);
+//  print $export;
+//  
+  // 149.18.33.10  is BL office
+  if (function_exists('dsm') && $_SERVER['REMOTE_ADDR'] == '149.18.33.10') {
+    $export = kprint_r($input, TRUE, $name);
+    drupal_set_message($export, $type);
+//    dsm($input);
+  }
+}
+
+
+/*
+ * END OF HELPERS
+ */
+
+
+function pse_main_custom_theme() {
+  if (arg(0) == 'user' && arg(2) == 'edit') {
+    return 'fdc_bootstrap';
+  }
+}
+
+function pse_main_admin_paths_alter(&$paths) {
+//  dsm('pse_main_admin_paths_alter');
+//  dsm($paths);
+  $paths['user/*/edit'] = FALSE;
+  $paths['user/*/edit/*'] = FALSE;
+}

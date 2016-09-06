@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Users feature.
+ */
+
+include_once 'pse__users.features.inc';

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Event or Webinar feature.
+ */
+
+include_once 'pse__node_events_and_webinar.features.inc';

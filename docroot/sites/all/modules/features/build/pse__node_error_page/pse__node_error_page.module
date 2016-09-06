@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Error Page feature.
+ */
+
+include_once 'pse__node_error_page.features.inc';

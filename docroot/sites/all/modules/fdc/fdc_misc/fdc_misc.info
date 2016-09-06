@@ -1,0 +1,5 @@
+name = Misc Functionality
+description = Various functionality and overrides for Drupal 7 (Mitchell Currie @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+core = 7.x

@@ -1,0 +1,11 @@
+name = PSE: World Wide Contact
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-world_wide_contact-field_breadcrumbs
+features[field_instance][] = node-world_wide_contact-field_col_content
+features[field_instance][] = node-world_wide_contact-field_col_wwoffice
+features[field_instance][] = node-world_wide_contact-field_collection_metatags
+features[node][] = world_wide_contact
+features[features_api][] = api:2

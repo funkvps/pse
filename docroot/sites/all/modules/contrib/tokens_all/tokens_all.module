@@ -1,0 +1,64 @@
+<?php
+/**
+ * @file
+ * Exposes all values for entities as tokens.
+ */
+
+/**
+ * Implements hook_tokens().
+ *
+ * Handles tokens that start with 'all--values'.
+ * Splits remaining parts of token and checks for value on entity.
+ */
+function tokens_all_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $return = array();
+  if ($type == 'entity' && !empty($data['entity'])) {
+    foreach ($tokens as $name => $original) {
+      $token_parts = explode(':', $name);
+      $first_part = array_shift($token_parts);
+      if ($first_part != 'all--values') {
+        // Only deal with this module's tokens
+        continue;
+      }
+      $value = $data['entity'];
+      $value_found = TRUE;
+      // Loop through remaining token parts retrieving nested value.
+      foreach ($token_parts as $token_part) {
+        if (is_array($value) && isset($value[$token_part])) {
+          $value = $value[$token_part];
+        }
+        elseif (is_object($value) && isset($value->{$token_part})) {
+          $value = $value->{$token_part};
+        }
+        else {
+          // No matching value was found for token part.
+          $value_found = FALSE;
+          break;
+        }
+      }
+      if ($value_found) {
+        $return[$original] = $value;
+      }
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Implements hook_token_info_alter().
+ *
+ * Adds 'all-values' token info to all entities
+ */
+function tokens_all_token_info_alter(&$info) {
+  $entity_info = entity_get_info();
+  $token_types = entity_token_types_chained();
+  foreach ($token_types as $token_type) {
+    $info['tokens'][$token_type]['all--values:?'] = array(
+      'name' => t('All properties on the @entity', array('@entity' => $entity_info[$token_type]['label'])),
+      'description' => t('Dynamically reads properties of the @entity. Use when the value is not available in other token. Yeah that\'s awesome', array('@entity' => $entity_info[$token_type]['label'])),
+    );
+  }
+
+
+}

@@ -1,0 +1,89 @@
+<?php
+
+/* helper
+  if(function_exists('fdc_meta_add'))
+  {
+  fdc_meta_add($node->nid) ;
+  }
+ * 
+ */
+
+function fdc_get_title($nid) {
+	$query = db_query("
+SELECT
+	node.nid,
+	node.title
+FROM
+	node
+where node.nid = :nid
+", array(":nid" => $nid))->fetchObject();
+	if (!empty($query)) {
+		return $query->title;
+	}
+}
+
+function fdc_meta_get_meta($nid) {
+	$query = db_query("
+SELECT
+	node.nid,
+	field_data_field_meta_title.field_meta_title_value AS meta_title,
+	field_data_field_meta_keywords.field_meta_keywords_value AS meta_keywords,
+	field_data_field_meta_description.field_meta_description_value AS meta_desc
+FROM
+	node
+INNER JOIN field_data_field_collection_metatags ON node.nid = field_data_field_collection_metatags.entity_id
+LEFT JOIN field_data_field_meta_title ON field_data_field_collection_metatags.field_collection_metatags_value = field_data_field_meta_title.entity_id
+LEFT JOIN field_data_field_meta_keywords ON field_data_field_collection_metatags.field_collection_metatags_value = field_data_field_meta_keywords.entity_id
+LEFT JOIN field_data_field_meta_description ON field_data_field_collection_metatags.field_collection_metatags_value = field_data_field_meta_description.entity_id
+WHERE node.nid = :nid
+", array(":nid" => $nid))->fetchObject();
+	if (!empty($query)) {
+		return $query;
+	}
+}
+
+function fdc_meta_add($nid) {
+
+	if (!empty($nid)) {
+
+		$site_name = variable_get('site_name');
+
+		$desc = fdc_meta_get_meta($nid);
+		$key = fdc_meta_get_meta($nid);
+		$title = fdc_meta_get_meta($nid);
+
+		if (!empty($title->meta_title)) {
+			drupal_set_title($site_name . " " . $title->meta_title);
+		}
+		else {
+			$title = fdc_get_title($nid);
+			if (!empty($title)) {
+				drupal_set_title($site_name . " " . $title);
+			}
+		}
+		if (!empty($desc->meta_desc)) {
+			$mdesc = array(
+				'#tag' => 'meta', // The #tag is the html tag - <link />
+				'#attributes' => array(// Set up an array of attributes inside the tag
+					'name' => 'description',
+					'content' => $desc->meta_desc,
+				),
+			);
+			drupal_add_html_head($mdesc, 'fdcdesc');
+		}
+
+
+		if (!empty($key->meta_keywords)) {
+
+			$mkey = array(
+				'#tag' => 'meta', // The #tag is the html tag - <link />
+				'#attributes' => array(// Set up an array of attributes inside the tag
+					'name' => 'keywords',
+					'content' => $key->meta_keywords,
+				),
+			);
+
+			drupal_add_html_head($mkey, 'fdckey');
+		}
+	}
+}

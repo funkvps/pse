@@ -1,0 +1,73 @@
+/**
+ *	 PSE
+ *
+ *	 Styling for Islands - overrides and imagery
+ */
+
+
+#intrographic {
+background-image: url(../img/pagebanner_wastewater.png);
+height: 320px;
+color: #444;
+margin-bottom: 20px;
+}
+
+#intrographic p, #intrographic h2 {
+color: #444;
+width: 400px;
+line-height: 130%;}
+
+#intrographic h1 {
+color: #fff;
+
+}
+#intrographic h2 {
+color: #fff;
+
+}
+
+.water1
+{
+background-image: url(../img/islandbg_wwt7.png);	
+	}
+.water2
+{
+background-image: url(../img/islandbg_wwt1.png);	
+	}
+.water3
+{
+background-image: url(../img/islandbg_wwt4.png);	
+	}
+.water4
+{
+background-image: url(../img/islandbg_wwt3.png);	
+	}
+
+#fourislands .water1 p,
+#fourislands .water1 h2,
+#fourislands .water1 a,
+#fourislands .water2 p,
+#fourislands .water2 h2,
+#fourislands .water2 a,
+#fourislands .water3 p,
+#fourislands .water3 h2,
+#fourislands .water3 a,
+#fourislands .water4 p,
+#fourislands .water4 h2,
+#fourislands .water4 a 
+{color: #fff;}
+
+#threeislands .water1 p,
+#threeislands .water1 h2,
+#threeislands .water1 a,
+#threeislands .water2 p,
+#threeislands .water2 h2,
+#threeislands .water2 a,
+#threeislands .water3 p,
+#threeislands .water3 h2,
+#threeislands .water3 a,
+#threeislands .water4 p,
+#threeislands .water4 h2,
+#threeislands .water4 a 
+{color: #fff;}
+

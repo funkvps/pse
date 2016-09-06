@@ -1,0 +1,797 @@
+<?php
+
+/*
+ * 		NEWS MODULE
+ * 		By Mitchell Currie @ FDC Studio
+ */
+
+define('ARTICLES_PER_PAGE', 29);
+define('PAGINATION_RANGE', 40);
+define('PAGE_URL', 'news');
+
+function fdc_news_theme() {
+	return array(
+		// TOPIC_LIST is the call used by THEME(), 
+		// pointing towards TOPIC_LIST_TEMPLATE as the template file to pass $CONTENT across to.
+		'news_list' => array(
+			'template' => 'fdc_news',
+		),
+		'news_category_list' => array(
+			'template' => 'fdc_news_category_list',
+		),
+		'fdc_news_ajax' => array(
+			'template' => 'fdc_news_ajax',
+		),
+	);
+}
+
+//function fdc_news_menu() {
+//	/*
+//	 * Implements of hook_menu()
+//	 */
+//	$items = array();
+//
+//	$items[PAGE_URL] = array(
+//		'title' => 'News',
+//		'page callback' => 'fdc_news_view',
+//		'menu_name' => 'main-menu',
+//		'weight' => 8,
+//		'access callback' => TRUE,
+//		'expanded' => TRUE
+//	);
+//
+////	$items['news/ajax_get_news'] = array(
+////		'title' => 'news',
+////		'page callback' => 'fdc_news_ajax',
+//////		'menu_name'			=> 'main-menu',
+//////		'weight'			=> 8,
+////		'type' => MENU_CALLBACK,
+////		'access callback' => TRUE,
+////		'expanded' => TRUE
+////	);
+//
+//	/*
+//	 * 	SQL to find all PARENT taxonomy terms.
+//	 * 	NOTE: IF MORE TAXONOMY IS MADE. THIS WILL BE PULLED IN. BUG? Maybe. Maybe not.
+//	 */
+//	$find_parent_categories = fdc_news_get_categories();
+//	/*
+//	 * 	Generate list of menu items dynamically.
+//	 */
+//	if (isset($find_parent_categories) && $find_parent_categories) {
+//		foreach ($find_parent_categories AS $find_parent_category) {
+//
+//			$cleaned_string = str_replace(array('--'), array('-'), str_replace('+', '-', urlencode(strtolower(preg_replace('/[^A-Za-z0-9-]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', str_replace(' ', '-', str_replace('&', '', $find_parent_category->name))))))));
+//			$items['news/' . $cleaned_string] = array(
+//				'title' => $find_parent_category->name,
+//				'page callback' => 'fdc_news_category_view',
+////				'menu_name' => 'main-menu',
+////				'weight' => 8,
+//				'type' => MENU_CALLBACK,
+//				'page arguments' => array($find_parent_category->tid),
+//				'access callback' => TRUE,
+//				'expanded' => TRUE
+//			);
+//		}
+//	}
+//
+//	/*
+//	 * 	Return generated menu
+//	 */
+//	return $items;
+//}
+
+function fdc_news_view($parent_tid = NULL) {
+
+	// START Pagination --------------------------------
+	// Config
+	$pagination_url = PAGE_URL . '?';
+
+	// Get Article Count
+	$article_count = db_query("
+		SELECT
+			COUNT(node.nid) AS `count`
+		FROM
+			node
+		WHERE
+			node.type = 'news_article'
+		AND node.`status` = 1		
+	")->fetchObject();
+
+	// Pagination
+	if ($article_count->count >= 1) {
+		$pagination_links = ''; // Variable containing pagination links
+		$totalpages = ceil($article_count->count / ARTICLES_PER_PAGE);
+		if (isset($_GET['page']) && is_numeric($_GET['page'])) {
+			$page = (int) $_GET['page'];
+		}
+		else {
+			$page = 1;
+		}
+		if ($page > $totalpages) {
+			$page = $totalpages;
+		}
+		if ($page < 1) {
+			$page = 1;
+		}
+		$offset = (int) ($page - 1) * ARTICLES_PER_PAGE;
+
+		// Pagination links
+		$pagination_links .= '<ul class="pagination" style="float:right">';
+		if ($page > 1) {
+			$pagination_links .= '
+				<li class="active">
+					<a href="' . PAGE_URL . '?page=' . ($page - 1) . '">
+						<span class="glyphicon glyphicon-chevron-left"></span>
+					</a>
+				</li>';
+		}
+		else {
+			$pagination_links .= '
+				<li class="disabled">
+					<a href="#">
+						<span class="glyphicon glyphicon-chevron-left"></span>
+					</a>
+				</li>';
+		}
+		for ($x = ($page - PAGINATION_RANGE); $x < (($page + PAGINATION_RANGE) + 1); $x++) {
+			if (($x > 0) && ($x <= $totalpages)) {
+				if ($x == $page) {
+					$pagination_links .= '
+						<li class="active">
+							<a href="#">
+								' . $x . '
+							</a>
+						</li>';
+				}
+				else {
+					$pagination_links .= '
+						<li>
+							<a href="' . PAGE_URL . '?page=' . $x . '">
+								' . $x . '
+							</a>
+						</li>';
+				}
+			}
+		}
+		if ($page != $totalpages) {
+			$pagination_links .= '
+				<li class="active">
+					<a href="' . PAGE_URL . '?page=' . ($page + 1) . '">
+						<span class="glyphicon glyphicon-chevron-right"></span>
+					</a>
+				</li>';
+		}
+		else {
+			$pagination_links .= '
+				<li class="disabled">
+					<a href="#">
+						<span class="glyphicon glyphicon-chevron-right"></span>
+					</a>
+				</li>';
+		}
+		$pagination_links .= '</ul>';
+	}
+	else {
+		$offset = 0;
+	}
+	// END Pagination --------------------------------}	
+
+	/*
+	 * 	Normal Content Listing.
+	 */
+
+	$content_pages = fdc_news_get_news('paginated', $offset, $rowsperpage, NULL);
+
+	/*
+	 * 	Set Array.
+	 */
+	$content = array();
+	/*
+	 * 	Place content pages into $content array.
+	 */
+	if (isset($content_pages) && $content_pages) {
+		$content['news'] = $content_pages;
+	}
+	/*
+	 * Pagination
+	 */
+	if (isset($pagination_links) && $pagination_links) {
+		$content['pagination'] = $pagination_links;
+	}
+
+	if (isset($content) && is_array($content)) {
+		// Pass across the array of TOPICS into new CONTENT variable for use on TOPIC_LIST template.
+		return theme('news_list', array('content' => $content));
+	}
+	else {
+		drupal_not_found();
+	}
+}
+
+function fdc_news_category_view($category_tid = NULL) {
+  return '63245236 function fdc_news_category_view';
+	if (isset($category_tid) && $category_tid) {
+		$category = (int) $category_tid;
+	}
+
+	// START Pagination --------------------------------
+	// Config
+	$rowsperpage = ARTICLES_PER_PAGE;
+	$range = PAGINATION_RANGE;
+
+	$pagination_url = strtok($_SERVER["REQUEST_URI"], '?') . '?';
+	// if a category is selected
+	$pagiQuery = "
+			SELECT
+				COUNT(*) AS `count`
+			FROM
+			node
+			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+			INNER JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			WHERE
+				node.type = 'news_article' 
+				AND	node.`status` = 1 
+				AND	field_data_field_news_category.field_news_category_tid = :category
+			";
+
+	// Script
+	$pagiResult = db_query($pagiQuery, array(':category' => $category));
+	$r = $pagiResult->fetchAssoc();
+	$numrows = (int) $r['count'];
+	if ($numrows > 0) {
+		$pagination_links = ''; // Variable containing pagination links
+		$totalpages = ceil($numrows / ARTICLES_PER_PAGE);
+		if (isset($_GET['page']) && is_numeric($_GET['page'])) {
+			$page = (int) $_GET['page'];
+		}
+		else {
+			$page = 1;
+		}
+		if ($page > $totalpages) {
+			$page = $totalpages;
+		}
+		if ($page < 1) {
+			$page = 1;
+		}
+		$offset = (int) ($page - 1) * ARTICLES_PER_PAGE;
+
+		// Pagination links
+		$pagination_links .= '<ul class="pagination" style="float:right">';
+		if ($page > 1) {
+			$pagination_links .= '
+				<li class="active">
+					<a href="' . PAGE_URL . '?page=' . ($page - 1) . '">
+						<span class="glyphicon glyphicon-chevron-left"></span>
+					</a>
+				</li>';
+		}
+		else {
+			$pagination_links .= '
+				<li class="disabled">
+					<a href="#">
+						<span class="glyphicon glyphicon-chevron-left"></span>
+					</a>
+				</li>';
+		}
+		for ($x = ($page - PAGINATION_RANGE); $x < (($page + PAGINATION_RANGE) + 1); $x++) {
+			if (($x > 0) && ($x <= $totalpages)) {
+				if ($x == $page) {
+					$pagination_links .= '
+						<li class="active">
+							<a href="#">
+								' . $x . '
+							</a>
+						</li>';
+				}
+				else {
+					$pagination_links .= '
+						<li>
+							<a href="' . PAGE_URL . '?page=' . $x . '">
+								' . $x . '
+							</a>
+						</li>';
+				}
+			}
+		}
+		if ($page != $totalpages) {
+			$pagination_links .= '
+				<li class="active">
+					<a href="' . PAGE_URL . '?page=' . ($page + 1) . '">
+						<span class="glyphicon glyphicon-chevron-right"></span>
+					</a>
+				</li>';
+		}
+		else {
+			$pagination_links .= '
+				<li class="disabled">
+					<a href="#">
+						<span class="glyphicon glyphicon-chevron-right"></span>
+					</a>
+				</li>';
+		}
+		$pagination_links .= '</ul>';
+	}
+	else {
+		$offset = (int) 0;
+	}
+	// END Pagination --------------------------------}	
+
+	if (isset($category) && $category) {
+		/*
+		 * 	Find content with TID
+		 */
+		$content_pages = fdc_news_get_news('paginatedcategory', $offset, $rowsperpage, $category);
+	}
+
+	/*
+	 * 	Find category description 
+	 */
+	$category_description = db_query("
+		SELECT DISTINCT
+			taxonomy_term_data.description AS `content`
+		FROM
+			taxonomy_term_data
+		WHERE
+			taxonomy_term_data.tid = :category
+		", array(
+		':category' => $category
+			))->fetchObject();
+
+	/*
+	 * 	Set Array.
+	 */
+	$content = array();
+	/*
+	 * 	Place content pages into $content array.
+	 */
+	if (isset($content_pages) && $content_pages) {
+		$content['news'] = $content_pages;
+	}
+
+//	print_r($content);
+	/*
+	 * 	Put taxonomy description into content array
+	 */
+	if (isset($category_description) && $category_description) {
+//		$content['desc'] = $category_description;
+	}
+	/*
+	 * 	Pagination
+	 */
+	if (isset($pagination_links) && $pagination_links) {
+		$content['pagination'] = $pagination_links;
+	}
+
+	if (isset($content) && is_array($content)) {
+		// Pass across the array of TOPICS into new CONTENT variable for use on TOPIC_LIST template.
+		return theme('news_category_list', array('content' => $content));
+	}
+	else {
+		drupal_not_found();
+	}
+}
+
+function fdc_news_get_categories() {
+  dsm('check me fdc_news_get_categories');
+  dsm(debug_backtrace());
+  return array();
+	$categories = db_query("
+		SELECT
+			taxonomy_term_data.`name`,
+			taxonomy_term_data.tid
+		FROM
+			node
+		INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+		INNER JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+		INNER JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_news_category.field_news_category_tid
+		WHERE
+			node.`status` = 1
+		GROUP BY
+			taxonomy_term_data.tid
+		ORDER BY
+			taxonomy_term_data.weight ASC
+		")->fetchAll();
+
+	if (isset($categories) && $categories) {
+		return $categories;
+	}
+}
+
+function fdc_news_get_news($type = NULL, $offset = 0, $rowsperpage = NULL, $category = NULL) {
+
+	if (!$rowsperpage) {
+		$rowsperpage = ARTICLES_PER_PAGE;
+	}
+
+	
+	if ($type == 'paginatedcategory') {
+		/*
+		 * 	show paginated category list.
+		 */
+		if (isset($category) && $category) {
+			/*
+			 * 	
+			 */
+			$content_pages = db_query("
+				SELECT
+					node.nid,
+					node.title,
+					field_data_field_news_date.field_news_date_value AS date,
+					field_data_field_news_heading.field_news_heading_value AS heading,
+					field_data_field_news_content.field_news_content_value AS content,
+					field_data_field_news_image.field_news_image_title AS image_title,
+					field_data_field_news_image.field_news_image_alt AS image_alt,
+					file_managed.uri AS image,
+					taxonomy_term_data.`name` AS category,
+					taxonomy_term_data.tid AS category_tid,
+					field_data_field_news_summary.field_news_summary_value as summary
+				FROM
+					node
+				INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+				LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+				LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+				LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+				LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+				LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+				LEFT JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+				LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_news_category.field_news_category_tid
+				LEFT JOIN field_data_field_news_summary ON field_data_field_collection_newsarticle.field_collection_newsarticle_value = field_data_field_news_summary.entity_id
+				WHERE
+					node.`status` = 1 AND
+				field_data_field_news_category.field_news_category_tid = :category
+				ORDER BY
+					field_data_field_news_date.field_news_date_value DESC
+				LIMIT 
+					{$offset}, {$rowsperpage}				
+				", array(
+				':category' => $category
+					)
+					)->fetchAll();
+		}
+	}
+	else if ($type == 'paginated') {
+		// show paginated list.
+//		$content_pages = db_query("
+//			SELECT
+//				node.nid,
+//				node.title,
+//				field_data_field_news_date.field_news_date_value AS date,
+//				field_data_field_news_heading.field_news_heading_value AS heading,
+//				field_data_field_news_content.field_news_content_value AS content,
+//				field_data_field_news_content.field_news_content_summary AS summary,
+//				field_data_field_news_image.field_news_image_title AS image_title,
+//				field_data_field_news_image.field_news_image_alt AS image_alt,
+//				file_managed.uri AS image,
+//				taxonomy_term_data.`name` AS `category`,
+//				taxonomy_term_data.tid AS `category_tid`
+//			FROM
+//				node
+//			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+//			LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+//			LEFT JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_news_category.field_news_category_tid
+//			WHERE
+//				node.`status` = 1
+//			ORDER BY
+//				field_data_field_news_date.field_news_date_value DESC
+//			LIMIT 
+//				{$offset}, {$rowsperpage}				
+//			"
+//				)->fetchAll();
+		$content_pages = db_query("
+			SELECT
+				node.nid,
+				node.title,
+				field_data_field_news_date.field_news_date_value AS date,
+				field_data_field_news_heading.field_news_heading_value AS heading,
+				field_data_field_news_content.field_news_content_value AS content,
+				field_data_field_news_content.field_news_content_summary AS summary,
+				field_data_field_news_image.field_news_image_title AS image_title,
+				field_data_field_news_image.field_news_image_alt AS image_alt,
+				file_managed.uri AS image
+			FROM
+				node
+			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+			LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+			WHERE
+				node.`status` = 1
+			ORDER BY
+				field_data_field_news_date.field_news_date_value DESC
+			LIMIT 
+				{$offset}, {$rowsperpage}				
+			"
+				)->fetchAll();
+	}
+	else if ($type == 'archive') {
+		// grab organized archive list.
+		$news_articles = fdc_news_get_news();
+//    dsm('news_articles');
+//    dsm($news_articles);
+		if (isset($news_articles) && $news_articles) {
+			foreach ($news_articles AS $news_article) {
+				// Place in Dates
+				//$content_pages[$news_article->category][date('Y', $news_article->date)][date('F', $news_article->date)][$news_article->nid] = array(
+        // BrightLemon, brightlemon, Brightlemon, Audrius, removed archive category
+				$content_pages[date('Y', $news_article->date)][date('F', $news_article->date)][$news_article->nid] = array( 
+					'category' => $news_article->category,
+					'tid' => $news_article->category_tid,
+					'nid' => $news_article->nid,
+					'title' => $news_article->title,
+					'date' => $news_article->date,
+					'title_override' => $news_article->heading
+				);
+			}
+		}
+	}
+	else if ($type == 'latest') {
+		// show all.
+//		$content_pages = db_query("
+//			SELECT
+//				node.nid,
+//				node.title,
+//				field_data_field_news_date.field_news_date_value AS date,
+//				field_data_field_news_heading.field_news_heading_value AS heading,
+//				field_data_field_news_content.field_news_content_value AS content,
+//				field_data_field_news_content.field_news_content_summary AS summary,
+//				field_data_field_news_image.field_news_image_title AS image_title,
+//				field_data_field_news_image.field_news_image_alt AS image_alt,
+//				file_managed.uri AS image,
+//				taxonomy_term_data.`name` AS `category`,
+//				taxonomy_term_data.tid AS `category_tid`
+//			FROM
+//				node
+//			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+//			LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+//			LEFT JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+//			LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_news_category.field_news_category_tid
+//			WHERE
+//				node.`status` = 1
+//			ORDER BY
+//				field_data_field_news_date.field_news_date_value DESC			
+//			LIMIT 5")->fetchAll();
+		$content_pages = db_query("
+			SELECT
+				node.nid,
+				node.title,
+				field_data_field_news_date.field_news_date_value AS date,
+				field_data_field_news_heading.field_news_heading_value AS heading,
+				field_data_field_news_content.field_news_content_value AS content,
+				field_data_field_news_content.field_news_content_summary AS summary,
+				field_data_field_news_image.field_news_image_title AS image_title,
+				field_data_field_news_image.field_news_image_alt AS image_alt,
+				file_managed.uri AS image
+			FROM
+				node
+			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+			LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+			WHERE
+				node.`status` = 1
+			ORDER BY
+				field_data_field_news_date.field_news_date_value DESC
+			LIMIT 5
+				")->fetchAll();
+	}
+	else {
+		// show all.
+		$content_pages = db_query("
+			SELECT
+				node.nid,
+				node.title,
+				field_data_field_news_date.field_news_date_value AS date,
+				field_data_field_news_heading.field_news_heading_value AS heading,
+				field_data_field_news_content.field_news_content_value AS content,
+				field_data_field_news_content.field_news_content_summary AS summary,
+				field_data_field_news_image.field_news_image_title AS image_title,
+				field_data_field_news_image.field_news_image_alt AS image_alt,
+				file_managed.uri AS image,
+				taxonomy_term_data.`name` AS `category`,
+				taxonomy_term_data.tid AS `category_tid`
+			FROM
+				node
+			INNER JOIN field_data_field_collection_newsarticle ON field_data_field_collection_newsarticle.entity_id = node.nid
+			LEFT JOIN field_data_field_news_heading ON field_data_field_news_heading.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_date ON field_data_field_news_date.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_content ON field_data_field_news_content.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_image ON field_data_field_news_image.entity_id = field_data_field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN file_managed ON file_managed.fid = field_data_field_news_image.field_news_image_fid
+			LEFT JOIN taxonomy_index ON taxonomy_index.nid = node.nid
+			LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = taxonomy_index.tid
+			WHERE
+				node.`status` = 1
+			ORDER BY
+				field_data_field_news_date.field_news_date_value DESC			
+			"
+				)->fetchAll();
+	}
+
+	if (isset($content_pages) && $content_pages) {
+		return $content_pages;
+	}
+	else {
+		return FALSE;
+	}
+}
+ 
+function fdc_news_get_multiple_categories($nid) {
+	if (!empty($nid)) {
+		$query = db_query("
+			SELECT
+				node.nid,
+				node.title,
+				taxonomy_term_data.`name` AS category,
+				taxonomy_term_data.tid AS category_tid,
+				field_news_heading_value
+			FROM
+				node
+			INNER JOIN field_data_field_collection_newsarticle AS field_collection_newsarticle ON field_collection_newsarticle.entity_id = node.nid
+			LEFT JOIN field_data_field_news_category ON field_data_field_news_category.entity_id = field_collection_newsarticle.field_collection_newsarticle_value
+			LEFT JOIN field_data_field_news_heading AS field_news_heading ON field_news_heading.entity_id = field_collection_newsarticle.field_collection_newsarticle_value AND field_collection_newsarticle.entity_type = 'field_collection_item'
+			LEFT JOIN taxonomy_term_data ON taxonomy_term_data.tid = field_data_field_news_category.field_news_category_tid
+			WHERE
+				node.`status` = 1
+			AND node.nid = :nid", array(":nid" => $nid))->fetchAll();
+		if (!empty($query)) {
+			return $query;
+		}
+	}
+}
+
+function fdc_news_navigation() {
+	/*
+	 * 	This function was created in order to centralise the news navigation on listing and article pages.
+	 * 	It's messy at present with HTML within a string, but it works.
+	 */
+
+	// Grab Categories
+//	$categories = fdc_news_get_categories(); // Replaced by 3 taxonomies, products, sectors, regions
+
+	// Grab Archive
+	$news_archive = fdc_news_get_news($type = 'archive'); // no single archive, content is slip by products
+
+	// Grab Latest
+	$latest_news = fdc_news_get_news($type = 'latest');
+
+	$news_nav_html = '';
+	// Start of News Navigation
+	$news_nav_html .= '<div class="news_nav">';
+
+//	if (isset($categories) && $categories) :
+//		$news_nav_html .= '<div class="news_categories">';
+//		$news_nav_html .= '<h2>Topics</h2>';
+//		$news_nav_html .= '<ul>';
+//		foreach ($categories AS $category) :
+//			$news_nav_html .= '<li>';
+//			$news_nav_html .= '<a href="/news/' . str_replace(array('--'), array('-'), str_replace('+', '-', urlencode(strtolower(preg_replace('/[^A-Za-z0-9-]/', '', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', str_replace(' ', '-', str_replace('&', '', $category->name)))))))) . '">';
+//			$news_nav_html .= $category->name;
+//			$news_nav_html .= '</a>';
+//			$news_nav_html .= '</li>';
+//		endforeach;
+//		$news_nav_html .= '<li><a href="/news/pressroom">Pressroom</a></li></ul>';
+//		$news_nav_html .= '</div>';
+//	endif;
+
+	if (isset($latest_news) && $latest_news) :
+		$news_nav_html .= '<div class="news_latest">';
+		$news_nav_html .= '<h2>Latest news</h2>';
+		$news_nav_html .= '<ul class="news_latest_list">';
+		$latest_limit = 0;
+		foreach ($latest_news as $id => $news) :
+			if ($latest_limit >= 3) :
+				break;
+			endif;
+			$news_nav_html .= '<li class="news_latest_item">';
+			$news_nav_html .= '<a href="' . url('node/' . $news->nid) . '">';
+			if (isset($news->heading) && $news->heading) {
+				$news_nav_html .= $news->heading;
+			}
+			else {
+				$news_nav_html .= $news->title;
+			}
+			$news_nav_html .= '</a>';
+			$news_nav_html .= '<p>' . date('j F Y', $news->date) . '</p>';
+			$news_nav_html .= '</li>';
+			++$latest_limit;
+		endforeach;
+		$news_nav_html .= '</ul>';
+		$news_nav_html .= '</div>';
+	endif;
+
+	if (isset($news_archive) && $news_archive) :
+		$news_nav_html .= '<div class="news_archive">';
+		$news_nav_html .= '<h2>Archive</h2>';
+    $news_nav_html .= '<div class="btn-collapse-wrapper hidden">';
+    $news_nav_html .= '<div class="btn btn-default btn-collapse-all-archive">Collapse all</div>';
+    $news_nav_html .= '</div>';
+		$news_nav_html .= '<ul class="archive_list">';
+//		foreach ($news_archive as $category => $years) :
+//			$news_nav_html .= '<li class="categories">';
+//			$news_nav_html .= '<p class="category_header">';
+//			if ($category != NULL) :
+//				$news_nav_html .= $category;
+//				$news_nav_html .= '<span class="count">(' . count($years) . ')</span>';
+//			endif;
+//
+//			$news_nav_html .= '</p>';
+//			$news_nav_html .= '<ul class="year_list">';
+
+//			foreach ($years as $year => $months) :
+			foreach ($news_archive as $year => $months) :
+				$news_nav_html .= '<li class="year">';
+				$news_nav_html .=' <h4 class="year_header">';
+				$news_nav_html .= $year;
+				$news_nav_html .= ' <span class="count">(' . count($months) . ')</span>';
+				$news_nav_html .= '</h4>';
+
+				$news_nav_html .= '<ul class="month_list">';
+				foreach ($months AS $month => $posts) :
+					$news_nav_html .= '<li class="month">';
+					$news_nav_html .= '<h4 class="month_header">';
+					$news_nav_html .= $month;
+					$news_nav_html .= ' <span class="count">(' . count($posts) . ')</span>';
+					$news_nav_html .= '</h4>';
+
+					$news_nav_html .= '<ul class="post_list">';
+					foreach ($posts AS $post) :
+						$news_nav_html .= '<li>';
+						if (isset($post['title_override'])) :
+							$news_nav_html .= '<a href="' . url('node/' . $post['nid']) . '" alt="' . $post['title_override'] . '">';
+							$news_nav_html .= $post['title_override'];
+							$news_nav_html .= '</a>';
+						else:
+							$news_nav_html .= '<a href="' . url('node/' . $post['nid']) . '" alt="' . $post['title'] . '">';
+							$news_nav_html .= $post['title'];
+							$news_nav_html .= '</a>';
+						endif;
+						$news_nav_html .= '</li>';
+					endforeach;
+					$news_nav_html .= '</ul>';
+
+					$news_nav_html .= '</li>';
+
+				endforeach;
+				$news_nav_html .= '</ul>';
+				$news_nav_html .= '</li>';
+			endforeach;
+//			$news_nav_html .= '</ul>';
+//			$news_nav_html .= '</li>';
+//		endforeach;
+		$news_nav_html .= '</ul>';
+		$news_nav_html .= '</div>';
+	endif;
+
+	$news_nav_html .= '</div>';
+
+	return $news_nav_html;
+}
+
+//function fdc_news_ajax() {
+//	$html = '
+//		
+//<div class="col-md-4">
+//	<img src="http://placehold.it/300&text=image+not+available" class="img-responsive"/>
+//</div> 
+//
+//';
+//
+//
+//	echo $html;
+//
+////	return theme('fdc_news_ajax', array('content' => $content));
+//}

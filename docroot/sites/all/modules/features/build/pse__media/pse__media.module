@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the PSE: Media feature.
+ */
+
+include_once 'pse__media.features.inc';

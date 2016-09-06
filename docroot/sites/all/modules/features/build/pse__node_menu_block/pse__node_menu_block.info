@@ -1,0 +1,9 @@
+name = PSE: Custom Menu Block
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = field_collection
+features[field_instance][] = node-menu_block-field_col_menu
+features[field_instance][] = node-menu_block-field_menu_heading
+features[node][] = menu_block
+features[features_api][] = api:2

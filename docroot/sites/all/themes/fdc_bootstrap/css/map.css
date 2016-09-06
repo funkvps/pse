@@ -1,0 +1,183 @@
+/**
+ *	 PSE
+ *
+ *	 Map only
+ */
+
+
+/* set up the map  */
+
+#imap {
+	display:block; 
+	width:938px; 
+	height:370px; 
+	background:url(../img/map.png); 
+	position:relative; 
+	border-radius: 4px;
+	-moz-box-shadow: 0px 0px 5px #333;
+	-webkit-box-shadow: 0px 0px 5px #333;
+	box-shadow: 0px 0px 5px #333;	
+	margin-left: 0px;
+}
+
+dl	{
+	margin:0 2.0em;
+	line-height: 1.5em;
+}
+dt {
+	font-weight: normal;
+	line-height: 1.5em;
+	
+}
+dd {
+	margin-bottom: 1.5em;
+}
+
+
+/* set up and hide the titling  */
+#imap a#title 
+{display:block; width:400px; height:0; overflow:hidden; position:absolute; left:0; top:0;}
+
+/* locations of offices  */
+#imap dd {position:absolute; padding:0; margin:0;}
+
+/* london  */
+#imap #dotlondon {left:400px; top:85px; z-index:99
+;}
+
+/* NJ  */
+#imap #dotnj {left:157px; top:136px; z-index:99
+;}
+
+/* Cologne  */
+#imap #dotcologne {left:432px; top:87px; z-index:99
+;}
+
+/* Swiss  */
+#imap #dotswitzerland {left:427px; top:106px; z-index:99
+;}
+
+/* Saudi Arabia  */
+#imap #dotsaudi {left:560px; top:198px; z-index:99
+;}
+
+/* United Arab Emirates  */
+#imap #dotuae {left:592px; top:196px; z-index:99
+;}
+
+/* malaysia  */
+#imap #dotmalaysia {left:766px; top:293px; z-index:99
+;}
+
+/* thailand */
+#imap #dotthailand {left:754px; top:246px; z-index:99
+;}
+
+/* china */
+#imap #dotchina {left:769px; top:130px; z-index:99
+;}
+
+/* japan */
+#imap #dotjapan {left:855px; top:151px; z-index:99
+;}
+
+/* korea */
+#imap #dotkorea {left:820px; top:145px; z-index:99
+;}
+
+/* korea */
+#imap #dothouston {left:87px; top:175px; z-index:99
+;}
+
+/* rollovers  */
+
+#imap a#uae, 
+#imap a#london, 
+#imap a#usa, 
+#imap a#germany, 
+#imap a#saudi, 
+#imap a#switzerland,
+#imap a#malaysia, 
+#imap a#thailand, 
+#imap a#china, 
+#imap a#japan, 
+#imap a#korea, 
+#imap a#houston  {
+display:block; 
+width:20px; 
+height:20px; 
+background:transparent url(../img/mapplace.png) 0px 0px no-repeat; text-decoration:none; z-index:98;}
+
+
+#imap a span, #imap a:visited span {display:none;}
+
+#imap a#uae:hover, 
+#imap a#london:hover, 
+#imap a#usa:hover, 
+#imap a#germany:hover, 
+#imap a#switzerland:hover,
+#imap a#saudi:hover, 
+#imap a#malaysia:hover, 
+#imap a#thailand:hover, 
+#imap a#china:hover, 
+#imap a#japan:hover, 
+#imap a#korea:hover. 
+#imap a#houston:hover 
+{background:transparent url(../img/mapplace2.png); background-position:0 0;}
+
+/* style the box  */
+#imap a:hover span 
+{position:absolute; 
+min-width:250px; 
+display:block;  
+background-color: #666; 
+color: #fff;
+padding:10px;
+border-radius: 4px;
+-moz-box-shadow: 0px 0px 5px #333;
+-webkit-box-shadow: 0px 0px 5px #333;
+box-shadow: 0px 0px 5px #333;
+z-index:100;}
+
+		
+* html #imap a:hover span {
+width:150px;}
+
+
+/* position the boxes  */
+#imap a#uae:hover span, 
+#imap a#london:hover span, 
+#imap a#usa:hover span, 
+#imap a#germany:hover span,
+#imap a#saudi:hover span, 
+#imap a#malaysia:hover span, 
+#imap a#thailand:hover span, 
+#imap a#china:hover span, 
+#imap a#japan:hover span, 
+#imap a#korea:hover span, 
+#imap a#houston:hover span  
+{left:0px; top:40px;
+z-index:97;
+}
+
+/* position the boxes -- override so they stay on the map */
+#imap a#london:hover span, 
+#imap a#switzerland:hover span, 
+#imap a#saudi:hover span,
+#imap a#china:hover span,
+#imap a#thailand:hover span, 
+#imap a#malaysia:hover span 
+  {left:-200px; top:40px;
+  z-index:97;}
+  
+/* position the boxes -- override so they stay on the map2  */
+
+#imap a#japan:hover span, 
+#imap a#korea:hover span 
+{left:-180px; top:40px;
+z-index:97;}
+
+
+.column {width: 300px; display: inline-block; vertical-align: top;}
+
+*html .column {display: block;}

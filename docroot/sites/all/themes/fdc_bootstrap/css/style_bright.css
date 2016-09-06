@@ -1,0 +1,697 @@
+.node-teaser .field-name-field-news-image {
+  float: right;
+}
+
+/**
+* GENERAL WEBSITE ELEMENTS
+*/
+
+body h2 a:focus {
+  outline: 0;
+  text-decoration: none;
+}
+
+body a.reset-link {
+  display: inline-block;
+  padding: .1em .4em .1em;
+/*  font-weight: bold;*/
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+  background-color: #999;
+  margin: 5px 50px;
+  /* float: left; */
+  width: auto;
+}
+
+/* temp @todo remove */
+.messages.status { 
+  border: 1px solid #DD5555;
+  background-color: #AAEEAA;
+  padding: 20px 20px 20px 50px;
+  margin: 20px 0;
+}
+
+legend.panel-heading {
+  padding-left: 0;
+}
+.page-user-register legend.panel-heading .panel-title {
+  font-weight: bold;
+}
+
+.block-with-white-background {
+  background-color: #fff;
+  margin-top: 1em;
+  padding: 6px 12px;
+  border-radius: 4px;
+  -moz-box-shadow: 0px 0px 5px #333;
+  -webkit-box-shadow: 0px 0px 5px #333;
+  box-shadow: 0px 0px 5px #333;
+  font-size: 14.4px;
+}
+
+.pse-inline-fields .field-label-inline .field-label,
+.pse-inline-fields .field-label-inline .field-items,
+.pse-inline-fields .field-label-inline .field-items .field-item {
+  display: inline;
+  float: none;
+}
+/**
+* END OF GENERAL WEBSITE ELEMENTS
+*/
+
+/**
+* News listing page
+*/
+ul.facetapi-facetapi-ajax-checkboxes {
+  list-style: none!important;
+}
+.node-teaser.node-news-articles {
+  margin-top: 1.5em;
+}
+.node-teaser.node-news-articles h2{
+  margin-top:5px;
+  margin-bottom:5px;
+}
+body.page-news .field-name-field-feature-news-article,
+.btn.btn-edit{
+  background-color: #CCC;
+  border-radius: 3px;
+  font-size: 0.8em;
+  display: inline-block;
+  padding: 1px 5px;
+  line-height: 1.428571429;
+  border: 0 none;
+  margin-right: 5px;
+}
+
+.region.region-sidebar-second.region-moved {
+  float: right;
+}
+/**
+* END OF News listing page
+*/
+
+/**
+* News article node page
+*/
+
+
+body .news-downloads h2,
+body .news-taxonomies h2{
+  margin-bottom: 20px;
+}
+
+body.node-type-news-articles .news_categories {
+  padding-top: 20px;
+}
+
+.news_archive ul ul {
+  padding-left: 10px;
+}
+
+body.node-type-news-articles .article h2{
+  margin: 20px 0;
+}
+
+body.node-type-news-articles .date{
+  float: right;
+  font-size: 16px;
+}
+.node-view-mode-teaser .links.list-inline {
+  display: none;
+}
+body.page-news .region-sidebar-second{
+  padding-top: 70px;
+}
+body.page-full-url-news .region-sidebar-second{
+  padding-top: 96px;
+}
+
+.btn.btn-default.btn-collapse-all-archive {
+/*  text-transform: none;
+  padding: 2px 10px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;*/
+
+  display: inline-block;
+  padding: .1em .4em .1em;
+  /* font-weight: bold; */
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+  background-color: #999;
+  margin: 5px 15px;
+  /* float: left; */
+  width: auto;
+  transition: .2s ease-in-out;
+  font-size: 14.4px;
+  font-weight: normal;
+  text-transform: none;
+  transform: translateZ(0);
+}
+.btn-collapse-wrapper {
+  height: 25px;
+}
+.btn.btn-default.btn-collapse-all-archive:hover {
+  background-color: #999;
+}
+.related_items ul.list {
+  margin-bottom: 0;
+}
+
+.archive_list .post_list li{
+  list-style: none;
+  padding-left: 1em !important;
+  background-image: url(../img/newsarrow.png);
+  background-repeat: no-repeat;
+  background-position: 0 0.45em;
+/*  border: 1px solid red!important;*/
+}
+
+/**
+* END OF News article node page
+*/
+
+
+/**
+* Training listing
+*/
+body.page-services-training-training-courses .region-sidebar-second {
+  padding-top: 49px;
+}
+body .table-events .listing-flag{
+  margin: 0px 4px 0 0!important;
+  float: none!important;
+}
+.views-field-field-event-icon img {
+  margin-top: 5px;
+}
+body.page-events .table-events .listing-flag{
+  margin: 7px 10px 0 0!important;
+  float: left!important;
+}
+.views-field-field-col-commerce-field-prod-start-date ,
+.views-field-field-col-commerce-field-prod-location {
+  white-space: nowrap;
+}
+body .label {
+  font-weight: normal;
+  padding: .2em .6em .1em;
+}
+td.views-field-edit-url {
+  padding: 0!important;
+  empty-cells: hide;
+}
+td.views-field-edit-url a{
+  margin-top: 8px;
+  empty-cells: hide;
+}
+/**
+* END OF Training listing
+*/
+
+/**
+* Events listing
+*/
+.views-field-field-event-location,
+.table-events th ,
+.views-field-field-event-start-date {
+  white-space: nowrap;
+}
+.views-field-field-events-type {
+  
+}
+
+ul.facetapi-facetapi-ajax-checkboxes {
+  padding-left: 0!important;
+  padding-right: 0!important;
+}
+
+/**
+* END OF Events listing
+*/
+
+/**
+* Taxonomy term page, node list
+*/
+.label.node-type {
+  font-size: 12px;
+  font-weight: normal;
+  font-family: arial;
+  line-height: 14px;
+  padding: 2px 6px;
+  vertical-align: middle;
+  margin-left: 10px;
+}
+
+.node.node-view-mode-teaser_with_node_type {
+  margin-bottom: 20px;
+}
+
+.node-events-and-webinar.node-view-mode-teaser_with_node_type .field-type-taxonomy-term-reference,
+.node-events-and-webinar.node-view-mode-teaser_with_node_type .field-type-datestamp,
+.node-events-and-webinar.node-view-mode-teaser_with_node_type .field-type-text{
+  float: left;
+  margin-right: 20px;
+}
+.node-view-mode-teaser_with_node_type .bodylarge{
+  font-size: 100%;
+  line-height: 1.428571429;
+}
+/**
+* END OF Taxonomy term page, node list
+*/
+
+
+/**
+* Downloads listing page
+*/
+.view-display-id-download_page .views-row{
+  margin-bottom: 1em;
+}
+.view-display-id-download_page .views-row h3{
+  margin-bottom: 0.2em;
+}
+/**
+* END OF Downloads listing page
+*/
+
+
+/**
+* Download page
+*/
+.text section.content .field-name-field-download-files img {
+  display: inline-block;
+}
+/**
+* END OF Download page
+*/
+
+
+/**
+* User profile page
+*/
+#block-views-pse-events-block-user-events,
+#block-views-pse-news-block-news-user-dash {
+  width: 50%;
+  float: left;
+}
+
+#block-views-pse-events-block-user-events h2,
+#block-views-pse-news-block-news-user-dash h2,
+#block-views-pse-training-courses-blck-dash h2 {
+  margin-top: 0em;
+  font-weight: normal;
+  font-size: 120%;
+  line-height: 100%;
+  margin-bottom: 0.5em;
+  width: 90%;
+  color: #333;
+}
+
+#block-views-pse-events-block-user-events .views-row span.event-type-title,
+#block-views-pse-news-block-news-user-dash .views-row a {
+  /*font-size: 85%;*/
+  border: 0px;
+  display: inline-block;
+  vertical-align: top;
+  /* width: 125px; */
+  /* height: 60px; */
+  padding-left: 15px;
+  margin-top: 5px;
+  margin-right: 40px;
+  background: transparent url(../img/newsarrow.png) no-repeat 0 5px;
+  padding-bottom: 5px;
+  color: #333;
+}
+
+#block-views-pse-events-block-user-events .views-row span.event-type-title a {
+  color: #333;
+}
+
+#block-views-pse-training-courses-blck-dash {
+/*  border-top: 1px solid #ccc;*/
+  padding-top: 1em;
+  padding-bottom: 2em;
+}
+
+#block-system-main {
+  border-bottom: 1px solid #ccc;
+}
+
+.view-pse-training-courses .view-footer .small_link {
+  /*padding-bottom: 1em;*/
+}
+.view-pse-training-courses .ruledtable td {
+  border-bottom: 0!important;
+}
+
+#block-views-pse-training-courses-blck-dash footer,
+#block-views-pse-events-block-user-events footer,
+#block-views-pse-news-block-news-user-dash footer {
+  /*padding: 5px 0;*/
+  /*margin-top: 20px;*/
+  /*margin-bottom: 1em;*/
+}
+#block-views-pse-events-block-user-events footer,
+/*#block-views-pse-training-courses-blck-dash .view-footer a,*/
+.more-link.more-orders,
+#block-views-pse-training-courses-blck-dash footer,
+#block-views-pse-news-block-news-user-dash footer {
+  text-transform: uppercase;
+  /*  letter-spacing: 0.2em;*/
+  font-size: 11.2px;
+  letter-spacing: 2.24px;
+}
+/*.more-link.more-orders:after,*/
+#block-views-pse-events-block-user-events footer .more-news:before,
+#block-views-pse-training-courses-blck-dash footer .more-training-courses:before,
+#block-views-pse-news-block-news-user-dash footer .more-news:before,
+.more-link.more-orders:before,
+.more-content-arrow:before {
+  content: '> ';
+  vertical-align: text-bottom;
+  font-size: 11.2px;
+  line-height: 17px;
+  /*background: transparent url(../img/newsarrow.png) no-repeat 5px 6px;*/
+  /*display: inline-block;*/
+  /*width: 12px;*/
+  /*height: 17px;*/
+  /*overflow: hidden;*/
+  /*text-indent: -60px;*/
+}
+#block-views-pse-training-courses-blck-dash .table-events th {
+  background-color: transparent;
+  font-weight: bold;
+  color: #58595b;
+}
+.edit-my-preferences {
+  margin-top: 1em;
+}
+body.page-full-url-user-dashboard h2.heading-filter-by {
+  margin-top: 10px!important;
+}
+.field-name-field-profile-mailing-list {
+  clear: both;
+}
+.panel-body > .help-block {
+  width: auto;
+  margin: 0 0 1em;
+  float: none;
+}
+a.edit-my-preferences {
+  display: block;
+  margin: 10px 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 12px;
+}
+
+.page-user-dashboard .table>tbody>tr>th ,
+.page-user-dashboard .table>thead>tr>th ,
+.page-user-dashboard .table>tbody>tr>td {
+  padding-left: 0;
+}
+.page-user-dashboard .table>tbody>tr>th + th ,
+.page-user-dashboard .table>thead>tr>th + th ,
+.page-user-dashboard .table>tbody>tr>td + td {
+  padding-left: 8px;
+}
+.page-user-dashboard .view-pse-training-courses .small_link a {
+  margin-left: 0!important;
+}
+.page-full-url-user-dashboard #block-system-main {
+  border-bottom: 0 none;
+}
+.page-full-url-user-dashboard section#content > section h3,
+.page-full-url-user-dashboard h2,
+.page-full-url-user-dashboard .dashboard-header {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+#block-views-pse-training-courses-blck-dash h2 {
+  width: 100%;
+}
+
+.view-pse-training-courses.view-display-id-blck_dash .view-content table ,
+.order_listing_table.my-orders{
+/*  border-bottom: 1px solid #cccccc;*/
+  margin-bottom: 10px;
+}
+table.my-orders tr{
+  overflow: hidden;
+}
+
+div.password-confirm {
+  margin-top: 0;
+  width: auto;
+}
+#user-profile-form fieldset#edit-masquerade {
+  display: none;
+}
+/**
+* END OF User profile page
+*/
+
+
+/**
+* User registration page
+*/
+
+body.page-user-register #edit-account ,
+body.page-user-register .form-type-password-confirm.form-item-pass.form-item {
+  padding: 0;
+  margin-bottom: 0;
+}
+
+body.page-user-register .panel-default > legend.panel-heading {
+  display: block;
+  background: transparent;
+}
+body div.error {
+  background-color: transparent;
+}
+
+/**
+* END OF User registration page
+*/
+
+
+/**
+* Company edit page
+*/
+
+.page-node-edit.node-type-company .tabs--primary {
+  display: none;
+}
+.page-node-edit.node-type-company form label {
+  width: 120px;
+  text-align: left;
+}
+
+/**
+* END OF Company edit page
+*/
+
+/**
+* PSE commerce custom module
+*/
+
+.pse-commerce .btn.btn-default.form-submit#edit-cancel {
+  background-color: #ccc;
+  background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.21, rgb(164,164,166)),color-stop(0.61, rgb(224,221,224)));
+  background-image: -webkit-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+  background-image: -o-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+  background-image: -moz-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+  background-image: linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+  color: #006c85;
+  margin-top: 0;
+}
+.pse-commerce .btn.btn-default.form-submit#edit-cancel:hover {
+  background-image: none;
+  background-color: #006c85;
+  color: #fff;
+}
+.pse-commerce .btn.btn-default.form-submit#edit-continue {
+  margin-left: 5px;
+}
+
+.page-checkout-review td.component-title,
+.page-checkout-review td.component-total {
+  padding: 8px !important;
+}
+
+.page-checkout-review td.component-title {
+  font-weight: bold;
+}
+
+.page-checkout-complete #block-system-main,
+.page-user-orders #block-system-main {
+  border-bottom: none;
+}
+
+.page-user-orders table.commerce-price-formatted-components {
+  width: 20%;
+  margin: 0 0 22.85px 0;
+}
+
+.page-user-orders table.commerce-price-formatted-components td.component-title,
+.page-user-orders table.commerce-price-formatted-components td.component-total {
+  background-color: transparent;
+  padding-top: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+}
+
+.page-user-orders .line-item-title {
+  display: inline;
+  font-weight: normal;
+}
+
+.page-user-orders .field-name-commerce-price {
+  display: none;
+}
+
+.page-user-orders .field-name-field-prod-public {
+  display: none;
+}
+.page-user-orders .field-name-field-pse-tax-products {
+  display: none;
+}
+
+.page-user-orders .field-name-field-pse-tax-sectors {
+  display: none;
+}
+
+.page-user-orders .field-name-field-pse-tax-regions {
+  display: none;
+}
+
+.page-user-orders .field-name-field-pse-training-course .field-label,
+.page-user-orders .field-name-field-pse-training-course .field-items {
+  display: inline-block;
+  font-style: normal;
+}
+
+.page-user-orders .field-name-field-pse-training-course .field-label {
+  margin-right: 0;
+}
+
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container .field-item  {
+  margin-bottom: 0;
+}
+
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container .field-item  .field-collection-view {
+  margin: 0;
+  padding: 0;
+}
+
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container .field-item  .field-collection-view .field-name-field-prod-start-date .field-label,
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container .field-item  .field-collection-view .field-name-field-prod-end-date .field-label,
+.page-user-orders .commerce-product-attributes-wrapper .field-collection-container .field-item  .field-collection-view .field-name-field-prod-location .field-label {
+  width: auto;
+  margin-right: 0;
+  font-style: normal;
+}
+
+.page-user-orders .views-field-commerce-total {
+  margin-bottom: 68.55px;
+}
+
+.page-user-dashboard #my-pse-header {
+  padding-top: 1em;
+  padding-bottom: 0;
+}
+
+.page-user-dashboard #my-pse-header h1 {
+  color: #fff;
+  margin: 2px 0 20px;
+}
+
+.page-user-dashboard #my-pse-header h1 {
+  color: #006c85;
+}
+
+.page-user-dashboard #my-pse-header h2 {
+  border-bottom: none;
+  margin: 20px 0;
+  padding-bottom: 0;
+}
+
+.page-user-dashboard #my-pse-header h3 {
+  margin: 20px 0 0;
+  padding: 0 0 10px;
+}
+
+.page-user-dashboard #block-views-pse-news-block-news-user-dash,
+.page-user-dashboard #block-views-pse-events-block-user-events {
+  padding-top: 3em;
+  padding-bottom: 2em;
+}
+
+.page-user-dashboard #block-views-pse-training-courses-blck-dash {
+  clear: both;
+}
+
+.page-user-dashboard hr {
+  margin-top: 0;
+  margin-left: 0;
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+.page-user-dashboard .user-nav a.btn.btn-primary {
+  margin-bottom: 2em;
+}
+
+.page-user-dashboard .view-pse-training-courses .views-field-field-col-commerce-field-prod-start-date {
+  width: 130px;
+}
+
+/* .page-user-dashboard table.order_listing_table.my-orders th:nth-child(2) */
+.page-user-dashboard table .views-field-field-prod-public {
+  width: 685px;
+}
+
+.page-user-dashboard .no-company-name {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+body.page-node-edit.node-type-company #block-system-main,
+body.page-user.page-user-edit #block-system-main {
+  border-bottom: 0;
+}
+
+body.page-node-edit.node-type-company .form-type-textfield.form-item-title.form-item.form-group {
+  margin-bottom: 45px;
+}
+
+body.page-node-edit.node-type-company #block-system-main fieldset {
+  margin-bottom: 0;
+}
+
+body.page-node-edit.node-type-company .horizontal-tabs {
+  background-color: #ccc;
+}
+
+/**
+* END OF PSE commerce custom module
+*/
+
+.float-image {
+  max-height: 50px;
+}

@@ -1,0 +1,5 @@
+ name = Newsletter Sign-Up
+description = Enables the Sign-Up form with email forwarding and data storage. (Mitchell Currie @ <a href="http://www.fdcstudio.co.uk" target="_BLANK">FDC</a>)
+;dependencies[] = 
+package = FDC Development
+core = 7.x

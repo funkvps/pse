@@ -1,0 +1,11 @@
+name = PSE: Publication
+core = 7.x
+package = Content
+dependencies[] = features
+dependencies[] = file
+dependencies[] = image
+features[field_instance][] = node-publication-field_publication_description
+features[field_instance][] = node-publication-field_publication_file
+features[field_instance][] = node-publication-field_publication_image
+features[node][] = publication
+features[features_api][] = api:2

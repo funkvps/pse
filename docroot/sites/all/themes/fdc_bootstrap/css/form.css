@@ -1,0 +1,184 @@
+fieldset p, fieldset h1, fieldset h2, fieldset h3, fieldset h4
+{width: 100%;
+clear: both;}
+
+fieldset h3
+{font-weight normal;
+margin-top: 2em;}
+
+
+fieldset.simple 
+{
+
+width: 100%;
+padding-left: 1em;
+padding-top: 2em;
+background-color: #ccc;
+		border-radius: 4px;
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;
+} 
+
+fieldset.simple legend
+{padding: 0.5em;
+position: relative; top: 1.5em;
+left: -0.5em;
+font-size: 135%;
+} 
+
+
+fieldset.simple label
+{
+width: 25%;
+text-align: right;
+margin-right:0.5em;
+display: block;
+float: left;
+padding-top: 0.5em;
+
+
+}
+
+
+fieldset.simple label.checkbox
+{
+
+width: 50%;
+float: left;
+clear: right;
+text-align: left;
+position: relative; top: -0.5em;
+
+
+}
+
+fieldset.simple input[type="checkbox"], fieldset.simple input[type="radio"]
+{
+display: inline-block;
+width: 3em;
+margin-left: 25%;
+float: left;
+clear: left;	}
+
+
+
+fieldset.simple input
+{
+padding: 0.5em;
+width: 50%;
+margin-left: 0.5em;
+display: block;
+margin-bottom: 1.5em;
+
+}
+
+fieldset.simple textarea
+{
+padding: 0.5em;
+width: 50%;
+margin-left: 0.5em;
+color: #666;
+display: block;
+margin-bottom: 1.5em;
+}
+
+fieldset.simple select
+{
+padding: 0.5em;
+width: 52.5%;
+margin-left: 0.5em;
+color: #666;
+display: block;
+margin-bottom: 1.5em;
+min-height: 3em;
+}
+
+
+fieldset.simple input[type="submit"]
+{
+
+width: 5em;
+	font-size: 95%;
+	background-color: #006c85;
+	background-image: linear-gradient(bottom, rgb(4,59,71) 14%, rgb(0,109,133) 57%);
+	background-image: -o-linear-gradient(bottom, rgb(4,59,71) 14%, rgb(0,109,133) 57%);
+	background-image: -moz-linear-gradient(bottom, rgb(4,59,71) 14%, rgb(0,109,133) 57%);
+	background-image: -webkit-linear-gradient(bottom, rgb(4,59,71) 14%, rgb(0,109,133) 57%);
+	background-image: -ms-linear-gradient(bottom, rgb(4,59,71) 14%, rgb(0,109,133) 57%);
+	background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0.14, rgb(4,59,71)),
+	color-stop(0.57, rgb(0,109,133)));
+	display: inline-block;
+	color: #fff;
+	border-radius: 4px;
+	padding: 5px 8px 5px 8px;
+	-moz-box-shadow: 0px 0px 5px #ccc;
+	-webkit-box-shadow: 0px 0px 5px #ccc;
+	box-shadow: 0px 0px 5px #ccc;
+	
+margin-left: 26%;
+	}
+	
+	
+fieldset.simple input[type="reset"]
+{
+
+width: 5em;
+	font-size: 95%;
+	background-color: #ccc;
+	background-image: linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+	background-image: -o-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+	background-image: -moz-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+	background-image: -webkit-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+	background-image: -ms-linear-gradient(bottom, rgb(164,164,166) 21%, rgb(224,221,224) 61%);
+	background-image: -webkit-gradient(
+	linear,
+	left bottom,
+	left top,
+	color-stop(0.21, rgb(164,164,166)),
+	color-stop(0.61, rgb(224,221,224))
+	);
+	display: inline-block;
+	margin-top: 1em;
+	color: 006c85;
+	border-radius: 4px;
+	padding: 5px 8px 5px 8px;
+	-moz-box-shadow: 0px 0px 5px #ccc;
+	-webkit-box-shadow: 0px 0px 5px #ccc;
+	box-shadow: 0px 0px 5px #ccc;
+	
+margin-left: 26%;
+	}
+
+.formerror {width: 100%; 
+	height: 0.5em;
+	color: red; 
+	font-size: 75%; 
+	letter-spacing: 0.125em; 
+	text-transform: uppercase;}
+
+
+#___gcse_1, .gsc-control-cse gsc-control-cse-en, gsc-control-wrapper-cse {
+
+		-moz-box-shadow: 0px 0px 5px #333;
+		-webkit-box-shadow: 0px 0px 5px #333;
+		box-shadow: 0px 0px 5px #333;}
+
+
+.gsc-control-wrapper-cse, .gsc-result-info, #___gcse_1 { border: none; background: #fff;	font-family: "news-gothic-std", "NewsGothic", "News Cycle", "Calibri", "Arial Narrow", "Geneva", "Helvetica", "Arial"; }
+
+table.gsc-search-box, table.gsc-search-box tbody {border-bottom: none; background: none;}
+
+table.gsc-search-box {margin-top: 30px;}
+
+table.gsc-table-result, table.gsc-table-result tbody  {border-bottom: 1px solid #d7d7d7; background: none; font-family: "news-gothic-std", "NewsGothic", "News Cycle", "Calibri", "Arial Narrow", "Geneva", "Helvetica", "Arial";}
+
+.gsc-results gsc-webResult, table.gsc-above-wrapper-area-container, .gsc-resultsRoot gsc-tabData gsc-tabdActivetable, .gsc-above-wrapper-area-container tbody, table.gsc-resultsHeader {border: none;}
+
+.gcsc-branding {display:none;}
+
+.gsc-url-bottom {padding-top: 5px; padding-bottom: 5px;}

@@ -1,0 +1,129 @@
+<?php
+
+//function fdc_vanilla_menu() {
+//	$items = array();
+////	$items['admin/config/fdc_vanilla'] = array(
+////		'title' => 'Registration Config',
+////		'description' => '',
+////		'page callback' => 'drupal_get_form',
+////		'page arguments' => array('fdc_vanilla_admin'),
+////		'access arguments' => array('administer fdc_vanilla module'),
+////		'type' => MENU_NORMAL_ITEM,
+////	);
+//	$items['admin/config/fdc_vanilla'] = array(
+//		'title' => 'vanilla forum configuration',
+//		'description' => '',
+//		'page callback' => 'fdc_vanilla_test',
+//		'page arguments' => array('fdc_vanilla_admin'),
+//		'access arguments' => array('administer fdc_vanilla module'),
+//		'type' => MENU_NORMAL_ITEM,
+//	);
+//	return $items;
+//}
+//function fdc_vanilla_permission() {
+//	return array(
+//		'fdc challenge utils' => array(
+//			'title' => t('Administrate fdc Settings'),
+//			'description' => t('Stuff'),
+//		),
+//	);
+//}
+//
+
+
+
+function fdc_vanilla_form_alter(&$form, &$form_state, $form_id) {
+	// make sure this is the register form
+	if ($form_id == 'user_register_form') {
+		// this adds your custom validation function to the form validation array
+		$form['#validate'][] = 'fdc_vanilla_user_register_validation';
+	}
+}
+
+// once user has registered, the username and password are passed onto vanilla forum
+function fdc_vanilla_user_register_validation($form, &$form_state) {
+	// Schools
+	// 
+	$pass1 = $form['account']['pass']['#value']['pass1'];
+	$pass2 = $form['account']['pass']['#value']['pass2'];
+	$email = $form_state['input']['mail'];
+	$fname = $form_state['input']['field_profile_first_name']['und'][0]['value'];
+	$lastname = $form_state['input']['field_profile_last_name']['und'][0]['value'];
+
+
+	if ($pass1 == $pass2) {
+		$params = array(
+			"token" => "fdc_studio",
+			"name" => $fname . " " . $lastname,
+			"password" => $pass1,
+			"email" => $email,
+		);
+
+		$result = fdc_vanilla_httpPost("http://pseforum.fdcdev2.co.uk/fdc_api.php", $params);
+		if (!empty($result)) {
+			if ($result == "success") {
+//				echo "added to forum";
+			}
+			if ($result == "user_exists") {
+//				echo "User Already exist";
+			}
+			if ($result == "data_missing") {
+//				echo "Please check data ";
+			}
+		}
+		else {
+//			echo "whaaaa";
+		}
+	}
+
+
+//	print_r($form['account']['pass']['#value']);
+}
+
+//
+//function fdc_vanilla_test() {
+//	$params = array(
+//		"token" => "uisdfhgdsfh",
+//		"name" => "waseem",
+//		"password" => "password123",
+//		"email" => "waseem@fdcstudio.co.uk",
+//	);
+//
+//	$result = fdc_vanilla_httpPost("http://pseforum.fdcdev.co.uk/test.php", $params);
+//	if (!empty($result)) {
+//		if ($result == "success") {
+//			echo "added";
+//		}
+//		if ($result == "user_exists") {
+//			echo "User Already exist";
+//		}
+//		if ($result == "data_missing") {
+//			echo "Please check data ";
+//		}
+//	}
+//	else {
+//		echo "whaaaa";
+//	}
+//}
+
+function fdc_vanilla_httpPost($url, $params) {
+	$postData = '';
+	//create name value pairs seperated by &
+	foreach ($params as $k => $v) {
+		$postData .= $k . '=' . $v . '&';
+	}
+	rtrim($postData, '&');
+
+	$ch = curl_init();
+
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, false);
+	curl_setopt($ch, CURLOPT_POST, count($postData));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+
+	$output = curl_exec($ch);
+
+	curl_close($ch);
+	return $output;
+}

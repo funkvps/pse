@@ -1,0 +1,626 @@
+#
+# Apache/PHP/Drupal settings:
+#
+
+# Protect files and directories from prying eyes.
+<FilesMatch "\.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)(~|\.sw[op]|\.bak|\.orig|\.save)?$|^(\..*|Entries.*|Repository|Root|Tag|Template)$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig\.save)$">
+  Order allow,deny
+</FilesMatch>
+
+# Don't show directory listings for URLs which map to a directory.
+Options -Indexes
+
+# Follow symbolic links in this directory.
+Options +FollowSymLinks
+
+# Make Drupal handle any 404 errors.
+ErrorDocument 404 /index.php
+
+# Set the default handler.
+DirectoryIndex index.php index.html index.htm
+
+# Override PHP settings that cannot be changed at runtime. See
+# sites/default/default.settings.php and drupal_environment_initialize() in
+# includes/bootstrap.inc for settings that can be changed at runtime.
+
+# PHP 5, Apache 1 and 2.
+<IfModule mod_php5.c>
+  php_flag magic_quotes_gpc                 off
+  php_flag magic_quotes_sybase              off
+  php_flag register_globals                 off
+  php_flag session.auto_start               off
+  php_value mbstring.http_input             pass
+  php_value mbstring.http_output            pass
+  php_flag mbstring.encoding_translation    off
+</IfModule>
+
+# Requires mod_expires to be enabled.
+<IfModule mod_expires.c>
+  # Enable expirations.
+  ExpiresActive On
+
+  # Cache all files for 2 weeks after access (A).
+  ExpiresDefault A1209600
+
+  <FilesMatch \.php$>
+    # Do not allow PHP scripts to be cached unless they explicitly send cache
+    # headers themselves. Otherwise all scripts would have to overwrite the
+    # headers set by mod_expires if they want another caching behavior. This may
+    # fail if an error occurs early in the bootstrap process, and it may cause
+    # problems if a non-Drupal PHP file is installed in a subdirectory.
+    ExpiresActive Off
+  </FilesMatch>
+</IfModule>
+
+# Various rewrite rules.
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+
+  # Set "protossl" to "s" if we were accessed via https://.  This is used later
+  # if you enable "www." stripping or enforcement, in order to ensure that
+  # you don't bounce between http and https.
+  RewriteRule ^ - [E=protossl]
+  RewriteCond %{HTTPS} on
+  RewriteRule ^ - [E=protossl:s]
+
+  # Make sure Authorization HTTP header is available to PHP
+  # even when running as CGI or FastCGI.
+  RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+  # Block access to "hidden" directories whose names begin with a period. This
+  # includes directories used by version control systems such as Subversion or
+  # Git to store control files. Files whose names begin with a period, as well
+  # as the control files used by CVS, are protected by the FilesMatch directive
+  # above.
+  #
+  # NOTE: This only works when mod_rewrite is loaded. Without mod_rewrite, it is
+  # not possible to block access to entire directories from .htaccess, because
+  # <DirectoryMatch> is not allowed here.
+  #
+  # If you do not have mod_rewrite installed, you should remove these
+  # directories from your webroot or otherwise protect them from being
+  # downloaded.
+  RewriteRule "(^|/)\." - [F]
+
+  # If your site can be accessed both with and without the 'www.' prefix, you
+  # can use one of the following settings to redirect users to your preferred
+  # URL, either WITH or WITHOUT the 'www.' prefix. Choose ONLY one option:
+  #
+  # To redirect all users to access the site WITH the 'www.' prefix,
+  # (http://example.com/... will be redirected to http://www.example.com/...)
+  # uncomment the following:
+  # RewriteCond %{HTTP_HOST} .
+  # RewriteCond %{HTTP_HOST} !^www\. [NC]
+  # RewriteRule ^ http%{ENV:protossl}://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  #
+  # To redirect all users to access the site WITHOUT the 'www.' prefix,
+  # (http://www.example.com/... will be redirected to http://example.com/...)
+  # uncomment the following:
+  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  # RewriteRule ^ http%{ENV:protossl}://%1%{REQUEST_URI} [L,R=301]
+
+  # Modify the RewriteBase if you are using Drupal in a subdirectory or in a
+  # VirtualDocumentRoot and the rewrite rules are not working properly.
+  # For example if your site is at http://example.com/drupal uncomment and
+  # modify the following line:
+  # RewriteBase /drupal
+  #
+  # If your site is running in a VirtualDocumentRoot at http://example.com/,
+  # uncomment the following line:
+  # RewriteBase /
+
+  # Pass all requests not referring directly to files in the filesystem to
+  # index.php. Clean URLs are handled in drupal_environment_initialize().
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !=/favicon.ico
+  RewriteRule ^ index.php [L]
+
+  # Rules to correctly serve gzip compressed CSS and JS files.
+  # Requires both mod_rewrite and mod_headers to be enabled.
+  <IfModule mod_headers.c>
+    # Serve gzip compressed CSS files if they exist and the client accepts gzip.
+    RewriteCond %{HTTP:Accept-encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}\.gz -s
+    RewriteRule ^(.*)\.css $1\.css\.gz [QSA]
+
+    # Serve gzip compressed JS files if they exist and the client accepts gzip.
+    RewriteCond %{HTTP:Accept-encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}\.gz -s
+    RewriteRule ^(.*)\.js $1\.js\.gz [QSA]
+
+    # Serve correct content types, and prevent mod_deflate double gzip.
+    RewriteRule \.css\.gz$ - [T=text/css,E=no-gzip:1]
+    RewriteRule \.js\.gz$ - [T=text/javascript,E=no-gzip:1]
+
+    <FilesMatch "(\.js\.gz|\.css\.gz)$">
+      # Serve correct encoding type.
+      Header set Content-Encoding gzip
+      # Force proxies to cache gzipped & non-gzipped css/js files separately.
+      Header append Vary Accept-Encoding
+    </FilesMatch>
+  </IfModule>
+
+#RewriteCond %{HTTPS} off
+#RewriteCond %{HTTP:X-Forwarded-Proto} !https
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+</IfModule>
+
+# Add headers to all responses.
+<IfModule mod_headers.c>
+  # Disable content sniffing, since it's an attack vector.
+  Header always set X-Content-Type-Options nosniff
+</IfModule>
+
+# Redirects
+Redirect /academic/form_academic.html http://www.psenterprise.com/sectors/academic
+Redirect /academic/index.html http://www.psenterprise.com/sectors/academic
+Redirect /academic/mbi_prize.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2015/results.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2015/runners_up1.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2015/runners_up2.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2015/winners.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2016/guidelines.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2016/judges.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/2016/overview.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/mbi_prize.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/mbi_prize/mbi_results_previous.html http://www.psenterprise.com/sectors/academic/mbi-prize-home
+Redirect /academic/partnership_for_apm.html http://www.psenterprise.com/sectors/academic/partnership-for-apm
+Redirect /academic/products_academic.html http://www.psenterprise.com/academic/products-academic
+Redirect /academic/publications.html http://www.psenterprise.com/sectors/academic/publications
+Redirect /academic/info_faq.html http://www.psenterprise.com/sectors/academic/info-faq
+Redirect /academic/info_research.html http://www.psenterprise.com/sectors/academic/research
+Redirect /academic/info_teaching.html http://www.psenterprise.com/sectors/academic/info-teaching
+Redirect /academic/prices/form_academic_pricelist.html http://www.psenterprise.com/sectors/academic/academic-pricelist-form
+Redirect /careers.html http://www.psenterprise.com/company/careers
+Redirect /careers/index.html http://www.psenterprise.com/company/careers
+Redirect /chemicals.html http://www.psenterprise.com/sectors/chemicals
+Redirect /chemicals/index.html http://www.psenterprise.com/sectors/chemicals
+Redirect /chemicals/olefins.html http://www.psenterprise.com/sectors/chemicals/olefins
+Redirect /chemicals/publications.html http://www.psenterprise.com/sectors/chemicals/publications
+Redirect /chemicals/reaction/benefits.html http://www.psenterprise.com/sectors/chemicals/reaction/benefits
+Redirect /chemicals/reaction/case_falling_film.html http://www.psenterprise.com/sectors/chemicals/reaction/cases/falling-film-reactors
+Redirect /chemicals/reaction/case_monolith.html http://www.psenterprise.com/sectors/chemicals/reaction/cases/catalyst-monolith-reactors
+Redirect /chemicals/reaction/case_multitubular.html http://www.psenterprise.com/sectors/chemicals/reaction/cases/multitubular-reactors
+Redirect /chemicals/reaction/feature_reactor.html http://www.psenterprise.com/chemicals/reaction/feature-reactor
+Redirect /chemicals/reaction/fixed_bed.html http://www.psenterprise.com/sectors/chemicals/reaction/fixed-bed
+Redirect /chemicals/reaction/index.html http://www.psenterprise.com/sectors/chemicals/reaction
+Redirect /chemicals/reaction/partial_oxidation.html http://www.psenterprise.com/sectors/chemicals/reaction/partial-oxidation
+Redirect /chemicals/separation/adsorption_landing.html http://www.psenterprise.com/sectors/chemicals/separation/adsorption-landing
+Redirect /chemicals/separation/hidic.html http://www.psenterprise.com/chemicals/separation/hidic
+Redirect /chemicals/separation/index.html http://www.psenterprise.com/sectors/chemicals/separation
+Redirect /chemicals/separation/optimal_distillation_design.html http://www.psenterprise.com/chemicals/separation/optimal-distillation-design
+Redirect /company.html http://www.psenterprise.com/company
+Redirect /company/americas/directions.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/americas/directions_houston.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/americas/hotels.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/americas/hotels_houston.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/board.html http://www.psenterprise.com/company/board
+Redirect /company/careers/1509_java_software_developer.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/1602_bdm_fp.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/1604_ae_japan.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/1604_ae_japan.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/benefits.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/employees.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/index.html http://www.psenterprise.com/company/careers
+Redirect /company/careers/values.html http://www.psenterprise.com/company/careers
+Redirect /company/contact.html http://www.psenterprise.com/contact-pse
+Redirect /company/customers.html http://www.psenterprise.com/company/customers
+Redirect /company/directions.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/hotels.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/howwework.html http://www.psenterprise.com/company/how-we-work
+Redirect /company/innovation.html http://www.psenterprise.com/company/innovation
+Redirect /company/japan/directions.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/japan/directions_jp.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/japan/hotels.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/japan/hotels_jp.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/korea/directions.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/korea/directions_kr.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/korea/hotels.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/korea/hotels_kr.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/sustainability.html http://www.psenterprise.com/company/sustainability
+Redirect /company/uk/directions.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /company/uk/hotels.html http://www.psenterprise.com/contact/worldwide-locations
+Redirect /concepts/apm.html http://www.psenterprise.com/concepts/apm
+Redirect /concepts/apm_benefits.html http://www.psenterprise.com/concepts/apm-benefits
+Redirect /concepts/apm_differences.html http://www.psenterprise.com/concepts/apm-differences
+Redirect /concepts/apm_technology.html http://www.psenterprise.com/concepts/apm-technology
+Redirect /concepts/equation_oriented.html http://www.psenterprise.com/concepts/equation-oriented
+Redirect /concepts/examples.html http://www.psenterprise.com/concepts/examples
+Redirect /concepts/mbe.html http://www.psenterprise.com/concepts/mbe
+Redirect /concepts/mbi.html http://www.psenterprise.com/concepts/mbi
+Redirect /concepts/model_targeted_experimentation.html http://www.psenterprise.com/concepts/model-targeted-experimentation
+Redirect /consulting.html http://www.psenterprise.com/services/consulting
+Redirect /consulting/index.html http://www.psenterprise.com/services/consulting
+Redirect /consulting/modelcare.html http://www.psenterprise.com/services/consulting/modelcare
+Redirect /consulting/process_design_optimization.html http://www.psenterprise.com/services/consulting/process-design-optimisation
+Redirect /consulting/process_development.html http://www.psenterprise.com/services/consulting/process-development
+Redirect /consulting/r_and_d/index.html http://www.psenterprise.com/services/consulting
+Redirect /consulting/r_and_d/vpdm.html http://www.psenterprise.com/services/consulting
+Redirect /consulting/reactor_design.html http://www.psenterprise.com/services/consulting/reactor-design
+Redirect /consulting/solutions.html http://www.psenterprise.com/services/consulting/solutions
+Redirect /consulting/whole_plant_optimisation.html http://www.psenterprise.com/services/consulting/whole-plant-optimisation
+Redirect /consulting_new.html http://www.psenterprise.com/services/consulting
+Redirect /consumer.html http://www.psenterprise.com/sectors/consumer
+Redirect /consumer/benefits.html http://www.psenterprise.com/sectors/consumer/benefits
+Redirect /consumer/consulting.html http://www.psenterprise.com/sectors/consumer/consulting
+Redirect /consumer/domo_reduce_batch_time_new.html http://www.psenterprise.com/sectors/consumer/domo-reduce-batch-time
+Redirect /consumer/downloads.html http://www.psenterprise.com/sectors/consumer/downloads
+Redirect /consumer/events.php http://www.psenterprise.com/events
+Redirect /consumer/scale_up_mill.html http://www.psenterprise.com/sectors/consumer/scale-up-mill
+Redirect /consumer/technology.html http://www.psenterprise.com/sectors/consumer/technology
+Redirect /customerarea/downloads.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/form_question.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/form_question_confirmation.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/download_40.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/download_41.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/download_41.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/download_42.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/form_bug_report.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/form_bug_report_confirmation.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/index.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/release_notes/gproms_32_release_notes.pdf http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/release_notes/gproms_33_release_notes.pdf http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms/release_notes/gproms_34_release_notes.pdf http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms41.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/gproms42.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/index.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/instructions/index.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/instructions/install_gproms_31_unix.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/instructions/install_gproms_31_windows.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/instructions/install_model_builder_unix.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/instructions/install_model_builder_windows.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/lm/index.html http://www.psenterprise.com/customer-area
+Redirect /customerarea/utility_flexutil.html http://www.psenterprise.com/customer-area
+Redirect /events/abstracts/index.html http://www.psenterprise.com/events/abstracts
+Redirect /events/americas/index.php http://www.psenterprise.com/events
+Redirect /events/americas/2016/apmf/agenda.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/apmf/apmf.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/apmf/highlights_2014.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/form_lowell.html http://www.psenterprise.com/events/americas/2016/workshops/gproms-lowell
+Redirect /americas/2016/workshops/index.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/workshops/s1_oil_gas.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/workshops/ws1_gpb.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/workshops/ws2_gpb_psa.html http://www.psenterprise.com/events
+Redirect /events/americas/2016/workshops/ws3_gpb_reactor.html http://www.psenterprise.com/events
+Redirect /events/emea/2016/workshops/form_sion_workshop.html http://www.psenterprise.com/events/emea/2016/workshops/sion-processbuilder
+Redirect /events/emea/index.php http://www.psenterprise.com/events
+Redirect /events/index.php http://www.psenterprise.com/events
+Redirect /events/japan/index.php http://www.psenterprise.com/events
+Redirect /events/korea/index.php http://www.psenterprise.com/events
+Redirect /events/uk/2016/apmf/poster_presentations.html http://www.psenterprise.com/events/uk/2016/apmf/poster-presentations
+Redirect /events/uk/2016/apmf/presentations.html http://www.psenterprise.com/events/uk/2016/apmf/presentations
+Redirect /events/uk/data/16_presentations/presentation_videos.html http://www.psenterprise.com/events/uk/2016/apmf/video-presentations
+Redirect /events/uk/index.php http://www.psenterprise.com/events
+Redirect /events/webinars/2015/15_09_reactor.html http://www.psenterprise.com/events/webinars/2015/15-09-reactor
+Redirect /events/webinars/2015/15_09_spray_drying.html http://www.psenterprise.com/events/webinars/2015/15-09-spray-drying
+Redirect /events/webinars/2015/15_10_biopharmaceutics.html http://www.psenterprise.com/events/webinars/2015/15-10-biopharmaceutics
+Redirect /events/webinars/2015/15_12_gcoas_technology.html http://www.psenterprise.com/events/webinars/2015/15-12-gcoas-technology
+Redirect /events/webinars/2016/16_02_materials_of_construction.html http://www.psenterprise.com/events/webinars/2016/16-02-materials-of-construction
+Redirect /events/webinars/2016/16_03_catalytic_reactor_design.html http://www.psenterprise.com/events/webinars/2016/16-03-catalytic-reactor-design
+Redirect /events/webinars/2016/16_03_ccs_japan.html http://www.psenterprise.com/events/webinars/2016/16-03-ccs-japan
+Redirect /events/webinars/2016/16_03_fire_analysis.html http://www.psenterprise.com/events/webinars/2016/16-03-fire-analysis
+Redirect /webinars/2016/16_03_pressure_swing_adsorption.html http://www.psenterprise.com/events/webinars/2016/16-03-pressure-swing-adsorption
+Redirect /events/webinars/2016/16_03_systems-based_pharmaceutics.html http://www.psenterprise.com/events/webinars/2016/16-03-systems-based-pharmaceutics
+Redirect /events/webinars/2016/16_04_batch_process_optimisation.html http://www.psenterprise.com/events/webinars/2016/16-04-batch-process-optimisation
+Redirect /events/webinars/2016/16_04_formulated_products_preview.html http://www.psenterprise.com/events/webinars/2016/16-04-formulated-products-preview
+Redirect /events/webinars/2016/16_04_whole_plant_optimisation.html http://www.psenterprise.com/events/webinars/2016/16-04-whole-plant-optimisation
+Redirect /events/webinars/2016/16_05_legacy_models.html http://www.psenterprise.com/events/webinars/2016/16-05-legacy-models
+Redirect /events/webinars/2016/16_06_blowdown_api521_americas.html http://www.psenterprise.com/events/webinars/2016/16-06-blowdown-api521-americas
+Redirect /events/webinars/2016/16_06_distillation.html http://www.psenterprise.com/events/webinars/2016/16-06-distillation
+Redirect /events/webinars/2016/16_06_gproms_processbuilder.html http://www.psenterprise.com/events/webinars/2016/16-06-gproms-processbuilder
+Redirect /events/webinars/2016/16_06_precipitation_of_poorly_soluble_drugs.html http://www.psenterprise.com/events/webinars/2016/16-06-precipitation-of-poorly-soluble-drugs
+Redirect /events/webinars/2016/16_06_wastewater.html http://www.psenterprise.com/events/webinars/2016/16-06-wastewater
+Redirect /events/webinars/2016/16_07_blowdown_api521_emea.html http://www.psenterprise.com/events/webinars/2016/16-07-blowdown-api521-emea
+Redirect /events/webinars/2016/16_07_catalytic_reactor_design.html http://www.psenterprise.com/events/webinars/2016/16-07-catalytic-reactor-design
+Redirect /events/webinars/2016/16_09_reaction_engineering.html http://www.psenterprise.com/events/webinars/2016/16-09-reaction-engineering
+Redirect /events/webinars/2016/16_10_global_system_analysis.html http://www.psenterprise.com/events/webinars/2016/16-10-global-system-analysis
+Redirect /events/webinars/archive.html http://www.psenterprise.com/events/webinars/archive
+Redirect /events/webinars/index.html http://www.psenterprise.com/events/webinars
+Redirect /events/webinars/index.php http://www.psenterprise.com/events/webinars
+Redirect /events/webinars/unsubscribe.html http://www.psenterprise.comevents/webinars/unsubscribe
+Redirect /form_contact.html http://www.psenterprise.com/
+Redirect /formulatedproducts.html http://www.psenterprise.com/products/gproms/formulated-products
+Redirect /formulatedproducts/consulting.html http://www.psenterprise.com/products/gproms/formulated-products/consulting-services
+Redirect /fuelcell.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /fuelcell/data.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /fuelcell/index.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /fuelcell/system.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /gcoas.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/case_diclofenac.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/case_examples.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/case_fluconazole.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/case_ziprasidone.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/gcoas_development.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/index.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/overview.html http://www.psenterprise.com/products/gcoas/overview
+Redirect /gcoas/productsheet.html http://www.psenterprise.com/products/gcoas
+Redirect /gcoas/software_environment.html http://www.psenterprise.com/products/gcoas/software-environment
+Redirect /gcoas/technology.html http://www.psenterprise.com/products/gcoas/technology
+Redirect /gcrystal.html http://www.psenterprise.com/products/gcrystal
+Redirect /gcrystal/advisory_board.html http://www.psenterprise.com/products/gcrystal/advisory-board
+Redirect /gcrystal/benefits.html http://www.psenterprise.com/products/gcrystal/benefits
+Redirect /gcrystal/case_domo_reduce_batch_time.html http://www.psenterprise.com/sectors/specialty-chem/domo-reduce-batch-time-new
+Redirect /gcrystal/consulting.html http://www.psenterprise.com/products/gcrystal/consulting
+Redirect /gcrystal/core_team.html http://www.psenterprise.com/products/gcrystal/consulting/core-team
+Redirect /gcrystal/downloads.html http://www.psenterprise.com/products/gcrystal/downloads
+Redirect /gcrystal/events.php http://www.psenterprise.com/events
+Redirect /gcrystal/index.html http://www.psenterprise.com/products/gcrystal
+Redirect /gcrystal/isdifferent.html http://www.psenterprise.com/products/gcrystal/is-different
+Redirect /gcrystal/news.html http://www.psenterprise.com/products/gcrystal
+Redirect /gcrystal/overview.html http://www.psenterprise.com/products/gcrystal/overview
+Redirect /gcrystal/productsheet.html http://www.psenterprise.com/products/gcrystal
+Redirect /gcrystal/software_features.html http://www.psenterprise.com/products/gcrystal/software-features
+Redirect /gcrystal/success_stories.html http://www.psenterprise.com/products/gcrystal/success-stories
+Redirect /gfp http://www.psenterprise.com/products/gproms/formulated-products
+Redirect /gfuelcell.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /gproms.html http://www.psenterprise.com/products/gproms
+Redirect /gproms/aml/aml_glc.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/aml_glc
+Redirect /gproms/aml/fbcr/index.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/aml_fbcr
+Redirect /gproms/aml/index.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/advanced-model-libraries
+Redirect /gproms/applications/fuelcell/index.html http://www.psenterprise.com/products/gproms
+Redirect /gproms/applications/reaction/index.html http://www.psenterprise.com/sectors/chemicals/reaction
+Redirect /gproms/applications/separation/index.html http://www.psenterprise.com/sectors/chemicals/separation
+Redirect /gproms/custom.html http://www.psenterprise.com/products/gproms/processbuilder/custom
+Redirect /gproms/enterprise/geweb.html http://www.psenterprise.com/products/gproms/geweb
+Redirect /gproms/family.html http://www.psenterprise.com/products/gproms/family
+Redirect /gproms/features.html http://www.psenterprise.com/products/gproms/platform
+Redirect /gproms/hybrid_multizonal.html http://www.psenterprise.com/products/gproms/hybrid-multizonal
+Redirect /gproms/index.html http://www.psenterprise.com/products/gproms
+Redirect /gproms/objects/gocapeopen.html http://www.psenterprise.com/products/gproms/objects/gocapeopen
+Redirect /gproms/objects/gocfd.html http://www.psenterprise.com/products/gproms/objects/gocfd
+Redirect /gproms/objects/gomatlab.html http://www.psenterprise.com/products/gproms/objects/gomatlab
+Redirect /gproms/objects/gorun.html http://www.psenterprise.com/products/gproms/objects/gorun
+Redirect /gproms/objects/index.html http://www.psenterprise.com/products/gproms/objects
+Redirect /gproms/optimisation.html http://www.psenterprise.com/products/gproms
+Redirect /gproms/options/physprops/saft/technology.html http://www.psenterprise.com/products/gproms/gsaft
+Redirect /gproms/physprops/index.html http://www.psenterprise.com/products/gproms/physprops
+Redirect /gproms/platform.html http://www.psenterprise.com/products/gproms/platform
+Redirect /gproms/technologies/dynamic_optimisation.html http://www.psenterprise.com/products/gproms/technologies/dynamic-optimisation
+Redirect /gproms/technologies/info_language.html http://www.psenterprise.com/products/gproms/technologies/info-language
+Redirect /gproms/technologies/mio.html http://www.psenterprise.com/products/gproms/technologies/mio
+Redirect /gproms/technologies/model_validation.html http://www.psenterprise.com/products/gproms/technologies/model-validation
+Redirect /gproms/technologies/optimal_experiment_design.html http://www.psenterprise.com/products/gproms/technologies/optimal-experiment-design
+Redirect /gsa http://www.psenterprise.com/sectors/life-sciences/gsa
+Redirect /gsaft.html http://www.psenterprise.com/products/gproms/gsaft
+Redirect /gsaft/example_associating.html http://www.psenterprise.com/products/gproms/gsaft/example-associating
+Redirect /gsaft/index.html http://www.psenterprise.com/products/gproms/gsaft
+Redirect /gsaft/methods.html http://www.psenterprise.com/products/gproms/gsaft/methods
+Redirect /gsolids.html http://www.psenterprise.com/products/gsolids
+Redirect /gsolids/advisory_board.html http://www.psenterprise.com/products/gsolids/advisory-board
+Redirect /gsolids/benefits.html http://www.psenterprise.com/products/gsolids/benefits
+Redirect /gsolids/consulting.html http://www.psenterprise.com/products/gsolids/consulting
+Redirect /gsolids/core_team.html http://www.psenterprise.com/products/gsolids/core-team
+Redirect /gsolids/downloads.html http://www.psenterprise.com/products/gsolids/downloads
+Redirect /gsolids/events.php http://www.psenterprise.com/events
+Redirect /gsolids/index.html http://www.psenterprise.com/products/gsolids
+Redirect /gsolids/isdifferent.html http://www.psenterprise.com/products/gsolids/is-different
+Redirect /gsolids/news.html http://www.psenterprise.com/news
+Redirect /gsolids/overview.html http://www.psenterprise.com/products/gsolids
+Redirect /gsolids/productsheet.html http://www.psenterprise.com/products/gsolids
+Redirect /gsolids/scale_up_mill.html http://www.psenterprise.com/products/gsolids/success-stories/scale-up-mill
+Redirect /gsolids/software_features.html http://www.psenterprise.com/products/gsolids/software-features
+Redirect /gsolids/spray_drying.html http://www.psenterprise.com/products/gproms/formulated-products/spray-drying
+Redirect /gsolids/success_stories.html http://www.psenterprise.com/products/gsolids
+Redirect /index.html http://www.psenterprise.com/
+Redirect /lifesciences.html http://www.psenterprise.com/sectors/life-sciences
+Redirect /lifesciences/benefits.html http://www.psenterprise.com/sectors/life-sciences/benefits
+Redirect /lifesciences/events.php http://www.psenterprise.com/events
+Redirect /lifesciences/landing_gsa.html http://www.psenterprise.com/sectors/life-sciences/gsa
+Redirect /lifesciences/landing_sbp.html http://www.psenterprise.com/sectors/life-sciences/systems-based-pharmaceutics
+Redirect /lifesciences/oral_absorption.html http://www.psenterprise.com/products/gcoas
+Redirect /lifesciences/partnership.html http://www.psenterprise.com/sectors/life-sciences
+Redirect /lifesciences/sbp_report/form_phase1_download.html http://www.psenterprise.com/sectors/life-sciences
+Redirect /lifesciences/sbp_report/form_sbp_phase1_report.html http://www.psenterprise.com/sectors/life-sciences
+Redirect /lifesciences/solutions.html http://www.psenterprise.com/sectors/life-sciences/solutions
+Redirect /lifesciences/success_stories.html http://www.psenterprise.com/sectors/life-sciences
+Redirect /lifesciences/systems_based_pharmaceutics.html http://www.psenterprise.com/sectors/life-sciences/systems-based-pharmaceutics
+Redirect /misc/accessibility.html http://www.psenterprise.com/
+Redirect /misc/cookies.html http://www.psenterprise.com/
+Redirect /misc/copyright.html http://www.psenterprise.com/
+Redirect /misc/privacy.html http://www.psenterprise.com/
+Redirect /misc/registration.html http://www.psenterprise.com/
+Redirect /modelbuilder.html http://www.psenterprise.com/products/gproms/modelbuilder
+Redirect /modelbuilder/overview.html http://www.psenterprise.com/products/gproms/modelbuilder
+Redirect /modelbuilder/productsheet.html http://www.psenterprise.com/products/gproms/modelbuilder
+Redirect /news/index.html http://www.psenterprise.com/news
+Redirect /news/index.html http://www.psenterprise.com/news
+Redirect /news/news_archive11.html http://www.psenterprise.com/news
+Redirect /news/news_archive12.html http://www.psenterprise.com/news
+Redirect /news/news_archive13.html http://www.psenterprise.com/news
+Redirect /news/news_archive14.html http://www.psenterprise.com/news
+Redirect /news/pr110209.html http://www.psenterprise.com/news
+Redirect /news/pr110505.html http://www.psenterprise.com/news
+Redirect /news/pr110525.html http://www.psenterprise.com/news
+Redirect /news/pr110603.html http://www.psenterprise.com/news
+Redirect /news/pr110610.html http://www.psenterprise.com/news
+Redirect /news/pr110915.html http://www.psenterprise.com/news
+Redirect /news/pr120403.html http://www.psenterprise.com/news
+Redirect /news/pr120516.html http://www.psenterprise.com/news
+Redirect /news/pr120619.html http://www.psenterprise.com/news
+Redirect /news/pr120620.html http://www.psenterprise.com/news
+Redirect /news/pr120921.html http://www.psenterprise.com/news
+Redirect /news/pr121109.html http://www.psenterprise.com/news
+Redirect /news/pr121112.html http://www.psenterprise.com/news
+Redirect /news/pr130211.html http://www.psenterprise.com/news
+Redirect /news/pr130715.html http://www.psenterprise.com/news
+Redirect /news/pr131030.html http://www.psenterprise.com/news
+Redirect /news/pr140320.html http://www.psenterprise.com/news
+Redirect /news/pr140320.html http://www.psenterprise.com/news
+Redirect /news/pr140327.html http://www.psenterprise.com/news
+Redirect /news/pr140402a.html http://www.psenterprise.com/news
+Redirect /news/pr140402b.html http://www.psenterprise.com/news
+Redirect /news/pr140708.html http://www.psenterprise.com/news
+Redirect /news/pr140710.html http://www.psenterprise.com/news
+Redirect /news/pr140731.html http://www.psenterprise.com/news
+Redirect /news/pr141015.html http://www.psenterprise.com/news
+Redirect /news/pr141103.html http://www.psenterprise.com/news
+Redirect /news/pr150120.html http://www.psenterprise.com/news
+Redirect /news/pr150210.html http://www.psenterprise.com/news
+Redirect /news/pr160128.html http://www.psenterprise.com/news
+Redirect /news/pr160302.html http://www.psenterprise.com/news
+Redirect /news/pr160422.html http://www.psenterprise.com/news
+Redirect /news/pr160614.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110209_csops/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110505_dale_curtis/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110525_mbi_prize/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110603_mecip/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110610_pseam11/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/110915_gcrystal/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120327_apmf/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120403_cmu_partnership/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120416_apmf_life_sciences/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120420_apmf/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120425_partnership_purdue/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120504_gsolids20/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120516_apmf_pfizer/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120619_achema12/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120620_gcrystal20/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/120921_rutgers/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/121109_gcrystal30/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/121112_mbi_prize_winners/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/130211_dnv_ccs/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/130625_mbi_prize/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/130626_gsolids30/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/130715_corbion_purac/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/131030_mbi_prize_winners/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140320_gcrystal40/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140327_sbp/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140402_gccs/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140402_wwt/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140708_gpromsv4/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140710_gccs/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/140731_shell_peterhead/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/141013_spray_drying/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/141103_mbi_results/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/150120_richard_longdon/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/150210_gcoas/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/160128_addopt/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/160229_paul_frey/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/160422_apmf/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/160614_gPB_v1_1/index.html http://www.psenterprise.com/news
+Redirect /news/press_releases/index.html http://www.psenterprise.com/news
+Redirect /news/pressroom.html http://www.psenterprise.com/news
+Redirect /oilandgas.html http://www.psenterprise.com/sectors/oil-and-gas
+Redirect /oilandgas/blowdown_analysis.html http://www.psenterprise.com/sectors/oil-and-gas/application-areas/blowdown-analysis
+Redirect /oilandgas/brittle_fracture.html http://www.psenterprise.com/sectors/oil-and-gas/brittle-fracture
+Redirect /oilandgas/cases/case_oil_and_gas_flare_system.html http://www.psenterprise.com/sectors/oil-and-gas/cases/case-oil-and-gas-flare-system
+Redirect /oilandgas/cases/case_uhp_gas_plant.html http://www.psenterprise.com/sectors/oil-and-gas/cases/case-uhp-gas-plant
+Redirect /oilandgas/cases/index.html http://www.psenterprise.com/sectors/oil-and-gas/cases
+Redirect /oilandgas/contact_oilgas.html http://www.psenterprise.com/sectors/oil-and-gas/contact-pse-og
+Redirect /oilandgas/dynamic_flare_analysis.html http://www.psenterprise.com/sectors/oil-and-gas/application-areas/dynamic-flare-analysis
+Redirect /oilandgas/dynamic_process_analysis.html http://www.psenterprise.com/sectors/oil-and-gas/application-areas/dynamic-process-analysis
+Redirect /oilandgas/experience_and_personnel.html http://www.psenterprise.com/sectors/oil-and-gas/experience-and-personnel
+Redirect /oilandgas/experience_and_personnel.php http://www.psenterprise.com/sectors/oil-and-gas/experience-and-personnel
+Redirect /oilandgas/fire_analysis.html http://www.psenterprise.com/sectors/oil-and-gas/application-areas/fire-analysis
+Redirect /oilandgas/gflare.html http://www.psenterprise.com/sectors/oil-and-gas/gflare
+Redirect /oilandgas/goilfield.html http://www.psenterprise.com/sectors/oil-and-gas/production
+Redirect /oilandgas/high_fidelity.html http://www.psenterprise.com/sectors/oil-and-gas
+Redirect /oilandgas/overpressure_protection.html http://www.psenterprise.com/sectors/oil-and-gas/application-areas/overpressure-protection
+Redirect /oilandgas/process.html http://www.psenterprise.com/sectors/oil-and-gas/process
+Redirect /oilandgas/production.html http://www.psenterprise.com/sectors/oil-and-gas/production
+Redirect /oilandgas/production_services.html http://www.psenterprise.com/sectors/oil-and-gas/production
+Redirect /oilandgas/relief_flare_blowdown.html http://www.psenterprise.com/sectors/oil-and-gas/relief-flare-blowdown
+Redirect /oilandgas/seminars/agenda_general.html http://www.psenterprise.com/sectors/oil-and-gas/seminars/agenda-general
+Redirect /oilandgas/seminars/form_request_og_seminar.html http://www.psenterprise.com/sectors/oil-and-gas/contact-pse-og
+Redirect /oilandgas/services.html http://www.psenterprise.com/sectors/oil-and-gas/services
+Redirect /oilandgas/seminars/index.html http://www.psenterprise.com/sectors/oil-and-gas/seminars
+Redirect /oilandgas/tech_brief_blowdown_system.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-blowdown-system
+Redirect /oilandgas/tech_brief_flare_capacity.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-flare-capacity
+Redirect /oilandgas/tech_brief_flare_temp.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-flare-temp
+Redirect /oilandgas/tech_brief_gas_cap.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-gas-cap
+Redirect /oilandgas/tech_brief_separator_low_temp.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-separator-low-temp
+Redirect /oilandgas/tech_brief_vessel_blowdown.html http://www.psenterprise.com/sectors/oil-and-gas/gflare/tech-brief-vessel-blowdown
+Redirect /power.html http://www.psenterprise.com/sectors/power
+Redirect /power/ccs.html http://www.psenterprise.com/sectors/power/ccs
+Redirect /power/ccs/benefits.html http://www.psenterprise.com/sectors/power/ccs/benefits
+Redirect /power/ccs/challenges.html http://www.psenterprise.com/sectors/power/ccs/challenges
+Redirect /power/ccs/ecosystem.html http://www.psenterprise.com/sectors/power/ccs/ecosystem
+Redirect /power/ccs/eti_smtk_project.html http://www.psenterprise.com/sectors/power/ccs
+Redirect /power/ccs/events.php http://www.psenterprise.com/events
+Redirect /power/ccs/features.html http://www.psenterprise.com/sectors/power/ccs/gccs
+Redirect /power/ccs/gccs.html http://www.psenterprise.com/sectors/power/ccs/gccs
+Redirect /power/ccs/overview.html http://www.psenterprise.com/sectors/power/ccs/overview
+Redirect /power/ccs/wholechain.html http://www.psenterprise.com/sectors/power/ccs
+Redirect /processbuilder.html http://www.psenterprise.com/products/gproms/processbuilder
+Redirect /processbuilder/advanced_applications.html http://www.psenterprise.com/products/gproms/processbuilder/advanced-applications
+Redirect /processbuilder/custom.html http://www.psenterprise.com/products/gproms/processbuilder/custom
+Redirect /processbuilder/example_bpo.html http://www.psenterprise.com/products/gproms/processbuilder/example-bpo
+Redirect /processbuilder/example_wpo.html http://www.psenterprise.com/products/gproms/processbuilder/example-wpo
+Redirect /processbuilder/features.html http://www.psenterprise.com/products/gproms/processbuilder/features
+Redirect /processbuilder/index.html http://www.psenterprise.com/products/gproms/processbuilder
+Redirect /processbuilder/isdifferent.html http://www.psenterprise.com/products/gproms/processbuilder/is-different
+Redirect /processbuilder/landing.html http://www.psenterprise.com/products/gproms/processbuilder
+Redirect /processbuilder/libraries.html http://www.psenterprise.com/products/gproms/processbuilder/libraries
+Redirect /processbuilder/libraries/aml_fbcr.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/aml_fbcr
+Redirect /processbuilder/libraries/aml_glc.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/aml_glc
+Redirect /processbuilder/libraries/hybrid_multitubular.html http://www.psenterprise.com/products/gproms/processbuilder/libraries/hybrid_multitubular
+Redirect /processbuilder/libraries/index.html http://www.psenterprise.com/products/gproms/processbuilder/libraries
+Redirect /processbuilder/productsheet.html http://www.psenterprise.com/products/gproms/processbuilder/product-sheet
+Redirect /products/gfuelcell/index.html http://www.psenterprise.com/sectors/fuelcell
+Redirect /specialtychem.html http://www.psenterprise.com/sectors/specialty-chem
+Redirect /specialtychem/batch_esterification.html http://www.psenterprise.com/sectors/specialty-chem/batch-esterification
+Redirect /specialtychem/consulting.html http://www.psenterprise.com/sectors/specialty-chem/consulting
+Redirect /specialtychem/events.php http://www.psenterprise.com/events
+Redirect /syspharma.html http://www.psenterprise.com/sectors/life-sciences/systems-based-pharmaceutics
+Redirect /training/accreditation.html http://www.psenterprise.com/services/training
+Redirect /training/index.html http://www.psenterprise.com/services/training
+Redirect /training/mentoring_sabbatical.html http://www.psenterprise.com/services/training
+Redirect /training/support.html http://www.psenterprise.com/services/training
+Redirect /training/support_modelcare.html http://www.psenterprise.com/services/training
+Redirect /training/support_premium.html http://www.psenterprise.com/services/training
+Redirect /training/technical_webinar_form.html http://www.psenterprise.com/services/training/technical-webinar-series
+Redirect /training/technical_webinars/tw_debugging.html http://www.psenterprise.com/pse-technical-webinar-series/tw_debugging
+Redirect /training/technical_webinars/tw_distributed_models.html http://www.psenterprise.com/pse-technical-webinar-series/tw_distributed_models
+Redirect /training/technical_webinars/tw_initialisation_procedures.html http://www.psenterprise.com/pse-technical-webinar-series/tw_initialisation_procedures
+Redirect /training/technical_webinars/tw_library_development_i.html http://www.psenterprise.com/pse-technical-webinar-series/tw_library_development
+Redirect /training/technical_webinars/tw_lumped_models.html http://www.psenterprise.com/pse-technical-webinar-series/tw_lumped_models
+Redirect /training/technical_webinars/tw_numerical_solutions_i.html http://www.psenterprise.com/pse-technical-webinar-series/tw_numerical_solutions
+Redirect /training/technical_webinars/tw_numerical_solutions_ii.html http://www.psenterprise.com/pse-technical-webinar-series/tw_numerical_solutions_2
+Redirect /training/technical_webinars/tw_optimisation_minlp.html http://www.psenterprise.com/pse-technical-webinar-series/tw_optimisation-minlp
+Redirect /training/technical_webinars/tw_optimisation_nlp.html http://www.psenterprise.com/pse-technical-webinar-series/tw_optimisation-nlp
+Redirect /training/technical_webinars/tw_parameter_estimation_i.html http://www.psenterprise.com/pse-technical-webinar-series/tw_parameter_estimation
+Redirect /training/technical_webinars/tw_parameter_estimation_ii.html http://www.psenterprise.com/pse-technical-webinar-series/tw_parameter_estimation_2
+Redirect /training/training_course_basic_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_developer_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gcrystal_intro_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gcrystal_intro_korea_2day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gp_custom_modelling_2day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gp_publishing_models_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gpb_dynamic_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_gpb_steadystate_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_japan_develop_custom_model_2day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_korea_ccs_intro_3day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_korea_pb_advanced_2day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_korea_pb_intro_3day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_optimisation_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_pb_steadystate_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course_validation_1day.html http://www.psenterprise.com/services/training
+Redirect /training/training_course1.html http://www.psenterprise.com/services/training
+Redirect /training/training_course3.html http://www.psenterprise.com/services/training
+Redirect /training/training_dates.html http://www.psenterprise.com/services/training
+Redirect /training/training_fees.html http://www.psenterprise.com/services/training
+Redirect /utility_flexutil.html http://www.psenterprise.com/utility_flexutil
+Redirect /wastewater.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/events.php http://www.psenterprise.com/events
+Redirect /wastewater/get_a_quote.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/get_a_quote_confirmation.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/gwater.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/plant_audit.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/plantoptimiser.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/services.html http://www.psenterprise.com/sectors/wastewater
+Redirect /wastewater/technology.html http://www.psenterprise.com/sectors/wastewater
+Redirect /311211.pdf http://www.psenterprise.com/public/mediafiles/pdf/311211.pdf
+Redirect /311212.pdf http://www.psenterprise.com/public/mediafiles/pdf/311212.pdf
+Redirect /311213.pdf http://www.psenterprise.com/public/mediafiles/pdf/311213.pdf
+Redirect /311214.pdf http://www.psenterprise.com/public/mediafiles/pdf/311214.pdf
+Redirect /311215.pdf http://www.psenterprise.com/public/mediafiles/pdf/311215.pdf
+Redirect /gutilities.html http://www.psenterprise.com/products/gproms/utilities
+Redirect /a_sw_terms_201401.pdf http://www.psenterprise.com/public/mediafiles/standardterms/a_sw_terms_201401.pdf
+Redirect /i_comb_terms_201401.pdf http://www.psenterprise.com/public/mediafiles/standardterms/i_comb_terms_201401.pdf
+Redirect /i_svs_terms_201401.pdf http://www.psenterprise.com/public/mediafiles/standardterms/i_svs_terms_201401.pdf
+Redirect /i_sw_terms_201401.pdf http://www.psenterprise.com/public/mediafiles/standardterms/i_sw_terms_201401.pdf
+
+php_value upload_max_filesize 300M
+php_value post_max_size 310M
