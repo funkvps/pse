@@ -333,7 +333,7 @@ ul.facetapi-facetapi-ajax-checkboxes {
 }
 
 #block-views-pse-events-block-user-events .views-row span.event-type-title a {
-  color: #333;
+  color: #006c85;
 }
 
 #block-views-pse-training-courses-blck-dash {
@@ -349,9 +349,7 @@ ul.facetapi-facetapi-ajax-checkboxes {
 .view-pse-training-courses .view-footer .small_link {
   /*padding-bottom: 1em;*/
 }
-.view-pse-training-courses .ruledtable td {
-  border-bottom: 0!important;
-}
+
 
 #block-views-pse-training-courses-blck-dash footer,
 #block-views-pse-events-block-user-events footer,

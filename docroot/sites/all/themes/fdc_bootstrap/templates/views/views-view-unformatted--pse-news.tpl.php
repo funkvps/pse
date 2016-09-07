@@ -21,13 +21,13 @@ if (!isset($_GET['page']) && empty($_GET['f'])) {
   <?php if ($id == 1) { ?>
   <div class="row">
   <?php }?>
-  <?php if ($id == 4 || $id == 8) { 
+  <?php if ($id == 7 || $id == 10) {
     $row_started = true;
   ?>
   </div><div class="row">
   <?php }
   if ($id > 0 && $id < 4) { $classes_array[$id] .= ' col-md-4'; }
-  if ($id >= 4 && $id < 12) { $classes_array[$id] .= ' col-md-3'; }
+  if ($id >= 4 && $id < 12) { $classes_array[$id] .= ' col-md-4'; }
   } ?>
     
     
