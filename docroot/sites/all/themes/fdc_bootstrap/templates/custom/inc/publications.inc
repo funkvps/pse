@@ -15,7 +15,9 @@
 				<?php // endif; ?>
 				<?php if ($item->pub->file_id): ?>
 					<?php $file_path = fdc_pse_publication_file($item->pub->file_id); ?>
-					<?php $url = file_create_url($file_path); ?>
+<!--					--><?php //var_dump($file_path);exit; ?>
+					<?php $url = '/system/tdf/' . $file_path->filename . "?file=1&type=node&id=$node->nid&force=1"; ?>
+<!--					--><?php //$url = file_create_url($file_path['file_path']) . "?file=1&type=node&id=$node->nid&force=1"; ?>
 				<?php endif; ?>
 
 				<?php if (!$item->lock_bool): ?>

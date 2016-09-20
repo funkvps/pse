@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * @see hook_cron()
+ */
+function pse_custom_cron() {
+  $start = strtotime('midnight');
+  $end = strtotime('tomorrow midnight');
+
+  $current_time = date('G');
+
+  if ($current_time == '17') {
+    $last_run = variable_get('tracking_downloads_email_cron');
+    if ($last_run != date('dmy')) {
+      $query = db_select('track_da_files', 'tdf')
+        ->fields('tdf')
+        ->condition('tdf.time', $start, '>=')
+        ->condition('tdf.time', $end, '<=');
+      $result = $query->execute();
+
+      $downloads = array();
+      foreach ($result as $download) {
+        $downloads[] = $download;
+      }
+      if (!empty($downloads)) {
+        drupal_mail('pse_custom', 'summmary_downloads', 'k.burness@psenterprise.com', language_default());
+        drupal_mail('pse_custom', 'summmary_downloads', 's.shingla@psenterprise.com', language_default());
+      }
+      else {
+        drupal_mail('pse_custom', 'summmary_downloads', 'k.burness@psenterprise.com', language_default());
+        drupal_mail('pse_custom', 'summmary_downloads', 's.shingla@psenterprise.com', language_default());
+      }
+
+      // Setting the date here will make sure on the next cron run (within the
+      // day) that this does not get executed, because it wcould be excuted at
+      // 17:03 and then 17:39, but if we check to see if it has already run today
+      // then we won't worry about it spaming the users.
+      variable_set('tracking_downloads_email_cron', date('dmy'));
+    }
+  }
+}
+
+function pse_custom_mail($key, &$message, $params) {
+  $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
+  $path = 'https://www.psenterprise.com/admin/reports/file-downloads-report?time%5Bmin%5D=midnight&time%5Bmax%5D=tomorrow+midnight&path=';
+  switch ($key) {
+    case 'summmary_downloads':
+      $message['subject'] = 'Summary of downloaded files';
+      $message['body'][] = t('Hi there,');
+      $message['body'][] .= '<br>';
+      $message['body'][] .= t('Files have been downloaded today, click !here to view the list of files that were downloaded.', array(
+        '!here' => l(t('here'), url($path))
+      ));
+      $message['body'][] .= '<br>';
+      $message['body'][] .= 'Thanks';
+      break;
+    case 'summmary_downloads_none':
+      $message['subject'] = 'Summary of downloaded files';
+      $message['body'][] = t('Hi there');
+      $message['body'][] .= '<br>';
+      $message['body'][] .= t('No files have been downloaded today.');
+      $message['body'][] .= '<br>';
+      $message['body'][] .= 'Thanks';
+      break;
+  }
+}
