@@ -470,14 +470,16 @@ div.vertical-tabs ul li.selected a:focus strong {
 /**
  * Page layout.
  */
+
 #page {
   padding: 20px 40px;
   background: #fff;
   position: relative;
   color: #333;
-  overflow: hidden;
 }
-
+.adminimal-theme #page {
+  overflow: visible;
+}
 #secondary-links ul.links li {
   padding: 0 10px 10px 0;/* LTR */
 }

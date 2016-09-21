@@ -29,6 +29,11 @@ if (function_exists('fdc_pse_get_product_side_menu')) {
 $content_menu = child_sibling_menu($node->nid);
 ?>
 
+<div class="row row_extra_negative">
+	<?php include DRUPAL_ROOT . '/sites/all/themes/fdc_bootstrap/templates/custom/inc/page_banner.inc'; ?>
+</div>
+
+
 <?php if (isset($content->heading) && $content->heading) : ?>
 	<h1>
 		<?php echo $content->heading; ?>

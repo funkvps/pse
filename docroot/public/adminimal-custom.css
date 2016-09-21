@@ -1,0 +1,176 @@
+
+
+table tbody {
+	border: 2px solid #E1E2DC;
+}
+ul.tips, div.description, .form-item div.description { white-space: normal; }
+
+.form-wrapper {
+	margin-bottom: 10px;
+}
+.form-item label, 
+.exposed-filters .form-item label {
+	font-size: 15px;
+	margin: 0 0 3px 5px;
+}
+.form-item label.option {
+	font-size: 14px;
+}
+
+
+
+.field-name-field-home-banner-link-text,
+.field-name-field-home-banner-sec-text {
+	float: left;
+	width: 150px;
+	margin-right: 20px;
+}
+.field-name-field-home-banner-link,
+.field-name-field-home-banner-sec-url {
+	float: left;
+	width: 300px;
+	margin-right: 20px;
+}
+.field-name-field-home-banner-link-text div,
+.field-name-field-home-banner-link div,
+.field-name-field-home-banner-sec-text div,
+.field-name-field-home-banner-sec-url div {
+	width: 100%;
+}
+.field-name-field-home-banner-link-text input,
+.field-name-field-home-banner-link input,
+.field-name-field-home-banner-sec-text input,
+.field-name-field-home-banner-sec-url input {
+	width: 90%;
+}
+
+
+.field-name-field-publication-to-bottom .form-radios > div {
+	display: inline-block;
+	font-size: 14px;
+	padding-right: 30px;
+}
+
+
+
+.field-name-field-calltoaction-title,
+.field-name-field-calltoaction-title-color,
+.field-name-field-calltoaction-body,
+.field-name-field-calltoaction-body-color,
+.field-name-field-calltoaction-button,
+.field-name-field-calltoaction-link,
+.field-name-field-calltoaction-bg-ref,
+.field-name-field-calltoaction-link-color,
+
+.field-name-field-caltoactionfour-title,
+.field-name-field-caltoactionfour-t-color,
+.field-name-field-caltoactionfour-body,
+.field-name-field-caltoactionfour-b-color,
+.field-name-field-caltoactionfour-button,
+.field-name-field-caltoactionfour-link,
+.field-name-field-caltoactionfour-bg-ref,
+.field-name-field-caltoactionfour-link-color {
+	float: left;
+	width: 300px;
+	margin-right: 20px;
+}
+.field-name-field-calltoaction-title-color,
+.field-name-field-calltoaction-body-color,
+.field-name-field-calltoaction-button,
+.field-name-field-calltoaction-link-color,
+
+.field-name-field-caltoactionfour-t-color,
+.field-name-field-caltoactionfour-b-color,
+.field-name-field-caltoactionfour-button,
+.field-name-field-caltoactionfour-link-color {
+	width: 150px;
+}
+.field-name-field-calltoaction-title div,
+.field-name-field-calltoaction-title-color div,
+.field-name-field-calltoaction-body div,
+.field-name-field-calltoaction-body-color div,
+.field-name-field-calltoaction-button div,
+.field-name-field-calltoaction-link div,
+.field-name-field-calltoaction-link-color div,
+
+.field-name-field-caltoactionfour-title div,
+.field-name-field-caltoactionfour-t-color div,
+.field-name-field-caltoactionfour-body div,
+.field-name-field-caltoactionfour-b-color div,
+.field-name-field-caltoactionfour-button div,
+.field-name-field-caltoactionfour-link div,
+.field-name-field-caltoactionfour-link-color div {
+	width: 99%;
+}
+.field-name-field-calltoaction-title input,
+.field-name-field-calltoaction-title-color input,
+.field-name-field-calltoaction-body-color input, 
+.field-name-field-calltoaction-button input,
+.field-name-field-calltoaction-link input,
+.field-name-field-calltoaction-link-color input,
+
+.field-name-field-caltoactionfour-title input,
+.field-name-field-caltoactionfour-t-color input,
+.field-name-field-caltoactionfour-b-color input,
+.field-name-field-caltoactionfour-button input,
+.field-name-field-caltoactionfour-link input,
+.field-name-field-caltoactionfour-link-color input {
+	width: 90%;
+}
+
+
+.field-name-field-calltoaction-body textarea,
+.field-name-field-caltoactionfour-body textarea {
+	width: 100%;
+}
+.field-name-field-calltoaction-button,
+.field-name-field-caltoactionfour-button {
+	clear: left;
+}
+
+
+input.form-submit  {
+	/*float: right;*/
+	/*clear: left;*/
+}
+
+
+
+
+
+.field-name-field-menu-ref,
+.field-name-field-menu-link,
+.field-name-field-menu-pdf  {
+	float: left;
+	width: 200px;
+	margin-right: 20px;
+}
+.field-name-field-menu-pdf {
+	width: 340px;
+}
+.field-name-field-menu-ref div,
+.field-name-field-menu-link div,
+.field-name-field-menu-pdf div {
+	width: 99%;
+}
+.field-name-field-menu-ref select,
+.field-name-field-menu-link input {
+	width: 90%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

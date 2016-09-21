@@ -33,13 +33,15 @@ if (!empty($row->_entity_properties['entity object']->field_events_type['und'][0
 }
 $title = $row->_entity_properties['entity object']->title;
 if (!empty($row->_entity_properties['entity object']->field_event_no_link['und'][0]['value'])) {
-  $output = $event_type . ': ' . $output;
-} elseif (!empty($row->_entity_properties['entity object']->field_event_external['und'][0]['safe_value'])) {
+  $output = $event_type . ': ' . l($row->_entity_properties['entity object']->title, 'node/' . $page_ref);
+}
+elseif (!empty($row->_entity_properties['entity object']->field_event_external['und'][0]['safe_value'])) {
   $url = $row->_entity_properties['entity object']->field_event_external['und'][0]['safe_value'];
   $output = htmlspecialchars_decode($output);
   $output = htmlspecialchars_decode($output);
   $output = $event_type . ': <a href="' . $url . '" target="_blank">' . $title . '</a>';
-} elseif (!empty($row->_entity_properties['entity object']->nid)) {
+}
+elseif (!empty($row->_entity_properties['entity object']->nid)) {
   $output = htmlspecialchars_decode($output);
   $output = htmlspecialchars_decode($output);
   $output = $event_type . ': ' . l($output, 'node/' . $row->_entity_properties['entity object']->nid);

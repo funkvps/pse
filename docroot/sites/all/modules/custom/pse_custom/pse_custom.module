@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @see hook_cron()
  */
@@ -42,14 +41,23 @@ function pse_custom_cron() {
 
 function pse_custom_mail($key, &$message, $params) {
   $message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
-  $path = 'https://www.psenterprise.com/admin/reports/file-downloads-report?time%5Bmin%5D=midnight&time%5Bmax%5D=tomorrow+midnight&path=';
+//  $path = 'https://www.psenterprise.com/admin/reports/file-downloads-report?time%5Bmin%5D=midnight&time%5Bmax%5D=tomorrow+midnight&path=';
+  $start = strtotime('midnight');
+  $end = strtotime('tomorrow midnight');
+
+  $start_date = format_date($start,'custom', 'd-m-Y');
+  $end_date = format_date($end,'custom', 'd-m-Y');
+  $software = "https://www.psenterprise.com/admin/reports/file-downloads-report?time%5Bmin%5D=$start_date&time%5Bmax%5D=$end_date&path=&type=software";
+  $publications = "https://www.psenterprise.com/admin/reports/file-downloads-report?time%5Bmin%5D=$start_date&time%5Bmax%5D=$end_date&path=&type=document";
+
   switch ($key) {
     case 'summmary_downloads':
       $message['subject'] = 'Summary of downloaded files';
       $message['body'][] = t('Hi there,');
       $message['body'][] .= '<br>';
-      $message['body'][] .= t('Files have been downloaded today, click !here to view the list of files that were downloaded.', array(
-        '!here' => l(t('here'), url($path))
+      $message['body'][] .= t('Files have been downloaded today, click !here_document for the software list or !here_document for publication/document list.', array(
+        '!here' => l(t('here'), url($software)),
+        '!here_document' => l(t('here'), url($publications))
       ));
       $message['body'][] .= '<br>';
       $message['body'][] .= 'Thanks';
@@ -63,4 +71,20 @@ function pse_custom_mail($key, &$message, $params) {
       $message['body'][] .= 'Thanks';
       break;
   }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function pse_custom_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'views_exposed_form') {
+    if (isset($form['time'])) {
+      $form['time']['min']['#title'] = t('From:');
+      $form['time']['max']['#title'] = t('To:');
+    }
+  }
+}
+
+function pse_custom_js_alter(&$js) {
+  $js['settings']['data'][] = array('better_exposed_filters'=> array('datepicker_options' => array('dateformat'=>'dd-mm-yy')));
 }

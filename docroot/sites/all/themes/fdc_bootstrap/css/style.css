@@ -1168,6 +1168,10 @@ form .checkout_review label {
 	width: 16px !important;
 }
 
+.page-user-dashboard .ruledtable td {
+	border-bottom:0 !important;
+
+}
 .ruledtable td {
 	border-bottom: 1px solid #ccc !important;
 }
@@ -2039,6 +2043,62 @@ ul.news_list li.news_item img {
   content: "g";
 }
 
+/*****************************/
+/******* COOKIE ALERT ********/
+/*****************************/
+
+#sliding-popup .popup-content #popup-text p {
+    font-size: 12px !important;
+}
+
+#sliding-popup .popup-content #popup-text a{
+    color: #fff !important;
+}
+
+#sliding-popup .popup-content #popup-text a:hover {
+    color: #fff !important;
+	text-decoration:underline !important;
+}
+
+button.find-more-button{display:none !important;}
+
+#sliding-popup .popup-content #popup-text h2, #sliding-popup .popup-content #popup-text p {
+    color: #fff;
+    display: block;
+    font-size: 16px;
+    font-weight: normal !important;
+    line-height: 1.4;
+    margin: 5px 0 25px 55px !important;
+}
+
+#sliding-popup .popup-content #popup-buttons button {
+    cursor: pointer;
+    display: inline;
+    margin-right: 48px !important;
+    margin-top: 1em;
+    vertical-align: middle;
+    overflow: visible;
+    width: auto;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+    background:none !important;
+    background: none !important;
+    filter: none !important;
+    background-color:  none !important;
+    -moz-border-radius:  none !important;
+    -webkit-border-radius:  none !important;
+    border-radius:  none !important;
+    border:none !important;
+    display: inline-block;
+    color: #fff !important;
+    font-family: arial;
+    font-weight: bold !important;
+    padding:0px !important;
+	margin-top:7px !important;
+    text-decoration: none;
+    text-shadow: none !important;
+}
 
 
 /*****************************/
@@ -2087,7 +2147,10 @@ and (-webkit-min-device-pixel-ratio : 3) {
 	footer#cta  													{ width: 100px; }
 	footer#bottom 													{ width: 114%; }
 	footer .copyright span											{ display: block; padding-bottom: 10px; }
+	
+	#imap 															{ display: none !important }
 
+	
 }
 
 @media only screen 
@@ -2097,6 +2160,8 @@ and (orientation : portrait)
 and (-webkit-min-device-pixel-ratio : 3) { 
 
 	.quotename 														{ background-position: bottom right !important; }
+	#imap 															{ display: none !important }
+
 
 
 }
@@ -2141,6 +2206,8 @@ and (-webkit-min-device-pixel-ratio : 2) {
 	footer#cta  													{ width: 100px; }
 	footer#bottom 													{ width: 115.3%; }
 	footer .copyright span											{ display: block; padding-bottom: 10px; }
+	#imap 															{ display: none !important }
+
 
 }
 
@@ -2152,8 +2219,8 @@ and (-webkit-min-device-pixel-ratio : 2) {
 
 	
     .user-mini-nav li 	 											{ padding: 0 5px; margin-top: 0; font-size: 1em; }
+	#imap 															{ display: none !important }
 
-    
 
 }
 
@@ -2179,6 +2246,8 @@ and (-webkit-device-pixel-ratio: 2) {
 	header#top div.strap 											{ top: 40px; font-size: .9em; }
 
 	.front .home_banners 											{ height: 130px !important; }
+	#imap 															{ display: none !important }
+	#og-map 														{ display: none !important }
 
 }
 /* iPhone 5 Landscape -------------------------- */
@@ -2211,6 +2280,8 @@ and (-webkit-device-pixel-ratio: 2) {
 	ul.sectors li 													{ width: 156px !important; margin-bottom: 20px }
 
 	footer#bottom 													{ width:118.7%; }
+	#imap 															{ display: none !important }
+
 
 }
 
@@ -2347,6 +2418,7 @@ and (max-device-width : 480px) {
 	.table-responsive:before 										{ content: 'Swipe on table sideways to see more >'; font-size: .8em; padding-bottom: 7px; }
 	.table-responsive table 										{ margin: 10px 0 10px 0 !important; }
 	.g-recaptcha 													{ transform:scale(0.77);-webkit-transform:scale(0.77);transform-origin:0 0;-webkit-transform-origin:0 0;}
+	#imap 															{ display: none !important }
 
 
 	.adminimal-backend #page { overflow: hidden; }
@@ -2388,6 +2460,7 @@ and (orientation : landscape) {
 
 
 	.not-front .home_banners 								{ height: 350px; }
+	.ipad-adjust											{ height: 340px; }
 
 }
 
@@ -2400,7 +2473,7 @@ and (orientation : portrait) {
 
 	.not-front .home_banners 								{ height: 280px; }
 	.strap 													{ display: none; }
-
+	.ipad-adjust											{ height: 262px; }
 }
 
 
