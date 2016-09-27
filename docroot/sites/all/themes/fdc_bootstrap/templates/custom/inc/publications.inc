@@ -62,7 +62,11 @@
 							$('#user_not_registered_modal').on('show.bs.modal', function(event) {
 								var button = $(event.relatedTarget); // Button that triggered the modal
 								var fname = button.data('file'); // Extract info from data-* attributes
+								var pub_file_name = fname.substring(fname.lastIndexOf("tdf/")+4,fname.lastIndexOf("?file"));
+
 								$("input:hidden[name='submitted[file_id]']").val(fname);
+								$("input:hidden[name='submitted[current_page]']").val(window.location.href);
+								$("input:hidden[name='submitted[file_name]']").val(pub_file_name);
 							})
 						})
 					</script>

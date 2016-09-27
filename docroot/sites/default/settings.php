@@ -569,7 +569,7 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 # $conf['allow_authorize_operations'] = FALSE;
 
 //$conf['theme_debug'] = TRUE;
-$conf['theme_debug'] = FALSE;
+$conf['theme_debug'] = TRUE;
 //$conf['theme_debug'] = TRUE;
 
 ini_set('memory_limit','500M');
