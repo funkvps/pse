@@ -12,7 +12,7 @@ hide($content['field_press_release_pdf']);
   
   <div class="content"<?php print $content_attributes; ?>>
     <?php if (!empty($field_collection['field_news_image'][0]['#item']['uri'])) {
-      $src = image_style_url($field_collection['field_news_image'][0]['#image_style'], $field_collection['field_news_image'][0]['#item']['uri']);
+      $src = image_style_url('news_sub_features', $field_collection['field_news_image'][0]['#item']['uri']);
       $alt = $field_collection['field_news_image'][0]['#item']['alt'];
       $img_title = $field_collection['field_news_image'][0]['#item']['title'];
     ?>

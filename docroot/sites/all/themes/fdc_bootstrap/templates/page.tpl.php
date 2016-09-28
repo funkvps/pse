@@ -184,21 +184,3 @@
 
 
 </div>
-
-
-
-	<div class="wrapper_privacy_notice">
-		<div class="privacy_notice">
-			<div class="container">
-				<div class="row">
-					<div class="col-xs-12 col-sm-12 col-md-9 col-lg-9">
-						<p>Our website uses cookies so that we can provide a better browsing experience. Continue to use the site as normal if you're happy with this or <a href="/misc/privacy">find out more about cookies</a></p>
-					</div>
-					<div class="col-xs-12 col-sm-12 col-md-3 col-lg-3">
-						<p><span class="notice_close">OK</span></p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
